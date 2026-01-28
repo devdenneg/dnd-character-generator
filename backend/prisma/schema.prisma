@@ -12,17 +12,21 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      String   @default("player") // "player" or "master"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  email      String   @unique
+  password   String
+  name       String?
+  role       String   @default("player") // "player" or "master"
+  experience Int      @default(0) // Опыт игрока
+  level      Int      @default(1) // Уровень игрока
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  characters  Character[]
-  rooms       Room[]
-  roomPlayers RoomPlayer[]
+  characters     Character[]
+  rooms          Room[]
+  roomPlayers    RoomPlayer[]
+  achievements   UserAchievement[]
+  givenAchievements UserAchievement[] @relation("AchievementGiver")
 }
 
 model Character {
@@ -74,4 +78,21 @@ model RoomPlayer {
   @@index([roomId])
   @@index([userId])
   @@index([characterId])
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String
+  achievementId String   // ID из справочника achievements.ts
+  roomId        String?  // Комната, в которой выдано (опционально)
+  givenBy       String?  // ID мастера, который выдал
+  earnedAt      DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  giver User? @relation("AchievementGiver", fields: [givenBy], references: [id], onDelete: SetNull)
+
+  @@unique([userId, achievementId]) // Одна ачивка один раз
+  @@index([userId])
+  @@index([achievementId])
+  @@index([roomId])
 }

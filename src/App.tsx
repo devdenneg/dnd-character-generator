@@ -25,6 +25,7 @@ import { MyRoomsPage } from "@/components/MyRoomsPage";
 import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { JoinRoomPage } from "@/components/JoinRoomPage";
 import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
+import { UserAchievementsPage } from "@/components/UserAchievementsPage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -295,6 +296,7 @@ function AppRoutes() {
       <Route path="/" element={<HomePageWrapper />} />
       <Route path="/character" element={<CharacterWizardPage />} />
       <Route path="/my-characters" element={<MyCharactersPage />} />
+      <Route path="/achievements" element={<UserAchievementsPage />} />
       <Route path="/join-room" element={<BrowseRoomsPage />} />
       <Route path="/join-room/:id" element={<JoinRoomPage />} />
       <Route path="/my-rooms" element={<MyRoomsPage />} />

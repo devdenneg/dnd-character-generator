@@ -358,6 +358,7 @@ export function RoomDetailsPage() {
           {isMaster ? (
             <MasterRoomView
               players={players}
+              roomId={room.id}
             />
           ) : (
             <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-8">
