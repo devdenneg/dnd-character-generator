@@ -173,38 +173,59 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {visibleMenuItems.map((item, index) => (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className="animate-fade-in-up w-full text-left p-6 rounded-2xl border transition-all duration-300 bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:bg-card/80 cursor-pointer group"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div
-                    className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${item.gradient} group-hover:scale-110 transition-transform`}
-                  >
-                    <item.icon className="w-7 h-7 text-white" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-semibold text-lg text-foreground">
-                        {item.title}
-                      </h3>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+          {isLoading ? (
+            // Loading skeleton
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="w-full p-6 rounded-2xl border bg-card/60 backdrop-blur-sm border-border/50 animate-pulse"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-muted" />
+                    <div className="flex-1 space-y-3">
+                      <div className="h-5 bg-muted rounded w-3/4" />
+                      <div className="h-4 bg-muted rounded w-full" />
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {item.description}
-                    </p>
                   </div>
                 </div>
-              </button>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            // Menu items
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {visibleMenuItems.map((item, index) => (
+                <button
+                  key={item.id}
+                  onClick={() => onNavigate(item.id)}
+                  className="animate-fade-in-up w-full text-left p-6 rounded-2xl border transition-all duration-300 bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:bg-card/80 cursor-pointer group"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div
+                      className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${item.gradient} group-hover:scale-110 transition-transform`}
+                    >
+                      <item.icon className="w-7 h-7 text-white" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-semibold text-lg text-foreground">
+                          {item.title}
+                        </h3>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Auth Info for non-authenticated users */}
           {!isAuthenticated && (
