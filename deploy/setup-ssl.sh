@@ -1,21 +1,21 @@
 #!/bin/bash
-# SSL certificate setup for dndgenerator.club
+# SSL certificate setup for dndgenerator.fun
 
 set -e
 
-echo "🔐 Setting up SSL certificate for dndgenerator.club..."
+echo "🔐 Setting up SSL certificate for dndgenerator.fun..."
 
 # Get SSL certificate from Let's Encrypt
-certbot --nginx -d dndgenerator.club -d www.dndgenerator.club \
+certbot --nginx -d dndgenerator.fun -d www.dndgenerator.fun \
   --non-interactive \
   --agree-tos \
   --redirect \
-  --email admin@dndgenerator.club
+  --email admin@dndgenerator.fun
 
 echo "✅ SSL certificate installed!"
 echo "🌐 Your site is now available at:"
-echo "   https://dndgenerator.club"
-echo "   https://www.dndgenerator.club"
+echo "   https://dndgenerator.fun"
+echo "   https://www.dndgenerator.fun"
 
 # Test auto-renewal
 certbot renew --dry-run
