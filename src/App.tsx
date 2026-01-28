@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BookOpen, Home } from "lucide-react";
 import {
@@ -311,9 +311,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SocketProvider>
-          <HashRouter>
+          <BrowserRouter>
             <AppRoutes />
-          </HashRouter>
+          </BrowserRouter>
         </SocketProvider>
       </AuthProvider>
     </QueryClientProvider>
