@@ -42,9 +42,16 @@ const queryClient = new QueryClient({
 
 function CharacterWizardPage() {
   const navigate = useNavigate();
-  const { currentStep } = useCharacterStore();
+  const { currentStep, resetCharacter } = useCharacterStore();
   const [showGlossary, setShowGlossary] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Clear character store when leaving the page
+  useEffect(() => {
+    return () => {
+      resetCharacter();
+    };
+  }, [resetCharacter]);
 
   // Show login required message
   if (!authLoading && !isAuthenticated) {
@@ -159,9 +166,14 @@ function CharacterWizardPage() {
     );
   }
 
+  const handleBackToHome = () => {
+    resetCharacter();
+    navigate("/");
+  };
+
   return (
     <div className="animate-fade-in">
-      <WizardLayout onBack={() => navigate("/")}>{renderStep()}</WizardLayout>
+      <WizardLayout onBack={handleBackToHome}>{renderStep()}</WizardLayout>
 
       {/* Floating Glossary Button */}
       <Button
