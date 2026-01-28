@@ -229,54 +229,54 @@ export function RoomDetailsPage() {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-4xl mx-auto px-4 py-8 w-full">
+        <main className="max-w-4xl mx-auto px-4 py-4 md:py-8 w-full">
           {/* Room Info */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-primary" />
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6 mb-4 md:mb-8">
+            <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl md:rounded-2xl p-4 md:p-6">
+              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Игроки</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Максимум игроков
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground text-sm md:text-base truncate">Игроки</h3>
+                  <p className="text-xs md:text-sm text-muted-foreground truncate">
+                    Максимум
                   </p>
                 </div>
               </div>
-              <p className="text-3xl font-bold text-foreground">
+              <p className="text-2xl md:text-3xl font-bold text-foreground">
                 {room.maxPlayers}
               </p>
             </div>
 
-            <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-amber-500" />
+            <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl md:rounded-2xl p-4 md:p-6">
+              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Защита</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Требуется пароль
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground text-sm md:text-base truncate">Защита</h3>
+                  <p className="text-xs md:text-sm text-muted-foreground truncate">
+                    Пароль
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Lock className="w-5 h-5 text-muted-foreground" />
-                <span className="text-muted-foreground">•••••••••</span>
+                <Lock className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
+                <span className="text-muted-foreground text-sm md:text-base">•••••••••</span>
               </div>
             </div>
           </div>
 
           {/* Invite Button */}
           {isMaster && !room.isStarted && (
-            <div className="mb-6">
+            <div className="mb-4 md:mb-6">
               <Button
                 onClick={() => setShowInviteModal(true)}
-                className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 w-full md:w-auto"
                 size="lg"
               >
-                <UserPlus className="w-5 h-5" />
+                <UserPlus className="w-4 h-4 md:w-5 md:h-5" />
                 Пригласить игроков
               </Button>
             </div>
@@ -377,17 +377,17 @@ export function RoomDetailsPage() {
               isStarting={isStarting}
             />
           ) : (
-            <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6 mb-8">
+            <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-8">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-foreground text-sm md:text-base truncate">
                       Игроки в комнате
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">
                       {players.length} / {room.maxPlayers}
                       {isConnected ? " • Онлайн" : " • Оффлайн"}
                     </p>
@@ -396,33 +396,33 @@ export function RoomDetailsPage() {
               </div>
 
               {players.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Пока никто не присоединился к комнате</p>
+                <div className="text-center py-6 md:py-8 text-muted-foreground">
+                  <Users className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm md:text-base">Пока никто не присоединился к комнате</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   {players.map((player) => (
                     <div
                       key={player.id}
-                      className="p-4 rounded-xl bg-gradient-to-br from-muted/30 to-muted/50 border border-border/30 hover:border-primary/30 transition-colors"
+                      className="p-3 md:p-4 rounded-lg md:rounded-xl bg-gradient-to-br from-muted/30 to-muted/50 border border-border/30 hover:border-primary/30 transition-colors"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                              <User className="w-6 h-6 text-primary" />
+                      <div className="flex items-start justify-between mb-2 md:mb-3">
+                        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                              <User className="w-5 h-5 md:w-6 md:h-6 text-primary" />
                             </div>
                             <Circle
-                              className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 ${
+                              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-3.5 md:h-3.5 ${
                                 player.isOnline
                                   ? "fill-emerald-500 text-emerald-500"
                                   : "fill-muted text-muted"
                               }`}
                             />
                           </div>
-                          <div>
-                            <p className="font-semibold text-foreground">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-foreground text-sm md:text-base truncate">
                               {player.user.name || player.user.email}
                             </p>
                             <p className="text-xs text-muted-foreground">
@@ -430,7 +430,7 @@ export function RoomDetailsPage() {
                             </p>
                           </div>
                         </div>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-[10px] md:text-xs text-muted-foreground flex-shrink-0 ml-2">
                           {new Date(player.joinedAt).toLocaleDateString(
                             "ru-RU",
                             {
