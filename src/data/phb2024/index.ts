@@ -16,3 +16,15 @@ export {
   getCantrips,
   getSpellById,
 } from "./spells";
+export {
+  weaponProperties,
+  armorProperties,
+  conditions,
+  combatActions,
+  generalTerms,
+  allGlossaryEntries,
+  getGlossaryEntry,
+  getGlossaryByCategory,
+  searchGlossary,
+} from "./glossary";
+export type { GlossaryEntry } from "./glossary";
