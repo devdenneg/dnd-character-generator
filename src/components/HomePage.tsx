@@ -83,37 +83,40 @@ export function HomePage({ onNavigate }: HomePageProps) {
       <div className="relative z-10 flex flex-col flex-1">
         {/* Header */}
         <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl">
-          <div className="max-w-5xl mx-auto px-4 py-6">
-            <div className="flex items-center justify-between">
-              <div className="text-center flex-1">
+          <div className="max-w-5xl mx-auto px-4 py-3 md:py-6">
+            <div className="flex items-center justify-between gap-3">
+              {/* Logo */}
+              <div className="flex-shrink-0">
                 <h1
-                  className="text-4xl md:text-5xl font-bold text-gradient mb-2"
+                  className="text-2xl md:text-4xl lg:text-5xl font-bold text-gradient"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
-                  D&D Generator
+                  <span className="md:hidden">D&D</span>
+                  <span className="hidden md:inline">D&D Generator</span>
                 </h1>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-xs md:text-sm hidden md:block mt-1">
                   Инструменты для Dungeons & Dragons 5е — PHB 2024
                 </p>
               </div>
 
-              {/* Auth Buttons */}
+              {/* Auth Section */}
               <div className="flex items-center gap-2">
                 {isLoading ? (
                   <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
                 ) : isAuthenticated ? (
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-2">
+                    {/* User Profile */}
+                    <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-lg bg-muted/50">
                       {user?.role === "master" ? (
-                        <Crown className="w-4 h-4 text-amber-500" />
+                        <Crown className="w-4 h-4 text-amber-500 flex-shrink-0" />
                       ) : (
-                        <User className="w-4 h-4 text-primary" />
+                        <User className="w-4 h-4 text-primary flex-shrink-0" />
                       )}
-                      <span className="text-sm text-foreground">
-                        {user?.name || user?.email}
+                      <span className="text-xs md:text-sm text-foreground truncate max-w-[100px] md:max-w-[150px]">
+                        {user?.name || user?.email?.split('@')[0]}
                       </span>
                       <span
-                        className={`text-xs px-1.5 py-0.5 rounded ${
+                        className={`hidden md:inline text-xs px-1.5 py-0.5 rounded ${
                           user?.role === "master"
                             ? "bg-amber-500/20 text-amber-500"
                             : "bg-primary/20 text-primary"
@@ -122,14 +125,16 @@ export function HomePage({ onNavigate }: HomePageProps) {
                         {user?.role === "master" ? "Мастер" : "Игрок"}
                       </span>
                     </div>
+                    
+                    {/* Logout Button */}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleLogout}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground p-2 md:px-3"
                     >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Выйти</span>
+                      <LogOut className="w-4 h-4" />
+                      <span className="hidden md:inline md:ml-2">Выйти</span>
                     </Button>
                   </div>
                 ) : (
@@ -138,18 +143,19 @@ export function HomePage({ onNavigate }: HomePageProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => onNavigate("login")}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground p-2 md:px-3"
                     >
-                      <LogIn className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Войти</span>
+                      <LogIn className="w-4 h-4" />
+                      <span className="hidden md:inline md:ml-2">Войти</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => onNavigate("register")}
-                      className="border-primary/50 hover:bg-primary/10"
+                      className="border-primary/50 hover:bg-primary/10 text-xs md:text-sm px-2 md:px-3"
                     >
-                      Регистрация
+                      <span className="md:hidden">Регистр.</span>
+                      <span className="hidden md:inline">Регистрация</span>
                     </Button>
                   </>
                 )}
