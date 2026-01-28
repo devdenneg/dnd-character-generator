@@ -169,17 +169,14 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {visibleMenuItems.map((item, index) => (
-              <div
+              <button
                 key={item.id}
-                className="animate-fade-in-up h-full"
+                onClick={() => onNavigate(item.id)}
+                className="animate-fade-in-up w-full text-left p-6 rounded-2xl border transition-all duration-300 bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:bg-card/80 cursor-pointer group"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <button
-                  onClick={() => onNavigate(item.id)}
-                  className="w-full h-full text-left p-6 rounded-2xl border transition-all duration-300 bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:bg-card/80 cursor-pointer group"
-                >
                   <div className="flex items-start gap-4">
                     {/* Icon */}
                     <div
@@ -202,7 +199,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
                     </div>
                   </div>
                 </button>
-              </div>
             ))}
           </div>
 
