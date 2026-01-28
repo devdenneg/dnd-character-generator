@@ -1,0 +1,32 @@
+name: Deploy to Production (Beget VPS)
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Beget VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd /var/www/dnd-character-generator
+            echo "📥 Pulling latest changes..."
+            git pull origin main
+            
+            echo "📦 Installing dependencies..."
+            npm install --production=false
+            
+            echo "🔨 Building frontend..."
+            npm run build -- --base=/
+            
+            echo "🔄 Reloading Nginx..."
+            systemctl reload nginx
+            
+            echo "✅ Deployment completed successfully!"
