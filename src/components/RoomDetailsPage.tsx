@@ -371,10 +371,7 @@ export function RoomDetailsPage() {
           {/* Master View or Player List */}
           {isMaster ? (
             <MasterRoomView
-              room={room}
               players={players}
-              onStartGame={handleStartGame}
-              isStarting={isStarting}
             />
           ) : (
             <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-8">

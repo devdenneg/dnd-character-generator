@@ -39,10 +39,7 @@ interface RoomPlayer {
 }
 
 interface MasterRoomViewProps {
-  room: any;
   players: RoomPlayer[];
-  onStartGame: () => void;
-  isStarting: boolean;
 }
 
 function getModifier(value: number): string {
@@ -140,10 +137,7 @@ function getWallet(character: any) {
 }
 
 export function MasterRoomView({
-  room,
   players,
-  onStartGame,
-  isStarting,
 }: MasterRoomViewProps) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
