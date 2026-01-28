@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipHeader, TooltipDescription } from "@/components/ui/tooltip";
-import { FitText } from "@/components/ui/fit-text";
 import {
-  Play,
   Users,
   Circle,
   Heart,

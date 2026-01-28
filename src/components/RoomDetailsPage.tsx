@@ -63,7 +63,6 @@ export function RoomDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
-  const [isStarting, setIsStarting] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
   const isMaster = user?.id === room?.master.id;
@@ -147,19 +146,6 @@ export function RoomDetailsPage() {
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       alert("Не удалось скопировать ID");
-    }
-  };
-
-  const handleStartGame = async () => {
-    try {
-      setIsStarting(true);
-      await roomsApi.startGame(id!);
-      // Reload room and players data
-      await loadRoom();
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Не удалось начать игру");
-    } finally {
-      setIsStarting(false);
     }
   };
 
