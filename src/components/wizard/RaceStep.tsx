@@ -8,23 +8,23 @@ import { getAllRaces } from "@/data/phb2024";
 import type { Race } from "@/types/character";
 import { t } from "@/data/translations/ru";
 
-// Визуальные данные рас
+// Визуальные данные рас - обновлённые цвета
 const RACE_DATA: Record<string, { gradient: string; icon: string }> = {
-  human: { gradient: "from-amber-600 to-orange-700", icon: "👤" },
-  elf: { gradient: "from-emerald-600 to-teal-700", icon: "🧝" },
-  dwarf: { gradient: "from-stone-600 to-amber-700", icon: "⛏️" },
-  halfling: { gradient: "from-green-600 to-lime-700", icon: "🏠" },
-  dragonborn: { gradient: "from-red-600 to-orange-700", icon: "🐉" },
-  gnome: { gradient: "from-purple-600 to-violet-700", icon: "🔧" },
-  "half-elf": { gradient: "from-indigo-600 to-blue-700", icon: "✨" },
-  "half-orc": { gradient: "from-gray-600 to-green-700", icon: "💪" },
-  tiefling: { gradient: "from-red-700 to-purple-800", icon: "😈" },
-  aasimar: { gradient: "from-yellow-500 to-amber-600", icon: "👼" },
-  goliath: { gradient: "from-slate-600 to-gray-700", icon: "🏔️" },
-  orc: { gradient: "from-green-700 to-emerald-800", icon: "⚔️" },
+  human: { gradient: "from-amber-500/90 to-orange-600/90", icon: "👤" },
+  elf: { gradient: "from-emerald-500/90 to-teal-600/90", icon: "🧝" },
+  dwarf: { gradient: "from-amber-600/90 to-stone-600/90", icon: "⛏️" },
+  halfling: { gradient: "from-lime-500/90 to-green-600/90", icon: "🏠" },
+  dragonborn: { gradient: "from-red-500/90 to-orange-600/90", icon: "🐉" },
+  gnome: { gradient: "from-violet-500/90 to-purple-600/90", icon: "🔧" },
+  "half-elf": { gradient: "from-blue-500/90 to-indigo-600/90", icon: "✨" },
+  "half-orc": { gradient: "from-slate-500/90 to-green-600/90", icon: "💪" },
+  tiefling: { gradient: "from-rose-600/90 to-purple-700/90", icon: "😈" },
+  aasimar: { gradient: "from-amber-400/90 to-yellow-500/90", icon: "👼" },
+  goliath: { gradient: "from-slate-500/90 to-zinc-600/90", icon: "🏔️" },
+  orc: { gradient: "from-emerald-600/90 to-green-700/90", icon: "⚔️" },
 };
 
-const DEFAULT_DATA = { gradient: "from-slate-600 to-gray-700", icon: "🎭" };
+const DEFAULT_DATA = { gradient: "from-slate-500/90 to-zinc-600/90", icon: "🎭" };
 
 export function RaceStep() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -216,18 +216,20 @@ export function RaceStep() {
 
       {/* Selected indicator bar */}
       {character.race && (
-        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 flex items-center justify-between">
+        <div className="bg-card border border-primary/30 rounded-xl p-4 flex items-center justify-between shadow-lg shadow-primary/5">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{getData(character.race.id).icon}</span>
             <div>
-              <p className="font-bold">{character.race.nameRu}</p>
+              <p className="font-semibold text-foreground">{character.race.nameRu}</p>
               <p className="text-sm text-muted-foreground">
                 {character.race.speed} фт •{" "}
                 {t(`sizes.${character.race.size.toLowerCase()}`)}
               </p>
             </div>
           </div>
-          <Check className="w-6 h-6 text-primary" />
+          <div className="flex items-center gap-2">
+            <Badge className="bg-primary/15 text-primary border-primary/30">Выбрано</Badge>
+          </div>
         </div>
       )}
     </div>

@@ -8,23 +8,23 @@ import { getAllClasses } from "@/data/phb2024";
 import type { CharacterClass, Subclass } from "@/types/character";
 import { t, getAbilityNameRu } from "@/data/translations/ru";
 
-// Визуальные данные классов
+// Визуальные данные классов - обновлённые цвета
 const CLASS_DATA: Record<string, { gradient: string; icon: string }> = {
-  barbarian: { gradient: "from-red-600 to-orange-700", icon: "🪓" },
-  bard: { gradient: "from-purple-600 to-pink-700", icon: "🎵" },
-  cleric: { gradient: "from-yellow-600 to-amber-700", icon: "✝️" },
-  druid: { gradient: "from-green-600 to-emerald-700", icon: "🌿" },
-  fighter: { gradient: "from-gray-600 to-slate-700", icon: "🛡️" },
-  monk: { gradient: "from-amber-600 to-yellow-700", icon: "👊" },
-  paladin: { gradient: "from-blue-600 to-indigo-700", icon: "⚜️" },
-  ranger: { gradient: "from-emerald-600 to-green-700", icon: "🏹" },
-  rogue: { gradient: "from-slate-700 to-gray-800", icon: "🗡️" },
-  sorcerer: { gradient: "from-red-600 to-rose-700", icon: "🔥" },
-  warlock: { gradient: "from-purple-700 to-violet-800", icon: "👁️" },
-  wizard: { gradient: "from-blue-700 to-cyan-800", icon: "📚" },
+  barbarian: { gradient: "from-red-500/90 to-orange-600/90", icon: "🪓" },
+  bard: { gradient: "from-fuchsia-500/90 to-pink-600/90", icon: "🎵" },
+  cleric: { gradient: "from-amber-500/90 to-yellow-600/90", icon: "✝️" },
+  druid: { gradient: "from-emerald-500/90 to-green-600/90", icon: "🌿" },
+  fighter: { gradient: "from-slate-500/90 to-zinc-600/90", icon: "🛡️" },
+  monk: { gradient: "from-amber-500/90 to-orange-600/90", icon: "👊" },
+  paladin: { gradient: "from-sky-500/90 to-blue-600/90", icon: "⚜️" },
+  ranger: { gradient: "from-teal-500/90 to-emerald-600/90", icon: "🏹" },
+  rogue: { gradient: "from-zinc-600/90 to-slate-700/90", icon: "🗡️" },
+  sorcerer: { gradient: "from-rose-500/90 to-red-600/90", icon: "🔥" },
+  warlock: { gradient: "from-violet-600/90 to-purple-700/90", icon: "👁️" },
+  wizard: { gradient: "from-indigo-500/90 to-blue-600/90", icon: "📚" },
 };
 
-const DEFAULT_DATA = { gradient: "from-slate-600 to-gray-700", icon: "⚔️" };
+const DEFAULT_DATA = { gradient: "from-slate-500/90 to-zinc-600/90", icon: "⚔️" };
 
 export function ClassStep() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -321,11 +321,11 @@ export function ClassStep() {
 
       {/* Selected indicator bar */}
       {character.class && (
-        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 flex items-center justify-between">
+        <div className="bg-card border border-primary/30 rounded-xl p-4 flex items-center justify-between shadow-lg shadow-primary/5">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{getData(character.class.id).icon}</span>
             <div>
-              <p className="font-bold">{character.class.nameRu}</p>
+              <p className="font-semibold text-foreground">{character.class.nameRu}</p>
               <p className="text-sm text-muted-foreground">
                 d{character.class.hitDie} •{" "}
                 {character.subclass
@@ -334,7 +334,7 @@ export function ClassStep() {
               </p>
             </div>
           </div>
-          <Check className="w-6 h-6 text-primary" />
+          <Badge className="bg-primary/15 text-primary border-primary/30">Выбрано</Badge>
         </div>
       )}
     </div>

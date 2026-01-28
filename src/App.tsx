@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BookOpen, Flame } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import {
   WizardLayout,
   RaceStep,
@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import "@/i18n";
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -28,56 +27,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// Фоновые эффекты таверны
-function TavernBackground() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  return (
-    <>
-      {/* Основной фон */}
-      <div className="tavern-background" />
-
-      {/* Эффект дыма снизу */}
-      <div className="smoke-effect" />
-
-      {/* Мерцающие свечи с параллаксом */}
-      <div
-        className="candle-glow candle-glow-1"
-        style={{
-          transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px)`,
-        }}
-      />
-      <div
-        className="candle-glow candle-glow-2"
-        style={{
-          transform: `translate(${mousePos.x * -0.3}px, ${mousePos.y * -0.3}px)`,
-        }}
-      />
-      <div
-        className="candle-glow candle-glow-3"
-        style={{
-          transform: `translate(${mousePos.x * 0.4}px, ${mousePos.y * 0.4}px)`,
-        }}
-      />
-
-      {/* Текстурный шум */}
-      <div className="texture-overlay" />
-    </>
-  );
-}
 
 function CharacterWizard() {
   const { currentStep } = useCharacterStore();
@@ -117,11 +66,7 @@ function CharacterWizard() {
     })();
 
     return (
-      <div
-        key={currentStep}
-        className="animate-fade-in-up"
-        style={{ animationDuration: "0.5s" }}
-      >
+      <div key={currentStep} className="animate-fade-in-up">
         {stepContent}
       </div>
     );
@@ -129,79 +74,63 @@ function CharacterWizard() {
 
   if (showGlossary) {
     return (
-      <>
-        <TavernBackground />
-        <div
-          className={`min-h-screen relative z-10 ${isLoaded ? "animate-fade-in-scale" : "opacity-0"}`}
-        >
-          <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
-            <div className="container mx-auto px-4 py-4">
+      <div className={`min-h-screen ${isLoaded ? "animate-fade-in" : "opacity-0"}`}>
+        {/* Background */}
+        <div className="app-background" />
+        <div className="ambient-glow ambient-glow-1" />
+        <div className="ambient-glow ambient-glow-2" />
+
+        <div className="relative z-10">
+          <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
+            <div className="max-w-4xl mx-auto px-4 py-4">
               <div className="flex items-center justify-between">
-                <div className="animate-slide-left">
+                <div>
                   <h1
-                    className="text-2xl font-bold text-gold"
+                    className="text-xl font-bold text-gradient"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
-                    Создание персонажа D&D
+                    Глоссарий D&D
                   </h1>
                   <p className="text-sm text-muted-foreground">
-                    Книга игрока 2024
+                    PHB 2024 — Справочник терминов
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   onClick={() => setShowGlossary(false)}
-                  className="btn-tavern animate-slide-right"
+                  className="gap-2"
                 >
-                  Вернуться к персонажу
+                  ← Вернуться
                 </Button>
               </div>
             </div>
           </header>
-          <main className="container mx-auto px-4 py-6">
-            <div
-              className="max-w-4xl mx-auto animate-fade-in-up"
-              style={{ animationDelay: "0.2s" }}
-            >
+
+          <main className="max-w-4xl mx-auto px-4 py-6">
+            <div className="animate-fade-in-up">
               <Glossary />
             </div>
           </main>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <TavernBackground />
-
-      <div
-        className={`relative z-10 ${isLoaded ? "animate-fade-in-scale" : "opacity-0"}`}
-      >
-        <WizardLayout>{renderStep()}</WizardLayout>
-      </div>
+    <div className={`${isLoaded ? "animate-fade-in" : "opacity-0"}`}>
+      <WizardLayout>{renderStep()}</WizardLayout>
 
       {/* Floating Glossary Button */}
       <Button
         size="lg"
-        className="fixed bottom-6 right-6 shadow-lg gap-2 z-50 btn-tavern animate-float"
+        className="fixed bottom-20 lg:bottom-6 right-4 lg:right-6 shadow-lg gap-2 z-50 bg-card/90 backdrop-blur border border-border hover:bg-card hover:border-primary/50 transition-all"
+        variant="outline"
         onClick={() => setShowGlossary(true)}
       >
-        <BookOpen className="w-5 h-5" />
-        Глоссарий
+        <BookOpen className="w-4 h-4" />
+        <span className="hidden sm:inline">Глоссарий</span>
       </Button>
-
-      {/* Декоративная свеча в углу */}
-      <div
-        className="fixed bottom-6 left-6 z-40 opacity-60 animate-float"
-        style={{ animationDelay: "1s" }}
-      >
-        <Flame
-          className="w-8 h-8 text-candle"
-          style={{ filter: "drop-shadow(0 0 10px #ff9f43)" }}
-        />
-      </div>
-    </>
+    </div>
   );
 }
 
