@@ -3,7 +3,7 @@ import { achievementsApi } from "../api/achievements";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
-import { ACHIEVEMENT_CATEGORIES, type AchievementCategory } from "../data/achievements";
+import { ACHIEVEMENT_CATEGORIES } from "../data/achievements";
 
 interface UserProgressCardProps {
   userId: string;
@@ -78,7 +78,7 @@ export function UserProgressCard({ userId }: UserProgressCardProps) {
                   </div>
                   {achievement.category && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {ACHIEVEMENT_CATEGORIES[achievement.category as AchievementCategory]}
+                      {ACHIEVEMENT_CATEGORIES[achievement.category]}
                     </p>
                   )}
                 </div>

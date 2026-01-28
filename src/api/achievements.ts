@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { Achievement } from "../data/achievements";
+import { Achievement } from "../data/achievements";
 
 export interface UserAchievement {
   id: string;
