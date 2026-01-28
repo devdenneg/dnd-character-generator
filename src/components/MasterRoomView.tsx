@@ -13,9 +13,7 @@ import {
   Star,
   Coins,
   BookOpen,
-  Trophy,
 } from "lucide-react";
-import { RoomPlayersProgressTab } from "./RoomPlayersProgressTab";
 
 interface Character {
   id: string;
@@ -39,7 +37,6 @@ interface RoomPlayer {
 
 interface MasterRoomViewProps {
   players: RoomPlayer[];
-  roomId: string;
 }
 
 function getModifier(value: number): string {
@@ -138,7 +135,6 @@ function getWallet(character: any) {
 
 export function MasterRoomView({
   players,
-  roomId,
 }: MasterRoomViewProps) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
@@ -224,24 +220,6 @@ export function MasterRoomView({
                 </p>
                 <p className="text-[10px] md:text-xs text-muted-foreground whitespace-nowrap">
                   Сводная информация
-                </p>
-              </div>
-            </button>
-            {/* Achievements Tab */}
-            <button
-              onClick={() => setSelectedPlayerId("__achievements__")}
-              className={`flex-shrink-0 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl border-2 transition-all ${
-                selectedPlayerId === "__achievements__"
-                  ? "border-primary bg-primary/10"
-                  : "border-border/50 bg-card/40 hover:border-primary/50"
-              }`}
-            >
-              <div className="text-left">
-                <p className="font-semibold text-xs md:text-sm text-foreground whitespace-nowrap flex items-center gap-1">
-                  <Trophy className="w-3 h-3 md:w-4 md:h-4" /> Достижения
-                </p>
-                <p className="text-[10px] md:text-xs text-muted-foreground whitespace-nowrap">
-                  Опыт и ачивки
                 </p>
               </div>
             </button>
@@ -1276,9 +1254,6 @@ export function MasterRoomView({
                 )}
               </div>
             </div>
-          ) : selectedPlayerId === "__achievements__" ? (
-            /* Achievements View */
-            <RoomPlayersProgressTab roomId={roomId} />
           ) : (
             <div className="text-center py-12 bg-card/40 rounded-2xl">
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
