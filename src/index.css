@@ -529,7 +529,6 @@ select:focus {
     min-width: 44px;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
   }
 
   /* Отключаем зум при фокусе на инпутах */
