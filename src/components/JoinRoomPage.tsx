@@ -21,7 +21,7 @@ interface Room {
 export function JoinRoomPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [room, setRoom] = useState<Room | null>(null);
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(true);

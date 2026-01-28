@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Users,
   Lock,
-  Hash,
   Copy,
   CheckCircle,
   Link as LinkIcon,
