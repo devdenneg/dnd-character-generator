@@ -33,7 +33,10 @@ export async function create(req: AuthenticatedRequest, res: Response) {
     }
 
     const validatedData = createCharacterSchema.parse(req.body);
-    const character = await createCharacter(userId, validatedData);
+    const character = await createCharacter(userId, {
+      name: validatedData.name,
+      data: validatedData.data ?? {},
+    });
 
     res.status(201).json({
       success: true,
