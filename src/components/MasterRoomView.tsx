@@ -387,185 +387,117 @@ export function MasterRoomView({
                 <div className="flex items-center gap-2 mb-4">
                   <Swords className="w-5 h-5 text-primary" />
                   <h3 className="text-lg font-semibold text-foreground">
-                    Реестр снаряжения
+                    Реестр снаряжения партии
                   </h3>
                 </div>
-                <div className="space-y-4">
-                  {/* Weapons */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-2">
-                      Оружие:
-                    </h4>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-border/30">
-                            <th className="text-left py-2 px-3 text-muted-foreground font-medium">
-                              Персонаж
-                            </th>
-                            <th className="text-left py-2 px-3 text-muted-foreground font-medium">
-                              Оружие
-                            </th>
-                            <th className="text-left py-2 px-3 text-muted-foreground font-medium">
-                              Урон
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {players.flatMap((player) => {
-                            if (!player.character?.data?.equipment) return [];
-                            return player.character.data.equipment
-                              .filter((e: any) => e.category === "weapon")
-                              .map((weapon: any, idx: number) => (
-                                <tr
-                                  key={`${player.id}-${idx}`}
-                                  className="border-b border-border/20"
-                                >
-                                  <td className="py-2 px-3 font-medium text-foreground">
-                                    {player.character.name}
-                                  </td>
-                                  <td className="py-2 px-3">{weapon.nameRu}</td>
-                                  <td className="py-2 px-3 text-muted-foreground">
-                                    {weapon.damage?.dice}{" "}
-                                    {DAMAGE_TYPES_RU[weapon.damage?.type] ||
-                                      weapon.damage?.type}
-                                  </td>
-                                </tr>
-                              ));
-                          })}
-                          {players.every(
-                            (p) =>
-                              !p.character?.data?.equipment?.some(
-                                (e: any) => e.category === "weapon",
-                              ),
-                          ) && (
-                            <tr>
-                              <td
-                                colSpan={3}
-                                className="py-4 text-center text-muted-foreground"
-                              >
-                                Нет оружия
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border/50">
+                        <th className="text-left py-2 px-2 text-muted-foreground font-semibold">
+                          Персонаж
+                        </th>
+                        <th className="text-left py-2 px-2 text-muted-foreground font-semibold">
+                          ⚔️ Оружие
+                        </th>
+                        <th className="text-left py-2 px-2 text-muted-foreground font-semibold">
+                          🛡️ Доспех
+                        </th>
+                        <th className="text-left py-2 px-2 text-muted-foreground font-semibold">
+                          🎒 Снаряжение
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {players.map((player) => {
+                        if (!player.character?.data) return null;
 
-                  {/* Armor */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-2">
-                      Доспехи:
-                    </h4>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-border/30">
-                            <th className="text-left py-2 px-3 text-muted-foreground font-medium">
-                              Персонаж
-                            </th>
-                            <th className="text-left py-2 px-3 text-muted-foreground font-medium">
-                              Доспех
-                            </th>
-                            <th className="text-left py-2 px-3 text-muted-foreground font-medium">
-                              КД
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {players.flatMap((player) => {
-                            if (!player.character?.data?.equipment) return [];
-                            return player.character.data.equipment
-                              .filter((e: any) => e.category === "armor")
-                              .map((armor: any, idx: number) => (
-                                <tr
-                                  key={`${player.id}-${idx}`}
-                                  className="border-b border-border/20"
-                                >
-                                  <td className="py-2 px-3 font-medium text-foreground">
-                                    {player.character.name}
-                                  </td>
-                                  <td className="py-2 px-3">{armor.nameRu}</td>
-                                  <td className="py-2 px-3 text-muted-foreground">
-                                    {armor.armorClass || "—"}
-                                  </td>
-                                </tr>
-                              ));
-                          })}
-                          {players.every(
-                            (p) =>
-                              !p.character?.data?.equipment?.some(
-                                (e: any) => e.category === "armor",
-                              ),
-                          ) && (
-                            <tr>
-                              <td
-                                colSpan={3}
-                                className="py-4 text-center text-muted-foreground"
-                              >
-                                Нет доспехов
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                        const equipment = player.character.data.equipment || [];
+                        const weapons = equipment.filter(
+                          (e: any) => e.category === "weapon",
+                        );
+                        const armor = equipment.find(
+                          (e: any) => e.category === "armor",
+                        );
+                        const gear = equipment.filter(
+                          (e: any) => e.category === "gear",
+                        );
 
-                  {/* Other Equipment */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-2">
-                      Снаряжение:
-                    </h4>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-border/30">
-                            <th className="text-left py-2 px-3 text-muted-foreground font-medium">
-                              Персонаж
-                            </th>
-                            <th className="text-left py-2 px-3 text-muted-foreground font-medium">
-                              Предмет
-                            </th>
+                        return (
+                          <tr
+                            key={player.id}
+                            className="border-b border-border/30 hover:bg-muted/20"
+                          >
+                            <td className="py-3 px-2 align-top">
+                              <div className="font-semibold text-foreground whitespace-nowrap">
+                                {player.character.name}
+                              </div>
+                            </td>
+                            <td className="py-3 px-2 align-top">
+                              {weapons.length > 0 ? (
+                                <div className="space-y-1">
+                                  {weapons.map((weapon: any, idx: number) => (
+                                    <div key={idx} className="text-xs">
+                                      <span className="text-foreground">
+                                        {weapon.nameRu}
+                                      </span>
+                                      <span className="text-muted-foreground ml-1">
+                                        ({weapon.damage?.dice}{" "}
+                                        {DAMAGE_TYPES_RU[weapon.damage?.type]})
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-2 align-top">
+                              {armor ? (
+                                <div className="text-xs">
+                                  <span className="text-foreground">
+                                    {armor.nameRu}
+                                  </span>
+                                  {armor.armorClass && (
+                                    <span className="text-muted-foreground ml-1">
+                                      (КД {armor.armorClass})
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-2 align-top">
+                              {gear.length > 0 ? (
+                                <div className="flex flex-wrap gap-1 max-w-xs">
+                                  {gear.slice(0, 5).map((item: any, idx: number) => (
+                                    <Badge
+                                      key={idx}
+                                      variant="outline"
+                                      className="text-[10px] py-0 px-1.5 h-5"
+                                    >
+                                      {item.nameRu}
+                                    </Badge>
+                                  ))}
+                                  {gear.length > 5 && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] py-0 px-1.5 h-5 text-muted-foreground"
+                                    >
+                                      +{gear.length - 5}
+                                    </Badge>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {players.flatMap((player) => {
-                            if (!player.character?.data?.equipment) return [];
-                            return player.character.data.equipment
-                              .filter((e: any) => e.category === "gear")
-                              .map((item: any, idx: number) => (
-                                <tr
-                                  key={`${player.id}-${idx}`}
-                                  className="border-b border-border/20"
-                                >
-                                  <td className="py-2 px-3 font-medium text-foreground">
-                                    {player.character.name}
-                                  </td>
-                                  <td className="py-2 px-3">{item.nameRu}</td>
-                                </tr>
-                              ));
-                          })}
-                          {players.every(
-                            (p) =>
-                              !p.character?.data?.equipment?.some(
-                                (e: any) => e.category === "gear",
-                              ),
-                          ) && (
-                            <tr>
-                              <td
-                                colSpan={2}
-                                className="py-4 text-center text-muted-foreground"
-                              >
-                                Нет снаряжения
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
