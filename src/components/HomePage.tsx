@@ -86,18 +86,16 @@ export function HomePage({ onNavigate }: HomePageProps) {
           <div className="max-w-5xl mx-auto px-4 py-3 md:py-6">
             <div className="flex items-center justify-between gap-3">
               {/* Logo */}
-              <div className="flex-shrink-0">
-                <h1
-                  className="text-2xl md:text-4xl lg:text-5xl font-bold text-gradient"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  <span className="md:hidden">D&D</span>
-                  <span className="hidden md:inline">D&D Generator</span>
-                </h1>
-                <p className="text-muted-foreground text-xs md:text-sm hidden md:block mt-1">
-                  Инструменты для Dungeons & Dragons 5е — PHB 2024
-                </p>
-              </div>
+              <button
+                onClick={() => onNavigate("home")}
+                className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                <img
+                  src="/logo.png"
+                  alt="D&D Generator"
+                  className="h-12 md:h-20 lg:h-28 w-auto"
+                />
+              </button>
 
               {/* Auth Section */}
               <div className="flex items-center gap-2">
@@ -113,7 +111,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                         <User className="w-4 h-4 text-primary flex-shrink-0" />
                       )}
                       <span className="text-xs md:text-sm text-foreground truncate max-w-[100px] md:max-w-[150px]">
-                        {user?.name || user?.email?.split('@')[0]}
+                        {user?.name || user?.email?.split("@")[0]}
                       </span>
                       <span
                         className={`hidden md:inline text-xs px-1.5 py-0.5 rounded ${
@@ -125,7 +123,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                         {user?.role === "master" ? "Мастер" : "Игрок"}
                       </span>
                     </div>
-                    
+
                     {/* Logout Button */}
                     <Button
                       variant="ghost"
@@ -183,28 +181,28 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 className="animate-fade-in-up w-full text-left p-6 rounded-2xl border transition-all duration-300 bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:bg-card/80 cursor-pointer group"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                  <div className="flex items-start gap-4">
-                    {/* Icon */}
-                    <div
-                      className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${item.gradient} group-hover:scale-110 transition-transform`}
-                    >
-                      <item.icon className="w-7 h-7 text-white" />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-lg text-foreground">
-                          {item.title}
-                        </h3>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {item.description}
-                      </p>
-                    </div>
+                <div className="flex items-start gap-4">
+                  {/* Icon */}
+                  <div
+                    className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${item.gradient} group-hover:scale-110 transition-transform`}
+                  >
+                    <item.icon className="w-7 h-7 text-white" />
                   </div>
-                </button>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-semibold text-lg text-foreground">
+                        {item.title}
+                      </h3>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              </button>
             ))}
           </div>
 
