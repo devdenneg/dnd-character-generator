@@ -33,7 +33,8 @@ model Character {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomPlayers RoomPlayer[]
 
   @@index([userId])
 }
@@ -45,6 +46,7 @@ model Room {
   maxPlayers Int      @default(4)
   password   String
   isActive   Boolean  @default(true)
+  isStarted  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -56,17 +58,20 @@ model Room {
 }
 
 model RoomPlayer {
-  id        String   @id @default(uuid())
-  roomId    String
-  userId    String
-  joinedAt  DateTime @default(now())
-  isOnline  Boolean  @default(true)
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  roomId      String
+  userId      String
+  characterId String
+  joinedAt    DateTime @default(now())
+  isOnline    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
 
-  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room      Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, userId])
   @@index([roomId])
   @@index([userId])
+  @@index([characterId])
 }

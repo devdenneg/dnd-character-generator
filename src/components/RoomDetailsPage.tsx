@@ -16,12 +16,14 @@ import { Input } from "@/components/ui/input";
 import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocket } from "@/contexts/SocketContext";
+import { MasterRoomView } from "@/components/MasterRoomView";
 
 interface Room {
   id: string;
   name: string;
   maxPlayers: number;
   isActive: boolean;
+  isStarted: boolean;
   createdAt: string;
   updatedAt: string;
   master: {
@@ -34,12 +36,18 @@ interface Room {
 interface RoomPlayer {
   id: string;
   userId: string;
+  characterId: string;
   isOnline: boolean;
   joinedAt: string;
   user: {
     id: string;
     name: string | null;
     email: string;
+  };
+  character: {
+    id: string;
+    name: string;
+    data: any;
   };
 }
 
@@ -53,6 +61,9 @@ export function RoomDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+
+  const isMaster = user?.id === room?.master.id;
 
   useEffect(() => {
     if (id) {
@@ -91,9 +102,17 @@ export function RoomDetailsPage() {
   const loadRoom = async () => {
     try {
       setIsLoading(true);
-      const response = await roomsApi.get(id!);
-      setRoom(response.data);
+      const [roomResponse, playersResponse] = await Promise.all([
+        roomsApi.get(id!),
+        roomsApi.getPlayers(id!),
+      ]);
+      console.log("🏠 Room response:", roomResponse);
+      console.log("👥 Players response:", playersResponse);
+      setRoom(roomResponse.data);
+      // The API returns { success: true, data: [...] }
+      setPlayers(playersResponse.data || []);
     } catch (err: any) {
+      console.error("Load room error:", err);
       setError(err.response?.data?.error || "Не удалось загрузить комнату");
     } finally {
       setIsLoading(false);
@@ -128,6 +147,19 @@ export function RoomDetailsPage() {
     }
   };
 
+  const handleStartGame = async () => {
+    try {
+      setIsStarting(true);
+      await roomsApi.startGame(id!);
+      // Reload room and players data
+      await loadRoom();
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Не удалось начать игру");
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -152,16 +184,14 @@ export function RoomDetailsPage() {
     );
   }
 
-  const isMaster = user?.id === room.master.id;
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen">
       {/* Background */}
       <div className="app-background" />
       <div className="ambient-glow ambient-glow-1" />
       <div className="ambient-glow ambient-glow-2" />
 
-      <div className="relative z-10 flex flex-col flex-1">
+      <div className="relative z-10">
         {/* Header */}
         <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl">
           <div className="max-w-4xl mx-auto px-4 py-6">
@@ -196,7 +226,7 @@ export function RoomDetailsPage() {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
+        <main className="max-w-4xl mx-auto px-4 py-8 w-full">
           {/* Room Info */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
@@ -236,7 +266,7 @@ export function RoomDetailsPage() {
           </div>
 
           {/* Invite Section */}
-          {isMaster && (
+          {isMaster && !room.isStarted && (
             <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/30 rounded-2xl p-6 mb-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -302,71 +332,137 @@ export function RoomDetailsPage() {
             </div>
           )}
 
-          {/* Players List */}
-          <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    Игроки в комнате
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {players.length} / {room.maxPlayers}
-                    {isConnected ? " • Онлайн" : " • Оффлайн"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {players.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>Пока никто не присоединился к комнате</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {players.map((player) => (
-                  <div
-                    key={player.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/30"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                          <User className="w-5 h-5 text-primary" />
-                        </div>
-                        <Circle
-                          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 ${
-                            player.isOnline
-                              ? "fill-emerald-500 text-emerald-500"
-                              : "fill-muted text-muted"
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {player.user.name || player.user.email}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {player.isOnline ? "Онлайн" : "Оффлайн"}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      Присоединился{" "}
-                      {new Date(player.joinedAt).toLocaleDateString("ru-RU", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </span>
+          {/* Master View or Player List */}
+          {isMaster ? (
+            <MasterRoomView
+              room={room}
+              players={players}
+              onStartGame={handleStartGame}
+              isStarting={isStarting}
+            />
+          ) : (
+            <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-primary" />
                   </div>
-                ))}
+                  <div>
+                    <h3 className="font-semibold text-foreground">
+                      Игроки в комнате
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {players.length} / {room.maxPlayers}
+                      {isConnected ? " • Онлайн" : " • Оффлайн"}
+                    </p>
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
+
+              {players.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Пока никто не присоединился к комнате</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {players.map((player) => (
+                    <div
+                      key={player.id}
+                      className="p-4 rounded-xl bg-gradient-to-br from-muted/30 to-muted/50 border border-border/30 hover:border-primary/30 transition-colors"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                              <User className="w-6 h-6 text-primary" />
+                            </div>
+                            <Circle
+                              className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 ${
+                                player.isOnline
+                                  ? "fill-emerald-500 text-emerald-500"
+                                  : "fill-muted text-muted"
+                              }`}
+                            />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground">
+                              {player.user.name || player.user.email}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {player.isOnline ? "🟢 Онлайн" : "⚪ Оффлайн"}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(player.joinedAt).toLocaleDateString(
+                            "ru-RU",
+                            {
+                              day: "numeric",
+                              month: "short",
+                            },
+                          )}
+                        </span>
+                      </div>
+
+                      {player.character && (
+                        <div className="pl-15 border-t border-border/30 pt-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <span className="text-lg">⚔️</span>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-foreground text-sm">
+                                {player.character.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {player.character.data.race?.name}{" "}
+                                {player.character.data.class?.name}
+                                {player.character.data.level &&
+                                  ` • Уровень ${player.character.data.level}`}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Character stats preview for master */}
+                          {player.character.data.abilities && (
+                            <div className="grid grid-cols-6 gap-2 mt-3">
+                              {[
+                                "strength",
+                                "dexterity",
+                                "constitution",
+                                "intelligence",
+                                "wisdom",
+                                "charisma",
+                              ].map((ability) => {
+                                const value =
+                                  player.character.data.abilities[ability];
+                                const modifier = Math.floor((value - 10) / 2);
+                                return (
+                                  <div
+                                    key={ability}
+                                    className="text-center p-2 rounded-lg bg-background/50"
+                                  >
+                                    <p className="text-[10px] text-muted-foreground uppercase mb-1">
+                                      {ability.substring(0, 3)}
+                                    </p>
+                                    <p className="text-xs font-bold text-foreground">
+                                      {modifier >= 0 ? "+" : ""}
+                                      {modifier}
+                                    </p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Info Cards */}
           <div className="grid md:grid-cols-2 gap-4">
@@ -395,7 +491,7 @@ export function RoomDetailsPage() {
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-border/50 bg-card/40 backdrop-blur-sm mt-auto">
+        <footer className="border-t border-border/50 bg-card/40 backdrop-blur-sm mt-8">
           <div className="max-w-4xl mx-auto px-4 py-6">
             <p className="text-sm text-muted-foreground text-center">
               D&D Generator — Инструменты для мастеров и игроков

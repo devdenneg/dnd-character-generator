@@ -139,10 +139,21 @@ export const roomsApi = {
     return response.data;
   },
 
-  join: async (id: string, password: string) => {
+  join: async (id: string, password: string, characterId: string) => {
     const response = await apiClient.post(`/rooms/${id}/join`, {
       password,
+      characterId,
     });
+    return response.data;
+  },
+
+  getPlayers: async (id: string) => {
+    const response = await apiClient.get(`/rooms/${id}/players`);
+    return response.data;
+  },
+
+  startGame: async (id: string) => {
+    const response = await apiClient.post(`/rooms/${id}/start`);
     return response.data;
   },
 };

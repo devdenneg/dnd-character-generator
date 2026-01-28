@@ -182,11 +182,75 @@ export async function verifyRoomPassword(
   return bcrypt.compare(password, room.password);
 }
 
+export async function getRoomPlayers(roomId: string) {
+  const players = await prisma.roomPlayer.findMany({
+    where: { roomId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      character: {
+        select: {
+          id: true,
+          name: true,
+          data: true,
+        },
+      },
+    },
+    orderBy: { joinedAt: "asc" },
+  });
+
+  return players;
+}
+
+export async function startGame(roomId: string, masterId: string) {
+  // Check if room belongs to master
+  const room = await prisma.room.findFirst({
+    where: {
+      id: roomId,
+      masterId,
+    },
+  });
+
+  if (!room) {
+    return null;
+  }
+
+  // Update room to started
+  const updatedRoom = await prisma.room.update({
+    where: { id: roomId },
+    data: { isStarted: true },
+  });
+
+  return updatedRoom;
+}
+
 export async function joinRoom(
   roomId: string,
   userId: string,
+  characterId: string,
   password: string,
 ) {
+  // Check if character exists and belongs to user
+  const character = await prisma.character.findFirst({
+    where: {
+      id: characterId,
+      userId,
+    },
+  });
+
+  if (!character) {
+    return {
+      success: false,
+      error: "Персонаж не найден или не принадлежит вам",
+      status: 404,
+    };
+  }
+
   // Get room with players count
   const room = await prisma.room.findUnique({
     where: { id: roomId },
@@ -214,6 +278,14 @@ export async function joinRoom(
     };
   }
 
+  if (room.isStarted) {
+    return {
+      success: false,
+      error: "Игра уже началась, присоединиться нельзя",
+      status: 403,
+    };
+  }
+
   // Verify password
   const isPasswordValid = await bcrypt.compare(password, room.password);
   if (!isPasswordValid) {
@@ -235,10 +307,13 @@ export async function joinRoom(
   });
 
   if (existingPlayer) {
-    // Update to online if rejoining
+    // Update to online and potentially change character if rejoining
     await prisma.roomPlayer.update({
       where: { id: existingPlayer.id },
-      data: { isOnline: true },
+      data: {
+        isOnline: true,
+        characterId, // Allow changing character on rejoin
+      },
     });
 
     return {
@@ -269,6 +344,7 @@ export async function joinRoom(
     data: {
       roomId,
       userId,
+      characterId,
     },
     include: {
       user: {
@@ -276,6 +352,13 @@ export async function joinRoom(
           id: true,
           name: true,
           email: true,
+        },
+      },
+      character: {
+        select: {
+          id: true,
+          name: true,
+          data: true,
         },
       },
     },

@@ -83,6 +83,13 @@ export function initializeSocket(httpServer: HTTPServer) {
           where: { roomId },
           include: {
             user: { select: { id: true, name: true, email: true } },
+            character: {
+              select: {
+                id: true,
+                name: true,
+                data: true,
+              },
+            },
           },
         });
 
@@ -117,6 +124,13 @@ export function initializeSocket(httpServer: HTTPServer) {
           where: { roomId },
           include: {
             user: { select: { id: true, name: true, email: true } },
+            character: {
+              select: {
+                id: true,
+                name: true,
+                data: true,
+              },
+            },
           },
         });
 
@@ -151,6 +165,13 @@ export function initializeSocket(httpServer: HTTPServer) {
             where: { roomId },
             include: {
               user: { select: { id: true, name: true, email: true } },
+              character: {
+                select: {
+                  id: true,
+                  name: true,
+                  data: true,
+                },
+              },
             },
           });
 

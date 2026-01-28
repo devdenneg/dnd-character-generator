@@ -21,6 +21,7 @@ const verifyPasswordSchema = z.object({
 
 const joinRoomSchema = z.object({
   password: z.string().min(4),
+  characterId: z.string().uuid(),
 });
 
 export async function create(req: Request, res: Response) {
@@ -215,9 +216,14 @@ export async function joinRoom(req: Request, res: Response) {
   try {
     const roomId = req.params.id as string;
     const userId = (req as any).userId;
-    const { password } = joinRoomSchema.parse(req.body);
+    const { password, characterId } = joinRoomSchema.parse(req.body);
 
-    const result = await roomService.joinRoom(roomId, userId, password);
+    const result = await roomService.joinRoom(
+      roomId,
+      userId,
+      characterId,
+      password,
+    );
 
     if (!result.success) {
       return res.status(result.status || 400).json({
@@ -244,6 +250,52 @@ export async function joinRoom(req: Request, res: Response) {
     res.status(500).json({
       success: false,
       error: "Failed to join room",
+    });
+  }
+}
+
+export async function getRoomPlayers(req: Request, res: Response) {
+  try {
+    const roomId = req.params.id as string;
+    const players = await roomService.getRoomPlayers(roomId);
+
+    res.json({
+      success: true,
+      data: players,
+    });
+  } catch (error) {
+    console.error("Get room players error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch room players",
+    });
+  }
+}
+
+export async function startGame(req: Request, res: Response) {
+  try {
+    const roomId = req.params.id as string;
+    const userId = (req as any).userId;
+
+    const room = await roomService.startGame(roomId, userId);
+
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        error: "Room not found or you are not the master",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: room,
+      message: "Game started successfully",
+    });
+  } catch (error) {
+    console.error("Start game error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to start game",
     });
   }
 }

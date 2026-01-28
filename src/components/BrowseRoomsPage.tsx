@@ -73,8 +73,26 @@ export function BrowseRoomsPage() {
     }
   };
 
+  // Loading auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <div className="app-background" />
+        <div className="ambient-glow ambient-glow-1" />
+        <div className="ambient-glow ambient-glow-2" />
+
+        <div className="relative z-10 flex items-center justify-center flex-1">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Загрузка...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Not authenticated
-  if (!authLoading && !isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex flex-col">
         <div className="app-background" />

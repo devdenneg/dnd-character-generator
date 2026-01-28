@@ -10,7 +10,9 @@
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "migration:generate": "node scripts/generate-migration.js",
+    "migration:apply": "node migrate-production.js"
   },
   "keywords": [
     "dnd",

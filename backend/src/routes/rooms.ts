@@ -14,8 +14,10 @@ router.use(authMiddleware);
 router.post("/", roomController.create);
 router.get("/", roomController.list);
 router.get("/:id", roomController.getById);
+router.get("/:id/players", roomController.getRoomPlayers);
 router.put("/:id", roomController.update);
 router.delete("/:id", roomController.remove);
 router.post("/:id/join", roomController.joinRoom);
+router.post("/:id/start", roomController.startGame);
 
 export default router;
