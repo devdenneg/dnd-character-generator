@@ -1,0 +1,514 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Crimson Text", Georgia, "Times New Roman", serif;
+  --font-display: "Cinzel", "Crimson Text", serif;
+
+  /* Тёплая палитра таверны */
+  --color-primary: #c9a227;
+  --color-primary-foreground: #1a0f00;
+  --color-secondary: #2d1810;
+  --color-secondary-foreground: #f5e6d3;
+  --color-accent: #8b4513;
+  --color-accent-foreground: #fff8dc;
+  --color-background: #1a0f00;
+  --color-foreground: #f5e6d3;
+  --color-muted: #3d2117;
+  --color-muted-foreground: #d4a574;
+  --color-border: #5c3a21;
+  --color-card: #2d1810;
+  --color-card-foreground: #f5e6d3;
+  --color-destructive: #8b0000;
+  --color-destructive-foreground: #ffd700;
+
+  /* Дополнительные цвета */
+  --color-candle: #ff9f43;
+  --color-fire: #ff6b35;
+  --color-gold: #ffd700;
+  --color-parchment: #f4e4bc;
+  --color-wood: #8b4513;
+  --color-leather: #654321;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Фоновый параллакс эффект - таверна */
+.tavern-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 20% 80%,
+      rgba(201, 162, 39, 0.15) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 20%,
+      rgba(255, 107, 53, 0.1) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(139, 69, 19, 0.2) 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, #1a0f00 0%, #2d1810 50%, #1a0f00 100%);
+}
+
+/* Эффект дыма/пара от очага */
+.smoke-effect {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(
+    to top,
+    rgba(45, 24, 16, 0.9) 0%,
+    rgba(45, 24, 16, 0.5) 30%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Мерцающие свечи */
+@keyframes candleFlicker {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+    filter: blur(0px);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.05);
+    filter: blur(1px);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(0.98);
+    filter: blur(0px);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1.02);
+    filter: blur(0.5px);
+  }
+}
+
+.candle-glow {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 159, 67, 0.4) 0%,
+    rgba(255, 107, 53, 0.2) 30%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: candleFlicker 3s ease-in-out infinite;
+  z-index: -1;
+}
+
+.candle-glow-1 {
+  top: 10%;
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.candle-glow-2 {
+  top: 60%;
+  right: 10%;
+  animation-delay: 1s;
+  width: 250px;
+  height: 250px;
+}
+
+.candle-glow-3 {
+  bottom: 20%;
+  left: 15%;
+  animation-delay: 2s;
+  width: 200px;
+  height: 200px;
+}
+
+/* Анимации появления */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes gentleFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Классы анимаций */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.5s ease-out forwards;
+}
+
+.animate-slide-left {
+  animation: slideInFromLeft 0.5s ease-out forwards;
+}
+
+.animate-slide-right {
+  animation: slideInFromRight 0.5s ease-out forwards;
+}
+
+.animate-float {
+  animation: gentleFloat 4s ease-in-out infinite;
+}
+
+/* Задержки анимаций */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
+.delay-300 {
+  animation-delay: 0.3s;
+}
+.delay-400 {
+  animation-delay: 0.4s;
+}
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+/* Стиль карточек - как пергамент */
+.card-parchment {
+  background: linear-gradient(135deg, #3d2117 0%, #2d1810 50%, #3d2117 100%);
+  border: 1px solid #5c3a21;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 20px rgba(201, 162, 39, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-parchment:hover {
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 30px rgba(201, 162, 39, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Кнопки в стиле таверны */
+.btn-tavern {
+  background: linear-gradient(135deg, #c9a227 0%, #8b6914 100%);
+  color: #1a0f00;
+  font-weight: 600;
+  border: 2px solid #5c3a21;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-tavern:hover {
+  background: linear-gradient(135deg, #d4af37 0%, #996515 100%);
+  box-shadow:
+    0 4px 12px rgba(201, 162, 39, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Золотой текст */
+.text-gold {
+  background: linear-gradient(135deg, #ffd700 0%, #c9a227 50%, #ffd700 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Декоративные разделители */
+.divider-ornate {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.divider-ornate::before,
+.divider-ornate::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #c9a227, transparent);
+}
+
+/* Эффект горящего текста */
+.text-fire {
+  text-shadow:
+    0 0 5px #ff6b35,
+    0 0 10px #ff9f43,
+    0 0 20px #c9a227;
+}
+
+/* Свечение выбранных элементов */
+.selected-glow {
+  box-shadow:
+    0 0 10px rgba(201, 162, 39, 0.5),
+    0 0 20px rgba(201, 162, 39, 0.3),
+    inset 0 0 10px rgba(201, 162, 39, 0.1);
+}
+
+/* Скроллбар в стиле пергамента */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d1810;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #5c3a21 0%, #8b4513 100%);
+  border-radius: 6px;
+  border: 2px solid #2d1810;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6d4a2e 0%, #9c5518 100%);
+}
+
+/* Эффект параллакса для контента */
+.parallax-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.parallax-layer {
+  transform: translateZ(0);
+  transition: transform 0.3s ease-out;
+}
+
+/* Анимация загрузки в стиле таверны */
+@keyframes tavern-loading {
+  0% {
+    transform: rotate(0deg);
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    filter: hue-rotate(30deg);
+  }
+}
+
+.loading-tavern {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #2d1810;
+  border-top: 4px solid #c9a227;
+  border-radius: 50%;
+  animation: tavern-loading 1s linear infinite;
+}
+
+/* Текстурный оверлей */
+.texture-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Стили для заголовков */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+}
+
+/* Интерактивные элементы */
+.interactive-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.interactive-hover:hover {
+  transform: scale(1.02);
+}
+
+/* Стиль для badges */
+.badge-gold {
+  background: linear-gradient(135deg, #c9a227 0%, #8b6914 100%);
+  color: #1a0f00;
+  font-weight: 600;
+  border: 1px solid #5c3a21;
+}
+
+/* Pulse анимация для важных элементов */
+@keyframes pulse-gold {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(201, 162, 39, 0);
+  }
+}
+
+.pulse-attention {
+  animation: pulse-gold 2s infinite;
+}
+
+/* Стили для печати */
+@media print {
+  /* Скрываем лишние элементы */
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Убираем фоны и эффекты */
+  .tavern-background,
+  .smoke-effect,
+  .candle-glow,
+  .texture-overlay {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Оптимизация карточек для печати */
+  .card-parchment {
+    background: white !important;
+    border: 1px solid #333 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Убираем анимации */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Принудительно показываем все секции */
+  [class*="CollapsibleSection"] > div {
+    display: block !important;
+  }
+
+  /* Оптимизация текста */
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: black !important;
+  }
+
+  /* Badge для печати */
+  .badge {
+    border: 1px solid #666 !important;
+  }
+}
