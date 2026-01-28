@@ -1,17 +1,24 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
-import { neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
 
-// Configure WebSocket for Neon (required for Node.js environment)
-neonConfig.webSocketConstructor = ws;
+// Check if we're using Neon (serverless) or regular PostgreSQL
+const isNeon = process.env.DATABASE_URL?.includes('neon.tech');
 
-const connectionString = process.env.DATABASE_URL!;
+let prisma: PrismaClient;
 
-// Create Prisma adapter
-const adapter = new PrismaNeon({ connectionString });
-
-// Create Prisma Client with Neon adapter
-const prisma = new PrismaClient({ adapter });
+if (isNeon) {
+  // Use Neon adapter for serverless PostgreSQL
+  const { PrismaNeon } = require("@prisma/adapter-neon");
+  const { neonConfig } = require("@neondatabase/serverless");
+  const ws = require("ws");
+  
+  neonConfig.webSocketConstructor = ws;
+  const connectionString = process.env.DATABASE_URL!;
+  const adapter = new PrismaNeon({ connectionString });
+  
+  prisma = new PrismaClient({ adapter });
+} else {
+  // Use regular Prisma Client for standard PostgreSQL
+  prisma = new PrismaClient();
+}
 
 export default prisma;
