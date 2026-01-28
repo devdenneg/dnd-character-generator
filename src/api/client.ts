@@ -87,3 +87,62 @@ export const charactersApi = {
     return response.data;
   },
 };
+
+// Rooms API
+export const roomsApi = {
+  listActive: async () => {
+    const response = await apiClient.get("/rooms/active");
+    return response.data;
+  },
+
+  list: async () => {
+    const response = await apiClient.get("/rooms");
+    return response.data;
+  },
+
+  create: async (data: {
+    name: string;
+    maxPlayers: number;
+    password: string;
+  }) => {
+    const response = await apiClient.post("/rooms", data);
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get(`/rooms/${id}`);
+    return response.data;
+  },
+
+  update: async (
+    id: string,
+    data: {
+      name?: string;
+      maxPlayers?: number;
+      password?: string;
+      isActive?: boolean;
+    },
+  ) => {
+    const response = await apiClient.put(`/rooms/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/rooms/${id}`);
+    return response.data;
+  },
+
+  verifyPassword: async (id: string, password: string) => {
+    const response = await apiClient.post(`/rooms/${id}/verify`, {
+      password,
+    });
+    return response.data;
+  },
+
+  join: async (id: string, password: string) => {
+    const response = await apiClient.post(`/rooms/${id}/join`, {
+      password,
+    });
+    return response.data;
+  },
+};

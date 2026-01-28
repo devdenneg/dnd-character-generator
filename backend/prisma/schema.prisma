@@ -20,7 +20,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  characters Character[]
+  characters  Character[]
+  rooms       Room[]
+  roomPlayers RoomPlayer[]
 }
 
 model Character {
@@ -33,5 +35,38 @@ model Character {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  masterId   String
+  name       String
+  maxPlayers Int      @default(4)
+  password   String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  master  User         @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  players RoomPlayer[]
+
+  @@index([masterId])
+  @@index([isActive])
+}
+
+model RoomPlayer {
+  id        String   @id @default(uuid())
+  roomId    String
+  userId    String
+  joinedAt  DateTime @default(now())
+  isOnline  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([roomId])
   @@index([userId])
 }

@@ -8,6 +8,8 @@ import {
   User,
   Users,
   Crown,
+  DoorOpen,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +25,7 @@ const MENU_ITEMS = [
     description: "Пошаговый мастер создания персонажа по правилам PHB 2024",
     icon: UserPlus,
     gradient: "from-primary to-accent",
+    roles: ["player", "master"],
   },
   {
     id: "my-characters",
@@ -30,6 +33,31 @@ const MENU_ITEMS = [
     description: "Сохранённые персонажи в облаке",
     icon: Users,
     gradient: "from-emerald-500 to-teal-500",
+    roles: ["player", "master"],
+  },
+  {
+    id: "join-room",
+    title: "Присоединиться к игре",
+    description: "Найдите активную комнату и присоединитесь",
+    icon: DoorOpen,
+    gradient: "from-blue-500 to-cyan-500",
+    roles: ["player"],
+  },
+  {
+    id: "my-rooms",
+    title: "Мои комнаты",
+    description: "Управление игровыми комнатами",
+    icon: DoorOpen,
+    gradient: "from-amber-500 to-orange-500",
+    roles: ["master"],
+  },
+  {
+    id: "create-room",
+    title: "Создать комнату",
+    description: "Создайте новую игровую комнату",
+    icon: Plus,
+    gradient: "from-purple-500 to-pink-500",
+    roles: ["master"],
   },
 ];
 
@@ -39,6 +67,11 @@ export function HomePage({ onNavigate }: HomePageProps) {
   const handleLogout = async () => {
     await logout();
   };
+
+  // Filter menu items based on user role
+  const visibleMenuItems = MENU_ITEMS.filter((item) =>
+    item.roles.includes(user?.role || "player"),
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -137,7 +170,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
-            {MENU_ITEMS.map((item, index) => (
+            {visibleMenuItems.map((item, index) => (
               <div
                 key={item.id}
                 className="animate-fade-in-up h-full"

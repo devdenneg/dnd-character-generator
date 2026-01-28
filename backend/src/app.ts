@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth";
 import characterRoutes from "./routes/characters";
+import roomRoutes from "./routes/rooms";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.get("/api/health", (_req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/characters", characterRoutes);
+app.use("/api/rooms", roomRoutes);
 
 // 404 handler
 app.use((_req, res) => {

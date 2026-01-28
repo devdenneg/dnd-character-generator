@@ -20,9 +20,15 @@ import { HomePage } from "@/components/HomePage";
 import { LoginPage } from "@/components/auth/LoginPage";
 import { RegisterPage } from "@/components/auth/RegisterPage";
 import { MyCharactersPage } from "@/components/MyCharactersPage";
+import { CreateRoomPage } from "@/components/CreateRoomPage";
+import { MyRoomsPage } from "@/components/MyRoomsPage";
+import { RoomDetailsPage } from "@/components/RoomDetailsPage";
+import { JoinRoomPage } from "@/components/JoinRoomPage";
+import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { SocketProvider } from "@/contexts/SocketContext";
 import "@/i18n";
 
 const queryClient = new QueryClient({
@@ -229,6 +235,15 @@ function HomePageWrapper() {
       case "my-characters":
         navigate("/my-characters");
         break;
+      case "join-room":
+        navigate("/join-room");
+        break;
+      case "my-rooms":
+        navigate("/my-rooms");
+        break;
+      case "create-room":
+        navigate("/create-room");
+        break;
       case "glossary":
         navigate("/glossary");
         break;
@@ -267,6 +282,11 @@ function AppRoutes() {
       <Route path="/" element={<HomePageWrapper />} />
       <Route path="/character" element={<CharacterWizardPage />} />
       <Route path="/my-characters" element={<MyCharactersPage />} />
+      <Route path="/join-room" element={<BrowseRoomsPage />} />
+      <Route path="/join-room/:id" element={<JoinRoomPage />} />
+      <Route path="/my-rooms" element={<MyRoomsPage />} />
+      <Route path="/create-room" element={<CreateRoomPage />} />
+      <Route path="/room/:id" element={<RoomDetailsPage />} />
       <Route path="/glossary" element={<GlossaryPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -278,9 +298,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <HashRouter>
-          <AppRoutes />
-        </HashRouter>
+        <SocketProvider>
+          <HashRouter>
+            <AppRoutes />
+          </HashRouter>
+        </SocketProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
