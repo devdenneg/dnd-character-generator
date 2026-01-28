@@ -1,6 +1,23 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+/* Telegram Web App CSS Variables */
+:root {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #999999;
+  --tg-theme-link-color: #2481cc;
+  --tg-theme-button-color: #2481cc;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f4f4f4;
+}
+
+/* Telegram Mini App Specific Styles */
+.telegram-web-app {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 @theme {
   /* Трендовые шрифты 2025-2026 */
   --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;

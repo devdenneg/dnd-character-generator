@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SocketProvider } from "@/contexts/SocketContext";
+import { TelegramProvider } from "@/contexts/TelegramContext";
 import "@/i18n";
 
 const queryClient = new QueryClient({
@@ -309,13 +310,15 @@ function AppRoutes() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SocketProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </SocketProvider>
-      </AuthProvider>
+      <TelegramProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </SocketProvider>
+        </AuthProvider>
+      </TelegramProvider>
     </QueryClientProvider>
   );
 }

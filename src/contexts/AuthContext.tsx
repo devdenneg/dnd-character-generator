@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { authApi } from "@/api/client";
+import { useTelegramOptional } from "@/contexts/TelegramContext";
 
 interface User {
   id: string;
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const telegram = useTelegramOptional();
 
   // Check if user is logged in on mount
   useEffect(() => {
@@ -35,11 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem("auth_token");
       const savedUser = localStorage.getItem("auth_user");
 
+      // Если есть токен - проверяем его
       if (token && savedUser) {
         try {
           // Verify token is still valid
           const response = await authApi.me();
           setUser(response.data.user);
+          setIsLoading(false);
+          return;
         } catch {
           // Token is invalid, clear storage
           localStorage.removeItem("auth_token");
@@ -47,11 +52,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Если нет токена, но приложение запущено в Telegram - авторизуемся через Telegram
+      if (telegram?.tg && telegram.isTelegramWebApp && telegram.tg.initData) {
+        try {
+          console.log('Attempting Telegram auth...');
+          const response = await authApi.telegramAuth(telegram.tg.initData);
+          
+          if (response.success) {
+            const { user: telegramUser, token: telegramToken } = response.data;
+            localStorage.setItem("auth_token", telegramToken);
+            localStorage.setItem("auth_user", JSON.stringify(telegramUser));
+            setUser(telegramUser);
+            console.log('Telegram auth successful!');
+          }
+        } catch (error) {
+          console.error('Telegram auth failed:', error);
+        }
+      }
+
       setIsLoading(false);
     };
 
     checkAuth();
-  }, []);
+  }, [telegram]);
 
   const login = async (email: string, password: string) => {
     const response = await authApi.login({ email, password });
