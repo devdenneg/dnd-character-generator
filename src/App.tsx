@@ -17,8 +17,12 @@ import {
 } from "@/components/wizard";
 import { Glossary } from "@/components/Glossary";
 import { HomePage } from "@/components/HomePage";
+import { LoginPage } from "@/components/auth/LoginPage";
+import { RegisterPage } from "@/components/auth/RegisterPage";
+import { MyCharactersPage } from "@/components/MyCharactersPage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "@/i18n";
 
 const queryClient = new QueryClient({
@@ -187,8 +191,17 @@ function HomePageWrapper() {
       case "character-wizard":
         navigate("/character");
         break;
+      case "my-characters":
+        navigate("/my-characters");
+        break;
       case "glossary":
         navigate("/glossary");
+        break;
+      case "login":
+        navigate("/login");
+        break;
+      case "register":
+        navigate("/register");
         break;
       default:
         navigate("/");
@@ -218,7 +231,10 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<HomePageWrapper />} />
       <Route path="/character" element={<CharacterWizardPage />} />
+      <Route path="/my-characters" element={<MyCharactersPage />} />
       <Route path="/glossary" element={<GlossaryPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
     </Routes>
   );
 }
@@ -226,9 +242,11 @@ function AppRoutes() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <HashRouter>
-        <AppRoutes />
-      </HashRouter>
+      <AuthProvider>
+        <HashRouter>
+          <AppRoutes />
+        </HashRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

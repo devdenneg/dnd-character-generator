@@ -655,6 +655,10 @@ interface CharacterState {
   // Actions - Reset
   resetCharacter: () => void;
   resetStep: (step: WizardStep) => void;
+
+  // Actions - Save/Load
+  getCharacterData: () => Character;
+  loadCharacter: (data: Character) => void;
 }
 
 // Calculate ability modifier
@@ -1160,5 +1164,28 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         });
         break;
     }
+  },
+
+  // Save/Load
+  getCharacterData: () => {
+    return get().character;
+  },
+
+  loadCharacter: (data: Character) => {
+    set({
+      character: { ...data },
+      currentStep: "summary",
+      completedSteps: [
+        "race",
+        "class",
+        "skills",
+        "abilities",
+        "background",
+        "abilityIncrease",
+        "equipment",
+        "spells",
+        "details",
+      ],
+    });
   },
 }));

@@ -1,5 +1,15 @@
-import { UserPlus, Sparkles, BookOpen, ChevronRight } from "lucide-react";
+import {
+  UserPlus,
+  Sparkles,
+  BookOpen,
+  ChevronRight,
+  LogIn,
+  LogOut,
+  User,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -13,9 +23,22 @@ const MENU_ITEMS = [
     icon: UserPlus,
     gradient: "from-primary to-accent",
   },
+  {
+    id: "my-characters",
+    title: "Мои персонажи",
+    description: "Сохранённые персонажи в облаке",
+    icon: Users,
+    gradient: "from-emerald-500 to-teal-500",
+  },
 ];
 
 export function HomePage({ onNavigate }: HomePageProps) {
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Background */}
@@ -27,16 +50,63 @@ export function HomePage({ onNavigate }: HomePageProps) {
         {/* Header */}
         <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl">
           <div className="max-w-5xl mx-auto px-4 py-6">
-            <div className="text-center">
-              <h1
-                className="text-4xl md:text-5xl font-bold text-gradient mb-2"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                D&D Generator
-              </h1>
-              <p className="text-muted-foreground">
-                Инструменты для Dungeons & Dragons 5е — PHB 2024
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="text-center flex-1">
+                <h1
+                  className="text-4xl md:text-5xl font-bold text-gradient mb-2"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  D&D Generator
+                </h1>
+                <p className="text-muted-foreground">
+                  Инструменты для Dungeons & Dragons 5е — PHB 2024
+                </p>
+              </div>
+
+              {/* Auth Buttons */}
+              <div className="flex items-center gap-2">
+                {isLoading ? (
+                  <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+                ) : isAuthenticated ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-foreground">
+                        {user?.name || user?.email}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Выйти</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onNavigate("login")}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Войти</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onNavigate("register")}
+                      className="border-primary/50 hover:bg-primary/10"
+                    >
+                      Регистрация
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </header>
@@ -89,8 +159,42 @@ export function HomePage({ onNavigate }: HomePageProps) {
             ))}
           </div>
 
+          {/* Auth Info for non-authenticated users */}
+          {!isAuthenticated && (
+            <div className="mt-8 bg-primary/5 border border-primary/20 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <User className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">
+                    Войдите в аккаунт
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Для сохранения персонажей в облаке
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Зарегистрируйтесь, чтобы сохранять созданных персонажей и
+                получить к ним доступ с любого устройства.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => onNavigate("register")}
+                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                >
+                  Создать аккаунт
+                </Button>
+                <Button variant="outline" onClick={() => onNavigate("login")}>
+                  Войти
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Quick Info */}
-          <div className="mt-12 bg-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
+          <div className="mt-8 bg-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-primary" />
