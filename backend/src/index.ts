@@ -1,4 +1,21 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import { existsSync } from "fs";
+import { resolve } from "path";
+
+// Load .env.local if exists (for local development), otherwise .env (for production)
+const envLocalPath = resolve(__dirname, "../.env.local");
+const envPath = resolve(__dirname, "../.env");
+
+if (existsSync(envLocalPath)) {
+  console.log("📝 Loading .env.local (local development)");
+  dotenv.config({ path: envLocalPath });
+} else if (existsSync(envPath)) {
+  console.log("📝 Loading .env (production)");
+  dotenv.config({ path: envPath });
+} else {
+  console.log("⚠️  No .env file found, using environment variables");
+}
+
 import app from "./app";
 
 const PORT = process.env.PORT || 3001;
