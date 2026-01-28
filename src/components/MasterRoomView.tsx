@@ -470,8 +470,8 @@ export function MasterRoomView({
                             </td>
                             <td className="py-3 px-2 align-top">
                               {gear.length > 0 ? (
-                                <div className="flex flex-wrap gap-1 max-w-xs">
-                                  {gear.slice(0, 5).map((item: any, idx: number) => (
+                                <div className="flex flex-wrap gap-1">
+                                  {gear.map((item: any, idx: number) => (
                                     <Badge
                                       key={idx}
                                       variant="outline"
@@ -480,14 +480,6 @@ export function MasterRoomView({
                                       {item.nameRu}
                                     </Badge>
                                   ))}
-                                  {gear.length > 5 && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-[10px] py-0 px-1.5 h-5 text-muted-foreground"
-                                    >
-                                      +{gear.length - 5}
-                                    </Badge>
-                                  )}
                                 </div>
                               ) : (
                                 <span className="text-muted-foreground">—</span>
