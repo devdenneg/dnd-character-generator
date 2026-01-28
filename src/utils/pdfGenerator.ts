@@ -94,6 +94,10 @@ export function generateCharacterPDF(
   weapons.forEach((w) => allEquipment.push(w.nameRu));
   armor.forEach((a) => allEquipment.push(a.nameRu));
 
+  // Особенности класса 1 уровня
+  const classFeatures =
+    character.class?.features.filter((f) => f.level <= character.level) || [];
+
   // HTML для PDF
   const html = `
 <!DOCTYPE html>
@@ -102,354 +106,384 @@ export function generateCharacterPDF(
   <meta charset="UTF-8">
   <title>${character.name || "Персонаж"} - D&D 2024</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Condensed:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
-    @page { size: A4; margin: 8mm; }
+    @page { size: A4; margin: 6mm; }
     
     body {
-      font-family: 'Roboto', Arial, sans-serif;
-      font-size: 8pt;
-      line-height: 1.3;
+      font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+      font-size: 7pt;
+      line-height: 1.25;
       color: #1a1a1a;
       background: white;
     }
     
     .page {
       width: 100%;
-      height: 277mm;
-      padding: 5px;
+      min-height: 280mm;
+      padding: 3px;
       page-break-after: always;
-      overflow: hidden;
     }
     
     .page:last-child { page-break-after: auto; }
     
     /* === ШАПКА === */
     .header {
-      background: linear-gradient(135deg, #5c3317 0%, #8b4513 100%);
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
       color: white;
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 6px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     
     .header-left h1 {
-      font-size: 16pt;
+      font-size: 14pt;
       font-weight: 700;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
     
-    .header-subtitle { font-size: 8pt; opacity: 0.9; }
+    .header-subtitle { font-size: 7pt; opacity: 0.9; }
     
     .header-stats {
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
     
     .stat-box {
       text-align: center;
       background: rgba(255,255,255,0.15);
-      border-radius: 6px;
-      padding: 4px 8px;
-      min-width: 55px;
+      border-radius: 4px;
+      padding: 3px 6px;
+      min-width: 45px;
     }
     
-    .stat-box .value { font-size: 14pt; font-weight: bold; display: block; }
-    .stat-box .label { font-size: 6pt; text-transform: uppercase; opacity: 0.8; }
+    .stat-box .value { font-size: 12pt; font-weight: bold; display: block; }
+    .stat-box .label { font-size: 5pt; text-transform: uppercase; opacity: 0.8; }
     
     /* === ОСНОВНОЙ ГРИД === */
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
+      gap: 4px;
+    }
+    
+    .full-width {
+      grid-column: 1 / -1;
     }
     
     .section {
-      background: #fafaf9;
-      border-radius: 6px;
-      padding: 6px;
-      border: 1px solid #e7e5e4;
+      background: #fafafa;
+      border-radius: 4px;
+      padding: 4px;
+      border: 1px solid #e5e5e5;
     }
     
     .section-title {
-      font-size: 8pt;
+      font-size: 7pt;
       font-weight: 700;
-      color: #5c3317;
-      margin-bottom: 4px;
-      padding-bottom: 2px;
-      border-bottom: 1px solid #d97706;
+      color: #4f46e5;
+      margin-bottom: 3px;
+      padding-bottom: 1px;
+      border-bottom: 1px solid #a5b4fc;
       text-transform: uppercase;
     }
     
     /* === ХАРАКТЕРИСТИКИ === */
     .abilities-row {
       display: flex;
-      gap: 4px;
+      gap: 3px;
       justify-content: space-between;
     }
     
     .ability-block {
       text-align: center;
-      background: linear-gradient(to bottom, #fef3c7, #fde68a);
-      border: 1px solid #d97706;
-      border-radius: 6px;
-      padding: 4px 6px;
+      background: linear-gradient(to bottom, #eef2ff, #e0e7ff);
+      border: 1px solid #a5b4fc;
+      border-radius: 4px;
+      padding: 3px 4px;
       flex: 1;
     }
     
-    .ability-name { font-size: 7pt; font-weight: 700; color: #92400e; }
-    .ability-mod { font-size: 14pt; font-weight: bold; color: #1c1917; }
-    .ability-score { font-size: 7pt; color: #78716c; }
-    .ability-save { font-size: 6pt; color: #78716c; }
+    .ability-name { font-size: 6pt; font-weight: 700; color: #4338ca; }
+    .ability-mod { font-size: 12pt; font-weight: bold; color: #1e1b4b; }
+    .ability-score { font-size: 6pt; color: #6366f1; }
+    .ability-save { font-size: 5pt; color: #64748b; }
     .ability-save.proficient { color: #059669; font-weight: bold; }
     
     /* === НАВЫКИ === */
     .skills-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-      font-size: 7pt;
+      gap: 1px;
+      font-size: 6pt;
     }
     
     .skill-item {
       display: flex;
       justify-content: space-between;
-      padding: 1px 3px;
+      padding: 1px 2px;
       border-radius: 2px;
     }
     
     .skill-item.proficient { background: #dcfce7; font-weight: 600; }
-    .skill-bonus { color: #5c3317; font-weight: bold; }
+    .skill-bonus { color: #4f46e5; font-weight: bold; }
     
     /* === ОРУЖИЕ === */
     .weapons-grid {
       display: grid;
-      gap: 4px;
+      gap: 2px;
     }
     
     .weapon-card {
       background: white;
-      border: 1px solid #d6d3d1;
-      border-radius: 4px;
-      padding: 4px 6px;
+      border: 1px solid #e5e5e5;
+      border-radius: 3px;
+      padding: 2px 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     
-    .weapon-info { flex: 1; }
-    .weapon-name { font-weight: 600; font-size: 8pt; }
-    .weapon-details { font-size: 7pt; color: #78716c; }
-    .weapon-stats {
-      text-align: right;
-    }
+    .weapon-name { font-weight: 600; font-size: 7pt; }
+    .weapon-details { font-size: 6pt; color: #64748b; }
     .weapon-attack {
-      background: #dc2626;
+      background: #ef4444;
       color: white;
-      padding: 1px 6px;
-      border-radius: 10px;
-      font-size: 7pt;
+      padding: 1px 4px;
+      border-radius: 8px;
+      font-size: 6pt;
       font-weight: bold;
     }
-    .weapon-damage {
-      font-size: 9pt;
-      font-weight: bold;
-      color: #1c1917;
-    }
+    .weapon-damage { font-size: 8pt; font-weight: bold; }
     
     /* === КОШЕЛЁК === */
     .wallet-row {
       display: flex;
       justify-content: space-between;
-      gap: 4px;
+      gap: 2px;
     }
     
     .wallet-item {
       flex: 1;
       text-align: center;
-      padding: 3px;
-      border-radius: 4px;
-      font-size: 7pt;
+      padding: 2px;
+      border-radius: 3px;
+      font-size: 6pt;
     }
     
     .wallet-item.pp { background: #e5e7eb; }
     .wallet-item.gp { background: #fef08a; }
-    .wallet-item.ep { background: #e0f2fe; }
+    .wallet-item.ep { background: #dbeafe; }
     .wallet-item.sp { background: #f3f4f6; }
     .wallet-item.cp { background: #fed7aa; }
     
-    .wallet-value { font-size: 11pt; font-weight: bold; }
-    .wallet-label { font-size: 6pt; color: #57534e; }
+    .wallet-value { font-size: 9pt; font-weight: bold; }
+    .wallet-label { font-size: 5pt; color: #57534e; }
     
     /* === ЧЕРТА === */
     .feat-box {
-      background: linear-gradient(to right, #fef9c3, #fef3c7);
-      border: 1px solid #eab308;
-      border-radius: 6px;
-      padding: 6px;
+      background: linear-gradient(to right, #fef3c7, #fde68a);
+      border: 1px solid #fbbf24;
+      border-radius: 4px;
+      padding: 4px;
     }
     
-    .feat-title { font-weight: 700; color: #854d0e; font-size: 8pt; margin-bottom: 2px; }
-    .feat-desc { font-size: 7pt; color: #78716c; margin-bottom: 4px; }
-    .feat-benefits { font-size: 7pt; padding-left: 12px; }
+    .feat-title { font-weight: 700; color: #92400e; font-size: 7pt; margin-bottom: 1px; }
+    .feat-desc { font-size: 6pt; color: #78716c; margin-bottom: 2px; }
+    .feat-benefits { font-size: 6pt; padding-left: 10px; }
     .feat-benefits li { margin-bottom: 1px; }
     
     /* === ОСОБЕННОСТИ === */
-    .traits-list { font-size: 7pt; }
-    .trait-item { margin-bottom: 3px; }
-    .trait-name { font-weight: 600; color: #5c3317; }
+    .traits-list { font-size: 6pt; }
+    .trait-item { margin-bottom: 2px; }
+    .trait-name { font-weight: 600; color: #4f46e5; }
     .trait-desc { color: #57534e; }
     
     /* === СНАРЯЖЕНИЕ === */
-    .equipment-text { font-size: 7pt; color: #57534e; line-height: 1.4; }
+    .equipment-text { font-size: 6pt; color: #57534e; line-height: 1.3; }
     
-    /* === ИНФО-БЛОКИ === */
+    /* === ОСОБЕННОСТИ КЛАССА === */
+    .feature-item {
+      margin-bottom: 3px;
+      padding: 2px 4px;
+      background: #f8fafc;
+      border-radius: 3px;
+      border-left: 2px solid #4f46e5;
+    }
+    .feature-name { font-weight: 600; color: #1e1b4b; font-size: 6.5pt; }
+    .feature-desc { font-size: 6pt; color: #475569; margin-top: 1px; }
+    
+    /* === ЛИЧНОСТЬ === */
+    .personality-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+    }
+    .personality-item {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 3px;
+      padding: 3px;
+    }
+    .personality-label { font-size: 5pt; color: #166534; font-weight: 600; text-transform: uppercase; }
+    .personality-text { font-size: 6pt; color: #15803d; font-style: italic; margin-top: 1px; }
+    
+    /* === ИНФО БЛОКИ === */
     .info-row {
       display: flex;
-      gap: 4px;
-      margin-top: 4px;
+      gap: 3px;
+      margin-top: 3px;
     }
     
     .info-box {
       flex: 1;
-      background: #f5f5f4;
-      border-radius: 4px;
-      padding: 4px;
+      background: #f5f5f5;
+      border-radius: 3px;
+      padding: 2px;
       text-align: center;
     }
     
-    .info-label { font-size: 6pt; color: #78716c; text-transform: uppercase; }
-    .info-value { font-size: 10pt; font-weight: bold; }
+    .info-label { font-size: 5pt; color: #78716c; text-transform: uppercase; }
+    .info-value { font-size: 9pt; font-weight: bold; }
     
     /* === ДОСПЕХИ === */
     .armor-info {
-      background: linear-gradient(to right, #dbeafe, #eff6ff);
+      background: #dbeafe;
       border: 1px solid #3b82f6;
-      border-radius: 4px;
-      padding: 4px 6px;
-      font-size: 7pt;
+      border-radius: 3px;
+      padding: 2px 4px;
+      font-size: 6pt;
     }
+    
+    /* Владения */
+    .proficiencies-text { font-size: 6pt; color: #57534e; margin-top: 2px; }
     
     /* === СТРАНИЦА 2: ЗАКЛИНАНИЯ === */
     .spells-header {
       background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
       color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      margin-bottom: 6px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     
-    .spells-header h2 { font-size: 14pt; }
+    .spells-header h2 { font-size: 12pt; }
     
     .spellcasting-stats {
       display: flex;
-      gap: 15px;
-      font-size: 8pt;
+      gap: 12px;
+      font-size: 7pt;
     }
     
     .spell-stat { text-align: center; }
-    .spell-stat .label { font-size: 6pt; opacity: 0.8; }
-    .spell-stat .value { font-size: 12pt; font-weight: bold; }
+    .spell-stat .label { font-size: 5pt; opacity: 0.8; }
+    .spell-stat .value { font-size: 10pt; font-weight: bold; }
     
     /* Ячейки заклинаний */
     .spell-slots-row {
       display: flex;
-      gap: 4px;
-      margin-bottom: 6px;
+      gap: 3px;
+      margin-bottom: 4px;
       justify-content: center;
     }
     
     .slot-box {
       text-align: center;
-      padding: 3px 6px;
-      border-radius: 4px;
+      padding: 2px 4px;
+      border-radius: 3px;
       background: #f3e8ff;
       border: 1px solid #c4b5fd;
-      min-width: 45px;
+      min-width: 38px;
     }
     
     .slot-box.empty { background: #f5f5f4; border-color: #d6d3d1; opacity: 0.5; }
-    .slot-level { font-size: 6pt; color: #7c3aed; }
-    .slot-count { font-size: 11pt; font-weight: bold; color: #5b21b6; }
+    .slot-level { font-size: 5pt; color: #7c3aed; }
+    .slot-count { font-size: 9pt; font-weight: bold; color: #5b21b6; }
     .slot-box.empty .slot-count { color: #a8a29e; }
     
     /* Карточки заклинаний */
     .spells-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 4px;
+      gap: 3px;
     }
     
     .spell-card {
       background: white;
       border: 1px solid #c4b5fd;
-      border-radius: 4px;
-      padding: 4px 6px;
-      font-size: 7pt;
+      border-radius: 3px;
+      padding: 3px 4px;
+      font-size: 6pt;
     }
     
     .spell-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
     
-    .spell-name { font-weight: 700; color: #5b21b6; font-size: 8pt; }
-    .spell-level { font-size: 6pt; color: #7c3aed; background: #f3e8ff; padding: 1px 4px; border-radius: 3px; }
+    .spell-name { font-weight: 700; color: #5b21b6; font-size: 7pt; }
+    .spell-level { font-size: 5pt; color: #7c3aed; background: #f3e8ff; padding: 1px 3px; border-radius: 2px; }
     
     .spell-meta {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       color: #6b7280;
-      font-size: 6pt;
-      margin-bottom: 2px;
+      font-size: 5pt;
+      margin-bottom: 1px;
     }
     
-    .spell-components { font-size: 6pt; color: #9ca3af; margin-bottom: 2px; }
+    .spell-components { font-size: 5pt; color: #9ca3af; margin-bottom: 1px; }
     
     .spell-desc {
-      font-size: 6.5pt;
+      font-size: 5.5pt;
       color: #374151;
-      line-height: 1.3;
+      line-height: 1.2;
       border-left: 2px solid #a855f7;
-      padding-left: 4px;
+      padding-left: 3px;
       background: #faf5ff;
-      padding: 2px 4px;
+      padding: 2px 3px;
       border-radius: 2px;
     }
     
-    .cantrips-section, .spells-section {
-      margin-bottom: 6px;
-    }
+    .cantrips-section, .spells-section { margin-bottom: 4px; }
     
     .spells-section-title {
-      font-size: 9pt;
+      font-size: 8pt;
       font-weight: 700;
       color: #7c3aed;
-      margin-bottom: 4px;
-      padding-bottom: 2px;
+      margin-bottom: 3px;
+      padding-bottom: 1px;
       border-bottom: 1px solid #d8b4fe;
     }
     
     /* Футер */
     .footer {
       text-align: center;
-      font-size: 6pt;
+      font-size: 5pt;
       color: #a8a29e;
-      margin-top: 4px;
+      margin-top: 3px;
     }
     
-    /* Языки и владения */
-    .proficiencies-text { font-size: 7pt; color: #57534e; margin-top: 4px; }
+    /* Описание предыстории */
+    .background-desc {
+      font-size: 6pt;
+      color: #64748b;
+      background: #f8fafc;
+      padding: 3px;
+      border-radius: 3px;
+      margin-bottom: 3px;
+      border-left: 2px solid #94a3b8;
+    }
     
     @media print {
       body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -485,17 +519,17 @@ export function generateCharacterPDF(
         </div>
         <div class="stat-box">
           <span class="value">+${stats.proficiencyBonus}</span>
-          <span class="label">Мастерство</span>
+          <span class="label">Маст.</span>
         </div>
         <div class="stat-box">
           <span class="value">${formatMod(stats.initiative)}</span>
-          <span class="label">Инициатива</span>
+          <span class="label">Иниц.</span>
         </div>
       </div>
     </div>
     
     <!-- Характеристики -->
-    <div class="section">
+    <div class="section full-width" style="margin-bottom: 4px;">
       <div class="abilities-row">
         ${ABILITIES.map((ability) => {
           const score =
@@ -510,7 +544,7 @@ export function generateCharacterPDF(
               <div class="ability-mod">${formatMod(mod)}</div>
               <div class="ability-score">${score}</div>
               <div class="ability-save ${hasSaveProf ? "proficient" : ""}">
-                Спас: ${formatMod(save)}${hasSaveProf ? "✓" : ""}
+                Спас: ${formatMod(save)}${hasSaveProf ? " ✓" : ""}
               </div>
             </div>
           `;
@@ -578,11 +612,11 @@ export function generateCharacterPDF(
                     : "";
                   return `
                   <div class="weapon-card">
-                    <div class="weapon-info">
+                    <div>
                       <div class="weapon-name">${weapon.nameRu}</div>
-                      <div class="weapon-details">${damageTypeRu}${weapon.properties?.length ? " • " + weapon.properties.slice(0, 2).join(", ") : ""}</div>
+                      <div class="weapon-details">${damageTypeRu}</div>
                     </div>
-                    <div class="weapon-stats">
+                    <div style="text-align: right;">
                       <span class="weapon-attack">${formatMod(atkMod)}</span>
                       <div class="weapon-damage">${weapon.damage?.dice}${dmgMod !== 0 ? formatMod(dmgMod) : ""}</div>
                     </div>
@@ -614,33 +648,24 @@ export function generateCharacterPDF(
         <div class="section">
           <div class="section-title">Кошелёк</div>
           <div class="wallet-row">
-            <div class="wallet-item pp">
-              <div class="wallet-value">${stats.wallet.platinum}</div>
-              <div class="wallet-label">ПМ</div>
-            </div>
-            <div class="wallet-item gp">
-              <div class="wallet-value">${stats.wallet.gold}</div>
-              <div class="wallet-label">ЗМ</div>
-            </div>
-            <div class="wallet-item ep">
-              <div class="wallet-value">${stats.wallet.electrum}</div>
-              <div class="wallet-label">ЭМ</div>
-            </div>
-            <div class="wallet-item sp">
-              <div class="wallet-value">${stats.wallet.silver}</div>
-              <div class="wallet-label">СМ</div>
-            </div>
-            <div class="wallet-item cp">
-              <div class="wallet-value">${stats.wallet.copper}</div>
-              <div class="wallet-label">ММ</div>
-            </div>
+            <div class="wallet-item pp"><div class="wallet-value">${stats.wallet.platinum}</div><div class="wallet-label">ПМ</div></div>
+            <div class="wallet-item gp"><div class="wallet-value">${stats.wallet.gold}</div><div class="wallet-label">ЗМ</div></div>
+            <div class="wallet-item ep"><div class="wallet-value">${stats.wallet.electrum}</div><div class="wallet-label">ЭМ</div></div>
+            <div class="wallet-item sp"><div class="wallet-value">${stats.wallet.silver}</div><div class="wallet-label">СМ</div></div>
+            <div class="wallet-item cp"><div class="wallet-value">${stats.wallet.copper}</div><div class="wallet-label">ММ</div></div>
           </div>
+        </div>
+        
+        <!-- Снаряжение -->
+        <div class="section">
+          <div class="section-title">Снаряжение</div>
+          <div class="equipment-text">${allEquipment.join(", ") || "—"}</div>
         </div>
       </div>
       
       <!-- Правая колонка -->
       <div>
-        <!-- Черта -->
+        <!-- Черта от предыстории -->
         ${
           feat
             ? `
@@ -680,16 +705,31 @@ export function generateCharacterPDF(
             : ""
         }
         
-        <!-- Снаряжение -->
-        <div class="section">
-          <div class="section-title">Снаряжение</div>
-          <div class="equipment-text">${allEquipment.join(", ") || "—"}</div>
-        </div>
+        <!-- Умения класса -->
+        ${
+          classFeatures.length > 0
+            ? `
+          <div class="section">
+            <div class="section-title">Умения класса: ${character.class?.nameRu}</div>
+            ${classFeatures
+              .map(
+                (f) => `
+              <div class="feature-item">
+                <div class="feature-name">${f.nameRu}</div>
+                <div class="feature-desc">${f.description}</div>
+              </div>
+            `,
+              )
+              .join("")}
+          </div>
+        `
+            : ""
+        }
         
         <!-- Доп. инфо -->
         <div class="info-row">
           <div class="info-box">
-            <div class="info-label">Пассивное восприятие</div>
+            <div class="info-label">Пасс. восприятие</div>
             <div class="info-value">${stats.passivePerception}</div>
           </div>
           <div class="info-box">
@@ -702,7 +742,7 @@ export function generateCharacterPDF(
           </div>
         </div>
         
-        <!-- Языки и владения -->
+        <!-- Владения -->
         <div class="proficiencies-text">
           ${character.languages.length > 0 ? `<strong>Языки:</strong> ${character.languages.join(", ")}<br>` : ""}
           ${character.class?.armorProficiencies?.length ? `<strong>Доспехи:</strong> ${character.class.armorProficiencies.join(", ")}<br>` : ""}
@@ -711,7 +751,28 @@ export function generateCharacterPDF(
       </div>
     </div>
     
-    <div class="footer">D&D 5e (2024) • ${new Date().toLocaleDateString("ru-RU")}</div>
+    <!-- Личность (если заполнена) -->
+    ${
+      character.personalityTraits ||
+      character.ideals ||
+      character.bonds ||
+      character.flaws
+        ? `
+      <div class="section full-width" style="margin-top: 4px;">
+        <div class="section-title">Личность и история</div>
+        ${character.background?.description ? `<div class="background-desc">${character.background.description}</div>` : ""}
+        <div class="personality-grid">
+          ${character.personalityTraits ? `<div class="personality-item"><div class="personality-label">Черты характера</div><div class="personality-text">"${character.personalityTraits}"</div></div>` : ""}
+          ${character.ideals ? `<div class="personality-item"><div class="personality-label">Идеалы</div><div class="personality-text">"${character.ideals}"</div></div>` : ""}
+          ${character.bonds ? `<div class="personality-item"><div class="personality-label">Привязанности</div><div class="personality-text">"${character.bonds}"</div></div>` : ""}
+          ${character.flaws ? `<div class="personality-item"><div class="personality-label">Слабости</div><div class="personality-text">"${character.flaws}"</div></div>` : ""}
+        </div>
+      </div>
+    `
+        : ""
+    }
+    
+    <div class="footer">D&D 5e PHB 2024 • ${new Date().toLocaleDateString("ru-RU")}</div>
   </div>
   
   ${
@@ -721,7 +782,7 @@ export function generateCharacterPDF(
   <div class="page">
     <!-- Шапка заклинаний -->
     <div class="spells-header">
-      <h2>✨ Заклинания</h2>
+      <h2>✨ Заклинания: ${character.class?.nameRu}</h2>
       <div class="spellcasting-stats">
         ${
           stats.spellcasting
@@ -731,7 +792,7 @@ export function generateCharacterPDF(
             <div class="value">${stats.spellcasting.ability ? getAbilityNameRu(stats.spellcasting.ability) : "—"}</div>
           </div>
           <div class="spell-stat">
-            <div class="label">Сложность спасброска</div>
+            <div class="label">СЛ спасброска</div>
             <div class="value">${stats.spellcasting.spellSaveDC}</div>
           </div>
           <div class="spell-stat">
@@ -741,6 +802,16 @@ export function generateCharacterPDF(
         `
             : ""
         }
+      </div>
+    </div>
+    
+    <!-- Пояснение -->
+    <div class="section full-width" style="margin-bottom: 4px; background: #fef3c7; border-color: #fbbf24;">
+      <div style="font-size: 6pt; color: #92400e;">
+        <strong>Как использовать:</strong> 
+        СЛ ${stats.spellcasting?.spellSaveDC || 10} = 8 + ${stats.proficiencyBonus} (мастерство) + ${stats.spellcasting?.abilityModifier || 0} (мод. ${stats.spellcasting?.ability ? getAbilityNameRu(stats.spellcasting.ability) : ""}) • 
+        Бонус атаки ${formatMod(stats.spellcasting?.spellAttackBonus || 0)} = ${stats.proficiencyBonus} + ${stats.spellcasting?.abilityModifier || 0} • 
+        Заговоры используются неограниченно • Заклинания тратят ячейки
       </div>
     </div>
     
@@ -771,7 +842,7 @@ export function generateCharacterPDF(
       character.cantripsKnown.length > 0
         ? `
       <div class="cantrips-section">
-        <div class="spells-section-title">Заговоры (неограниченно)</div>
+        <div class="spells-section-title">Заговоры (${character.cantripsKnown.length} шт.) — используются неограниченно</div>
         <div class="spells-grid">
           ${character.cantripsKnown.map((spell) => generateCompactSpellCard(spell)).join("")}
         </div>
@@ -784,7 +855,7 @@ export function generateCharacterPDF(
       character.spellsKnown.length > 0
         ? `
       <div class="spells-section">
-        <div class="spells-section-title">Заклинания 1-го круга</div>
+        <div class="spells-section-title">Заклинания 1-го круга (${character.spellsKnown.length} шт.) — требуют ячейку</div>
         <div class="spells-grid">
           ${character.spellsKnown.map((spell) => generateCompactSpellCard(spell)).join("")}
         </div>
@@ -794,9 +865,8 @@ export function generateCharacterPDF(
     }
     
     <div class="footer">
-      Формулы: Сложность спасброска = 8 + бонус мастерства + модификатор ${stats.spellcasting?.ability ? getAbilityNameRu(stats.spellcasting.ability) : "характеристики"} • 
-      Бонус атаки = бонус мастерства + модификатор ${stats.spellcasting?.ability ? getAbilityNameRu(stats.spellcasting.ability) : "характеристики"}<br>
-      D&D 5e (2024) • ${new Date().toLocaleDateString("ru-RU")}
+      Ячейки заклинаний восстанавливаются после длинного отдыха${character.class?.id === "warlock" ? " (Колдун: после короткого отдыха)" : ""} • 
+      D&D 5e PHB 2024 • ${new Date().toLocaleDateString("ru-RU")}
     </div>
   </div>
   `

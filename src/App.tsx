@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Home } from "lucide-react";
 import {
   WizardLayout,
   RaceStep,
@@ -15,6 +16,7 @@ import {
   SummaryStep,
 } from "@/components/wizard";
 import { Glossary } from "@/components/Glossary";
+import { HomePage } from "@/components/HomePage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import "@/i18n";
@@ -28,14 +30,10 @@ const queryClient = new QueryClient({
   },
 });
 
-function CharacterWizard() {
+function CharacterWizardPage() {
+  const navigate = useNavigate();
   const { currentStep } = useCharacterStore();
   const [showGlossary, setShowGlossary] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   const renderStep = () => {
     const stepContent = (() => {
@@ -74,7 +72,7 @@ function CharacterWizard() {
 
   if (showGlossary) {
     return (
-      <div className={`min-h-screen ${isLoaded ? "animate-fade-in" : "opacity-0"}`}>
+      <div className="min-h-screen animate-fade-in">
         {/* Background */}
         <div className="app-background" />
         <div className="ambient-glow ambient-glow-1" />
@@ -117,8 +115,8 @@ function CharacterWizard() {
   }
 
   return (
-    <div className={`${isLoaded ? "animate-fade-in" : "opacity-0"}`}>
-      <WizardLayout>{renderStep()}</WizardLayout>
+    <div className="animate-fade-in">
+      <WizardLayout onBack={() => navigate("/")}>{renderStep()}</WizardLayout>
 
       {/* Floating Glossary Button */}
       <Button
@@ -134,10 +132,106 @@ function CharacterWizard() {
   );
 }
 
+function GlossaryPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen animate-fade-in">
+      {/* Background */}
+      <div className="app-background" />
+      <div className="ambient-glow ambient-glow-1" />
+      <div className="ambient-glow ambient-glow-2" />
+
+      <div className="relative z-10">
+        <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1
+                  className="text-xl font-bold text-gradient"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Глоссарий D&D
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  PHB 2024 — Справочник терминов
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/")}
+                className="gap-2"
+              >
+                <Home className="w-4 h-4" />
+                На главную
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-4xl mx-auto px-4 py-6">
+          <div className="animate-fade-in-up">
+            <Glossary />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function HomePageWrapper() {
+  const navigate = useNavigate();
+
+  const handleNavigate = (page: string) => {
+    switch (page) {
+      case "character-wizard":
+        navigate("/character");
+        break;
+      case "glossary":
+        navigate("/glossary");
+        break;
+      default:
+        navigate("/");
+    }
+  };
+
+  return <HomePage onNavigate={handleNavigate} />;
+}
+
+function AppRoutes() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="app-background" />
+        <div className="animate-pulse text-muted-foreground">Загрузка...</div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<HomePageWrapper />} />
+      <Route path="/character" element={<CharacterWizardPage />} />
+      <Route path="/glossary" element={<GlossaryPage />} />
+    </Routes>
+  );
+}
+
 function App() {
+  // basename нужен только для GitHub Pages (production)
+  const basename = import.meta.env.PROD ? "/dnd-character-generator" : "";
+
   return (
     <QueryClientProvider client={queryClient}>
-      <CharacterWizard />
+      <BrowserRouter basename={basename}>
+        <AppRoutes />
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

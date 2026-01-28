@@ -1,30 +1,32 @@
 import { useState } from "react";
-import { Search, Check, X, Zap, Ruler } from "lucide-react";
+import { Search, Check, Zap, Ruler, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FitText } from "@/components/ui/fit-text";
+import { Modal, ModalContent, ModalFooter } from "@/components/ui/modal";
 import { useCharacterStore } from "@/store/characterStore";
 import { getAllRaces } from "@/data/phb2024";
 import type { Race } from "@/types/character";
 import { t } from "@/data/translations/ru";
 
-// Визуальные данные рас - обновлённые цвета
-const RACE_DATA: Record<string, { gradient: string; icon: string }> = {
-  human: { gradient: "from-amber-500/90 to-orange-600/90", icon: "👤" },
-  elf: { gradient: "from-emerald-500/90 to-teal-600/90", icon: "🧝" },
-  dwarf: { gradient: "from-amber-600/90 to-stone-600/90", icon: "⛏️" },
-  halfling: { gradient: "from-lime-500/90 to-green-600/90", icon: "🏠" },
-  dragonborn: { gradient: "from-red-500/90 to-orange-600/90", icon: "🐉" },
-  gnome: { gradient: "from-violet-500/90 to-purple-600/90", icon: "🔧" },
-  "half-elf": { gradient: "from-blue-500/90 to-indigo-600/90", icon: "✨" },
-  "half-orc": { gradient: "from-slate-500/90 to-green-600/90", icon: "💪" },
-  tiefling: { gradient: "from-rose-600/90 to-purple-700/90", icon: "😈" },
-  aasimar: { gradient: "from-amber-400/90 to-yellow-500/90", icon: "👼" },
-  goliath: { gradient: "from-slate-500/90 to-zinc-600/90", icon: "🏔️" },
-  orc: { gradient: "from-emerald-600/90 to-green-700/90", icon: "⚔️" },
+// Визуальные данные рас - акцентные цвета для иконок
+const RACE_DATA: Record<string, { accent: string; icon: string }> = {
+  human: { accent: "text-amber-400", icon: "👤" },
+  elf: { accent: "text-emerald-400", icon: "🧝" },
+  dwarf: { accent: "text-orange-400", icon: "⛏️" },
+  halfling: { accent: "text-lime-400", icon: "🏠" },
+  dragonborn: { accent: "text-red-400", icon: "🐉" },
+  gnome: { accent: "text-violet-400", icon: "🔧" },
+  "half-elf": { accent: "text-blue-400", icon: "✨" },
+  "half-orc": { accent: "text-green-400", icon: "💪" },
+  tiefling: { accent: "text-rose-400", icon: "😈" },
+  aasimar: { accent: "text-yellow-400", icon: "👼" },
+  goliath: { accent: "text-slate-400", icon: "🏔️" },
+  orc: { accent: "text-emerald-500", icon: "⚔️" },
 };
 
-const DEFAULT_DATA = { gradient: "from-slate-500/90 to-zinc-600/90", icon: "🎭" };
+const DEFAULT_DATA = { accent: "text-slate-400", icon: "🎭" };
 
 export function RaceStep() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,13 +56,13 @@ export function RaceStep() {
           placeholder={t("app.search")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-10 bg-card/50 backdrop-blur border-border/50 focus:border-primary/50"
         />
       </div>
 
       {/* Race grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {filteredRaces.map((race) => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredRaces.map((race, index) => {
           const isSelected = character.race?.id === race.id;
           const data = getData(race.id);
 
@@ -68,43 +70,57 @@ export function RaceStep() {
             <div
               key={race.id}
               onClick={() => handleSelectRace(race)}
-              className={`
-                relative cursor-pointer rounded-xl overflow-hidden transition-all duration-200
-                ${
-                  isSelected
-                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
-                    : "hover:scale-[1.02] hover:shadow-lg"
-                }
-              `}
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              {/* Card */}
               <div
-                className={`bg-gradient-to-br ${data.gradient} p-4 aspect-[4/5]`}
+                className={`
+                  relative group cursor-pointer rounded-2xl p-6 transition-all duration-300
+                  bg-card/60 backdrop-blur-sm border h-full min-h-[200px]
+                  flex flex-col overflow-hidden
+                  ${
+                    isSelected
+                      ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                      : "border-border/50 hover:border-primary/30 hover:bg-card/80"
+                  }
+                `}
               >
                 {/* Icon */}
-                <div className="text-5xl mb-3 drop-shadow-lg">{data.icon}</div>
+                <div className="text-6xl mb-4 transition-transform group-hover:scale-110 flex-shrink-0">
+                  {data.icon}
+                </div>
 
                 {/* Name */}
-                <h3 className="text-white font-bold text-lg leading-tight drop-shadow">
+                <FitText
+                  maxFontSize={18}
+                  minFontSize={12}
+                  className="font-semibold text-foreground mb-1"
+                >
                   {race.nameRu}
-                </h3>
-                <p className="text-white/70 text-xs mb-2">{race.name}</p>
+                </FitText>
+                <FitText
+                  maxFontSize={14}
+                  minFontSize={10}
+                  className="text-muted-foreground mb-4"
+                >
+                  {race.name}
+                </FitText>
 
                 {/* Stats */}
-                <div className="flex gap-1.5 flex-wrap">
-                  <Badge className="bg-black/30 text-white border-0 text-xs">
-                    <Zap className="w-3 h-3 mr-1" />
-                    {race.speed}
-                  </Badge>
-                  <Badge className="bg-black/30 text-white border-0 text-xs">
-                    <Ruler className="w-3 h-3 mr-1" />
-                    {race.size === "Small" ? "S" : "M"}
-                  </Badge>
+                <div className="flex gap-2 flex-wrap mt-auto">
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <span>{race.speed} фт</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg">
+                    <Ruler className="w-4 h-4 text-primary" />
+                    <span>{race.size === "Small" ? "S" : "M"}</span>
+                  </div>
                 </div>
 
                 {/* Selected indicator */}
                 {isSelected && (
-                  <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
+                  <div className="absolute top-4 right-4 bg-primary rounded-full p-1.5 shadow-lg shadow-primary/30">
                     <Check className="w-4 h-4 text-primary-foreground" />
                   </div>
                 )}
@@ -115,9 +131,9 @@ export function RaceStep() {
                     e.stopPropagation();
                     setModalRace(race);
                   }}
-                  className="absolute bottom-2 right-2 bg-white/20 hover:bg-white/30 rounded-full px-2 py-1 text-white text-xs transition-colors"
+                  className="absolute bottom-4 right-4 p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all opacity-0 group-hover:opacity-100"
                 >
-                  Инфо
+                  <Info className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -126,75 +142,62 @@ export function RaceStep() {
       </div>
 
       {/* Modal */}
-      {modalRace && (
-        <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
-        >
-          <div
-            className="bg-card rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal header */}
-            <div
-              className={`bg-gradient-to-br ${getData(modalRace.id).gradient} p-6 rounded-t-2xl flex-shrink-0`}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="text-5xl mb-2 block">
-                    {getData(modalRace.id).icon}
-                  </span>
-                  <h2 className="text-2xl font-bold text-white">
-                    {modalRace.nameRu}
-                  </h2>
-                  <p className="text-white/70">{modalRace.name}</p>
-                </div>
-                <button
-                  onClick={() => setModalRace(null)}
-                  className="bg-black/30 hover:bg-black/50 rounded-full p-2 text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Stats */}
-              <div className="flex gap-3 mt-4">
-                <div className="bg-black/30 rounded-lg px-4 py-2">
-                  <p className="text-white/70 text-xs">Скорость</p>
-                  <p className="text-white font-bold text-lg">
+      <Modal
+        isOpen={!!modalRace}
+        onClose={() => setModalRace(null)}
+        title={modalRace?.nameRu}
+        subtitle={modalRace?.name}
+        icon={modalRace ? getData(modalRace.id).icon : undefined}
+      >
+        {modalRace && (
+          <>
+            {/* Stats in header area */}
+            <div className="px-6 pb-4 border-b border-border/50">
+              <div className="flex gap-3">
+                <div className="bg-muted/30 rounded-xl px-4 py-2.5 flex-1">
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Скорость
+                  </p>
+                  <p className="font-semibold text-foreground">
                     {modalRace.speed} фт
                   </p>
                 </div>
-                <div className="bg-black/30 rounded-lg px-4 py-2">
-                  <p className="text-white/70 text-xs">Размер</p>
-                  <p className="text-white font-bold text-lg">
+                <div className="bg-muted/30 rounded-xl px-4 py-2.5 flex-1">
+                  <p className="text-xs text-muted-foreground mb-0.5">Размер</p>
+                  <p className="font-semibold text-foreground">
                     {t(`sizes.${modalRace.size.toLowerCase()}`)}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Modal content - scrollable */}
-            <div className="p-6 overflow-y-auto flex-1">
-              <p className="text-muted-foreground mb-6">
+            <ModalContent>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
                 {modalRace.description}
               </p>
 
-              <h3 className="font-bold mb-3">{t("character.traits")}</h3>
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                {t("character.traits")}
+              </h3>
               <div className="space-y-3">
                 {modalRace.traits.map((trait) => (
-                  <div key={trait.name} className="bg-muted/30 p-4 rounded-lg">
-                    <p className="font-medium text-primary">{trait.nameRu}</p>
-                    <p className="text-sm text-muted-foreground mt-1">
+                  <div
+                    key={trait.name}
+                    className="bg-muted/20 p-4 rounded-xl border border-border/30"
+                  >
+                    <p className="font-medium text-primary mb-1">
+                      {trait.nameRu}
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {trait.description}
                     </p>
                   </div>
                 ))}
               </div>
-            </div>
+            </ModalContent>
 
-            {/* Modal footer */}
-            <div className="p-4 border-t border-border flex gap-3 flex-shrink-0">
+            <ModalFooter>
               <Button
                 variant="outline"
                 className="flex-1"
@@ -203,33 +206,38 @@ export function RaceStep() {
                 Закрыть
               </Button>
               <Button
-                className="flex-1"
+                className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90"
                 onClick={() => handleSelectRace(modalRace)}
               >
                 <Check className="w-4 h-4 mr-2" />
                 Выбрать
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </ModalFooter>
+          </>
+        )}
+      </Modal>
 
       {/* Selected indicator bar */}
       {character.race && (
-        <div className="bg-card border border-primary/30 rounded-xl p-4 flex items-center justify-between shadow-lg shadow-primary/5">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{getData(character.race.id).icon}</span>
+        <div className="bg-card/80 backdrop-blur border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-lg animate-fade-in-up">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
+              {getData(character.race.id).icon}
+            </div>
             <div>
-              <p className="font-semibold text-foreground">{character.race.nameRu}</p>
+              <p className="font-semibold text-foreground">
+                {character.race.nameRu}
+              </p>
               <p className="text-sm text-muted-foreground">
                 {character.race.speed} фт •{" "}
                 {t(`sizes.${character.race.size.toLowerCase()}`)}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge className="bg-primary/15 text-primary border-primary/30">Выбрано</Badge>
-          </div>
+          <Badge className="bg-primary/15 text-primary border-primary/30 px-3 py-1">
+            <Check className="w-3 h-3 mr-1" />
+            Выбрано
+          </Badge>
         </div>
       )}
     </div>

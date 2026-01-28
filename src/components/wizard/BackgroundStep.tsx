@@ -3,7 +3,6 @@ import {
   Search,
   Check,
   Info,
-  X,
   Star,
   Package,
   Wrench,
@@ -20,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Modal, ModalContent, ModalFooter } from "@/components/ui/modal";
 import { useCharacterStore } from "@/store/characterStore";
 import { getAllBackgrounds } from "@/data/phb2024";
 import { getFeatByName } from "@/data/phb2024/feats";
@@ -402,35 +402,21 @@ export function BackgroundStep() {
       )}
 
       {/* Модалка с полным описанием */}
-      {showModal && (
-        <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
-          onClick={() => setShowModal(null)}
-        >
-          <div
-            className="bg-card rounded-2xl max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header - fixed */}
-            <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
-              <h2 className="text-xl font-bold">{showModal.nameRu}</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowModal(null)}
-              >
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-
-            {/* Content - scrollable */}
-            <div className="p-6 space-y-4 overflow-y-auto flex-1">
-              <p className="text-sm text-muted-foreground">
+      <Modal
+        isOpen={!!showModal}
+        onClose={() => setShowModal(null)}
+        title={showModal?.nameRu}
+        subtitle={showModal?.name}
+        maxWidth="max-w-2xl"
+      >
+        {showModal && (
+          <>
+            <ModalContent>
+              <p className="text-sm text-muted-foreground mb-4">
                 {showModal.description}
               </p>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <h4 className="font-medium text-sm mb-2">
                     Владение навыками
@@ -455,12 +441,12 @@ export function BackgroundStep() {
                 </div>
               </div>
 
-              <div>
+              <div className="mb-4">
                 <h4 className="font-medium text-sm mb-2">Снаряжение</h4>
                 <p className="text-sm">{showModal.equipment.join(", ")}</p>
               </div>
 
-              <div>
+              <div className="mb-4">
                 <h4 className="font-medium text-sm mb-2">Языки</h4>
                 <p className="text-sm">
                   +{showModal.languages} язык(а) на выбор
@@ -494,25 +480,30 @@ export function BackgroundStep() {
                   })()}
                 </div>
               )}
-            </div>
+            </ModalContent>
 
-            {/* Footer - fixed */}
-            <div className="flex justify-end gap-2 p-4 border-t border-border flex-shrink-0">
-              <Button variant="outline" onClick={() => setShowModal(null)}>
+            <ModalFooter>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowModal(null)}
+              >
                 Закрыть
               </Button>
               <Button
+                className="flex-1"
                 onClick={() => {
                   handleSelectBackground(showModal);
                   setShowModal(null);
                 }}
               >
+                <Check className="w-4 h-4 mr-2" />
                 Выбрать
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </ModalFooter>
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

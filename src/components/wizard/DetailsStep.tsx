@@ -3,8 +3,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useCharacterStore } from "@/store/characterStore";
 import { t } from "@/data/translations/ru";
+import {
+  Footprints,
+  Ruler,
+  Heart,
+  Star,
+  Shield,
+  Zap,
+  Lock,
+} from "lucide-react";
 
 const ALIGNMENTS = [
   { value: "lawful-good", label: "Законно-добрый" },
@@ -18,11 +28,197 @@ const ALIGNMENTS = [
   { value: "chaotic-evil", label: "Хаотично-злой" },
 ];
 
+// Рекомендуемые диапазоны роста и веса по видам
+const RACE_PHYSICAL_STATS: Record<
+  string,
+  { heightRange: string; weightRange: string; ageRange: string }
+> = {
+  human: {
+    heightRange: "155–185 см",
+    weightRange: "55–90 кг",
+    ageRange: "18–80 лет",
+  },
+  elf: {
+    heightRange: "155–180 см",
+    weightRange: "45–70 кг",
+    ageRange: "100–750 лет",
+  },
+  dwarf: {
+    heightRange: "120–150 см",
+    weightRange: "60–90 кг",
+    ageRange: "50–350 лет",
+  },
+  halfling: {
+    heightRange: "90–110 см",
+    weightRange: "20–35 кг",
+    ageRange: "20–150 лет",
+  },
+  dragonborn: {
+    heightRange: "180–210 см",
+    weightRange: "100–140 кг",
+    ageRange: "15–80 лет",
+  },
+  gnome: {
+    heightRange: "90–120 см",
+    weightRange: "18–30 кг",
+    ageRange: "40–500 лет",
+  },
+  "half-elf": {
+    heightRange: "155–180 см",
+    weightRange: "55–85 кг",
+    ageRange: "20–180 лет",
+  },
+  "half-orc": {
+    heightRange: "170–200 см",
+    weightRange: "80–120 кг",
+    ageRange: "14–75 лет",
+  },
+  tiefling: {
+    heightRange: "160–185 см",
+    weightRange: "60–90 кг",
+    ageRange: "18–100 лет",
+  },
+  aasimar: {
+    heightRange: "160–190 см",
+    weightRange: "60–95 кг",
+    ageRange: "18–160 лет",
+  },
+  goliath: {
+    heightRange: "210–240 см",
+    weightRange: "130–170 кг",
+    ageRange: "18–80 лет",
+  },
+  orc: {
+    heightRange: "180–210 см",
+    weightRange: "100–140 кг",
+    ageRange: "12–50 лет",
+  },
+};
+
 export function DetailsStep() {
-  const { character, setCharacterDetails, setName } = useCharacterStore();
+  const { character, setCharacterDetails, setName, getStats } =
+    useCharacterStore();
+  const stats = getStats();
+
+  const raceStats = character.race?.id
+    ? RACE_PHYSICAL_STATS[character.race.id]
+    : null;
 
   return (
     <div className="space-y-6">
+      {/* Игровые характеристики (из выбора расы/класса) */}
+      <Card className="border-primary/30 bg-primary/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Lock className="w-5 h-5 text-primary" />
+            Игровые характеристики
+            <Badge variant="outline" className="ml-2 text-xs">
+              Определены выбором
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Эти значения определяются вашим выбором вида и класса и не могут
+            быть изменены.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            {/* Скорость */}
+            <div className="bg-card rounded-xl p-3 border border-border text-center">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mx-auto mb-2">
+                <Footprints className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                {stats.speed}
+              </div>
+              <div className="text-xs text-muted-foreground">Скорость (фт)</div>
+              {character.race && (
+                <div className="text-[10px] text-emerald-600 mt-1">
+                  от {character.race.nameRu}
+                </div>
+              )}
+            </div>
+
+            {/* Размер */}
+            <div className="bg-card rounded-xl p-3 border border-border text-center">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mx-auto mb-2">
+                <Ruler className="w-5 h-5 text-blue-500" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                {character.race?.size === "Small" ? "Маленький" : "Средний"}
+              </div>
+              <div className="text-xs text-muted-foreground">Размер</div>
+              {character.race && (
+                <div className="text-[10px] text-blue-600 mt-1">
+                  от {character.race.nameRu}
+                </div>
+              )}
+            </div>
+
+            {/* Хиты */}
+            <div className="bg-card rounded-xl p-3 border border-border text-center">
+              <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center mx-auto mb-2">
+                <Heart className="w-5 h-5 text-red-500" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                {stats.hitPointMaximum}
+              </div>
+              <div className="text-xs text-muted-foreground">Макс. хиты</div>
+              {character.class && (
+                <div className="text-[10px] text-red-600 mt-1">
+                  d{character.class.hitDie} + ТЕЛ
+                </div>
+              )}
+            </div>
+
+            {/* КД */}
+            <div className="bg-card rounded-xl p-3 border border-border text-center">
+              <div className="w-10 h-10 rounded-lg bg-sky-500/10 flex items-center justify-center mx-auto mb-2">
+                <Shield className="w-5 h-5 text-sky-500" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                {stats.armorClass}
+              </div>
+              <div className="text-xs text-muted-foreground">Класс доспеха</div>
+              <div className="text-[10px] text-sky-600 mt-1">
+                10 + ЛОВ + броня
+              </div>
+            </div>
+
+            {/* Мастерство */}
+            <div className="bg-card rounded-xl p-3 border border-border text-center">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center mx-auto mb-2">
+                <Star className="w-5 h-5 text-amber-500" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                +{stats.proficiencyBonus}
+              </div>
+              <div className="text-xs text-muted-foreground">Мастерство</div>
+              <div className="text-[10px] text-amber-600 mt-1">
+                {character.level} уровень
+              </div>
+            </div>
+
+            {/* Инициатива */}
+            <div className="bg-card rounded-xl p-3 border border-border text-center">
+              <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center mx-auto mb-2">
+                <Zap className="w-5 h-5 text-violet-500" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                {stats.initiative >= 0
+                  ? `+${stats.initiative}`
+                  : stats.initiative}
+              </div>
+              <div className="text-xs text-muted-foreground">Инициатива</div>
+              <div className="text-[10px] text-violet-600 mt-1">
+                мод. Ловкости
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Basic Info */}
       <Card>
         <CardHeader>
@@ -59,6 +255,13 @@ export function DetailsStep() {
       <Card>
         <CardHeader>
           <CardTitle>{t("details.appearance")}</CardTitle>
+          {raceStats && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Рекомендуемые диапазоны для {character.race?.nameRu}: рост{" "}
+              {raceStats.heightRange}, вес {raceStats.weightRange}, возраст{" "}
+              {raceStats.ageRange}
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
@@ -66,7 +269,7 @@ export function DetailsStep() {
               <Label htmlFor="age">{t("details.age")}</Label>
               <Input
                 id="age"
-                placeholder="25 лет"
+                placeholder={raceStats?.ageRange || "25 лет"}
                 value={character.age}
                 onChange={(e) => setCharacterDetails({ age: e.target.value })}
               />
@@ -75,7 +278,7 @@ export function DetailsStep() {
               <Label htmlFor="height">{t("details.height")}</Label>
               <Input
                 id="height"
-                placeholder="180 см"
+                placeholder={raceStats?.heightRange.split("–")[0] || "180 см"}
                 value={character.height}
                 onChange={(e) =>
                   setCharacterDetails({ height: e.target.value })
@@ -86,7 +289,7 @@ export function DetailsStep() {
               <Label htmlFor="weight">{t("details.weight")}</Label>
               <Input
                 id="weight"
-                placeholder="75 кг"
+                placeholder={raceStats?.weightRange.split("–")[0] || "75 кг"}
                 value={character.weight}
                 onChange={(e) =>
                   setCharacterDetails({ weight: e.target.value })
@@ -197,15 +400,28 @@ export function DetailsStep() {
       <Card>
         <CardHeader>
           <CardTitle>{t("details.backstory")}</CardTitle>
+          {character.background && (
+            <p className="text-sm text-muted-foreground mt-1">
+              На основе предыстории:{" "}
+              <span className="font-medium text-foreground">
+                {character.background.nameRu}
+              </span>
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <Textarea
             id="backstory"
             placeholder="Расскажите историю вашего персонажа..."
-            value={character.backstory}
+            value={
+              character.backstory || character.background?.description || ""
+            }
             onChange={(e) => setCharacterDetails({ backstory: e.target.value })}
             rows={6}
           />
+          <p className="text-xs text-muted-foreground mt-2">
+            Вы можете отредактировать или полностью удалить этот текст
+          </p>
         </CardContent>
       </Card>
     </div>

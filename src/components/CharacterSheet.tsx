@@ -15,9 +15,19 @@ import {
   Package,
   User,
   BookOpen,
+  HelpCircle,
+  Calculator,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipHeader,
+  TooltipDescription,
+  TooltipCalc,
+  TooltipCalcRow,
+  TooltipHighlight,
+} from "@/components/ui/tooltip";
 import { useCharacterStore } from "@/store/characterStore";
 import {
   getSkillNameRu,
@@ -68,11 +78,13 @@ function CollapsibleSection({
   icon,
   children,
   defaultOpen = true,
+  badge,
 }: {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  badge?: string;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -86,6 +98,11 @@ function CollapsibleSection({
           <span className="flex items-center gap-2">
             {icon}
             {title}
+            {badge && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {badge}
+              </Badge>
+            )}
           </span>
           {isOpen ? (
             <ChevronUp className="w-5 h-5" />
@@ -99,10 +116,53 @@ function CollapsibleSection({
   );
 }
 
+// Информационный блок с пояснением
+function ExplanationBox({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4">
+      <div className="flex items-center gap-2 text-blue-400 text-sm font-medium mb-2">
+        <HelpCircle className="w-4 h-4" />
+        {title}
+      </div>
+      <div className="text-sm text-muted-foreground">{children}</div>
+    </div>
+  );
+}
+
+// Блок расчёта
+function CalculationBlock({
+  label,
+  formula,
+  result,
+}: {
+  label: string;
+  formula: string;
+  result: string | number;
+}) {
+  return (
+    <div className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-2">
+        <code className="text-xs bg-muted px-2 py-0.5 rounded">{formula}</code>
+        <span className="font-bold text-primary">{result}</span>
+      </div>
+    </div>
+  );
+}
+
 // Компонент характеристики с тултипом
 function AbilityBlock({
   ability,
   score,
+  baseScore,
+  raceBonus,
+  backgroundBonus,
   modifier,
   savingThrow,
   hasSaveProficiency,
@@ -110,56 +170,69 @@ function AbilityBlock({
 }: {
   ability: AbilityName;
   score: number;
+  baseScore: number;
+  raceBonus: number;
+  backgroundBonus: number;
   modifier: number;
   savingThrow: number;
   hasSaveProficiency: boolean;
   proficiencyBonus: number;
 }) {
-  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipContent = (
+    <>
+      <TooltipHeader>{getAbilityNameRu(ability)}</TooltipHeader>
+      <TooltipDescription>{ABILITY_EXPLANATIONS[ability]}</TooltipDescription>
+
+      <TooltipCalc>
+        <TooltipCalcRow label="Базовое значение:" value={baseScore} />
+        {raceBonus > 0 && (
+          <div className="flex justify-between text-emerald-400">
+            <span>Бонус вида:</span>
+            <span>+{raceBonus}</span>
+          </div>
+        )}
+        {backgroundBonus > 0 && (
+          <div className="flex justify-between text-amber-400">
+            <span>Бонус предыстории:</span>
+            <span>+{backgroundBonus}</span>
+          </div>
+        )}
+        <TooltipCalcRow label="Итого:" value={score} highlight border />
+      </TooltipCalc>
+
+      <p className="text-muted-foreground text-xs">
+        <strong>Модификатор</strong> = (Значение - 10) ÷ 2 = ({score} - 10) ÷ 2
+        = <strong>{modifier}</strong>
+      </p>
+
+      {hasSaveProficiency && (
+        <TooltipHighlight>
+          ✓ Владение спасброском: {formatModifier(modifier)} +{" "}
+          {proficiencyBonus} = <strong>{formatModifier(savingThrow)}</strong>
+        </TooltipHighlight>
+      )}
+    </>
+  );
 
   return (
-    <div
-      className="relative text-center bg-gradient-to-b from-muted/50 to-muted/30 p-4 rounded-xl border-2 border-border hover:border-primary/50 transition-all cursor-help"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-    >
-      <div className="text-xs font-bold text-primary mb-1">
-        {getAbilityAbbr(ability)}
-      </div>
-      <div className="text-3xl font-bold">{formatModifier(modifier)}</div>
-      <div className="w-10 h-10 mx-auto mt-2 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-        {score}
-      </div>
-      <div className="mt-2 text-xs text-muted-foreground">
-        Спасбросок:{" "}
-        <span className={hasSaveProficiency ? "text-primary font-bold" : ""}>
-          {formatModifier(savingThrow)}
-        </span>
-        {hasSaveProficiency && <span className="ml-1">●</span>}
-      </div>
-
-      {/* Тултип с пояснением */}
-      {showTooltip && (
-        <div
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 border rounded-lg shadow-2xl text-left text-xs"
-          style={{
-            zIndex: 99999,
-            backgroundColor: "hsl(var(--card))",
-            borderColor: "hsl(var(--border))",
-          }}
-        >
-          <p className="font-bold mb-1">{getAbilityNameRu(ability)}</p>
-          <p className="text-muted-foreground">
-            {ABILITY_EXPLANATIONS[ability]}
-          </p>
-          {hasSaveProficiency && (
-            <p className="mt-2 text-primary">
-              ✓ Владение спасброском (+{proficiencyBonus} от мастерства)
-            </p>
-          )}
+    <Tooltip content={tooltipContent} maxWidth="max-w-xs">
+      <div className="text-center bg-gradient-to-b from-muted/50 to-muted/30 p-4 rounded-xl border-2 border-border hover:border-primary/50 transition-all cursor-help">
+        <div className="text-xs font-bold text-primary mb-1">
+          {getAbilityAbbr(ability)}
         </div>
-      )}
-    </div>
+        <div className="text-3xl font-bold">{formatModifier(modifier)}</div>
+        <div className="w-10 h-10 mx-auto mt-2 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+          {score}
+        </div>
+        <div className="mt-2 text-xs text-muted-foreground">
+          Спасбросок:{" "}
+          <span className={hasSaveProficiency ? "text-primary font-bold" : ""}>
+            {formatModifier(savingThrow)}
+          </span>
+          {hasSaveProficiency && <span className="ml-1">●</span>}
+        </div>
+      </div>
+    </Tooltip>
   );
 }
 
@@ -179,58 +252,60 @@ function SkillRow({
   proficiencyBonus: number;
   ability: string;
 }) {
-  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipContent = (
+    <>
+      <TooltipHeader>{skillName}</TooltipHeader>
+      <TooltipDescription>
+        Базовая характеристика: <strong>{getAbilityNameRu(ability)}</strong>
+      </TooltipDescription>
+
+      <TooltipCalc>
+        <TooltipCalcRow
+          label={`Модификатор ${getAbilityAbbr(ability)}:`}
+          value={formatModifier(abilityMod)}
+        />
+        {isProficient && (
+          <div className="flex justify-between text-primary">
+            <span>Бонус мастерства:</span>
+            <span>+{proficiencyBonus}</span>
+          </div>
+        )}
+        <TooltipCalcRow
+          label="Итого:"
+          value={formatModifier(bonus)}
+          highlight
+          border
+        />
+      </TooltipCalc>
+
+      {isProficient && (
+        <TooltipHighlight>
+          ✓ Владение навыком (от класса или предыстории)
+        </TooltipHighlight>
+      )}
+    </>
+  );
 
   return (
-    <div
-      className={`relative flex items-center justify-between p-2 rounded-lg cursor-help transition-colors ${
-        isProficient
-          ? "bg-primary/10 hover:bg-primary/20"
-          : "bg-muted/20 hover:bg-muted/40"
-      }`}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-    >
-      <span className="text-sm flex items-center gap-2">
-        {isProficient && <Star className="w-3 h-3 text-primary fill-primary" />}
-        {skillName}
-      </span>
-      <Badge variant={isProficient ? "default" : "secondary"}>
-        {formatModifier(bonus)}
-      </Badge>
-
-      {showTooltip && (
-        <div
-          className="absolute bottom-full left-0 mb-2 w-56 p-3 border rounded-lg shadow-2xl text-xs"
-          style={{
-            zIndex: 99999,
-            backgroundColor: "hsl(var(--card))",
-            borderColor: "hsl(var(--border))",
-          }}
-        >
-          <p className="font-bold mb-1">{skillName}</p>
-          <p className="text-muted-foreground mb-2">
-            Базовая характеристика: {getAbilityNameRu(ability)}
-          </p>
-          <div className="space-y-1 font-mono text-xs">
-            <div className="flex justify-between">
-              <span>Модификатор {getAbilityAbbr(ability)}:</span>
-              <span>{formatModifier(abilityMod)}</span>
-            </div>
-            {isProficient && (
-              <div className="flex justify-between text-primary">
-                <span>Бонус мастерства:</span>
-                <span>+{proficiencyBonus}</span>
-              </div>
-            )}
-            <div className="flex justify-between font-bold border-t pt-1 mt-1">
-              <span>Итого:</span>
-              <span>{formatModifier(bonus)}</span>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <Tooltip content={tooltipContent} maxWidth="max-w-xs">
+      <div
+        className={`flex items-center justify-between p-2 rounded-lg cursor-help transition-colors ${
+          isProficient
+            ? "bg-primary/10 hover:bg-primary/20"
+            : "bg-muted/20 hover:bg-muted/40"
+        }`}
+      >
+        <span className="text-sm flex items-center gap-2">
+          {isProficient && (
+            <Star className="w-3 h-3 text-primary fill-primary" />
+          )}
+          {skillName}
+        </span>
+        <Badge variant={isProficient ? "default" : "secondary"}>
+          {formatModifier(bonus)}
+        </Badge>
+      </div>
+    </Tooltip>
   );
 }
 
@@ -242,6 +317,8 @@ function WeaponCard({
   attackBonus,
   properties,
   damageBonus,
+  abilityUsed,
+  profBonus,
 }: {
   name: string;
   damage: string;
@@ -249,64 +326,190 @@ function WeaponCard({
   attackBonus: number;
   properties?: string[];
   damageBonus: number;
+  abilityUsed: string;
+  profBonus: number;
 }) {
-  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipContent = (
+    <>
+      <TooltipHeader>{name}</TooltipHeader>
+
+      <div className="space-y-2 mb-3">
+        <div className="bg-muted/30 p-2.5 rounded-lg">
+          <p className="font-medium mb-1 text-xs">Бросок атаки:</p>
+          <p className="font-mono text-xs">
+            1d20 + {abilityUsed} ({formatModifier(damageBonus)}) + мастерство (
+            {profBonus}) = 1d20 {formatModifier(attackBonus)}
+          </p>
+        </div>
+
+        <div className="bg-muted/30 p-2.5 rounded-lg">
+          <p className="font-medium mb-1 text-xs">Урон:</p>
+          <p className="font-mono text-xs">
+            {damage} + {abilityUsed} ({formatModifier(damageBonus)}) = {damage}
+            {damageBonus !== 0 && formatModifier(damageBonus)}{" "}
+            {DAMAGE_TYPE_RU[damageType] || damageType}
+          </p>
+        </div>
+      </div>
+
+      <TooltipDescription>
+        Используется <strong>{abilityUsed}</strong> для атаки и урона
+      </TooltipDescription>
+    </>
+  );
 
   return (
-    <div
-      className="relative p-3 bg-muted/30 rounded-lg border hover:border-primary/50 transition-colors cursor-help"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-medium">{name}</span>
-        <Badge variant="outline">{formatModifier(attackBonus)} атака</Badge>
-      </div>
-      <div className="text-sm text-muted-foreground">
-        {damage}
-        {damageBonus !== 0 && formatModifier(damageBonus)}{" "}
-        {DAMAGE_TYPE_RU[damageType] || damageType}
-      </div>
-      {properties && properties.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {properties.map((prop, i) => (
-            <span key={i} className="text-xs bg-muted px-1.5 py-0.5 rounded">
-              {prop}
-            </span>
-          ))}
+    <Tooltip content={tooltipContent} maxWidth="max-w-xs">
+      <div className="p-3 bg-muted/30 rounded-lg border hover:border-primary/50 transition-colors cursor-help">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-medium">{name}</span>
+          <Badge variant="outline">{formatModifier(attackBonus)} атака</Badge>
         </div>
-      )}
-
-      {showTooltip && (
-        <div
-          className="absolute bottom-full left-0 mb-2 w-64 p-3 border rounded-lg shadow-2xl text-xs"
-          style={{
-            zIndex: 99999,
-            backgroundColor: "hsl(var(--card))",
-            borderColor: "hsl(var(--border))",
-          }}
-        >
-          <p className="font-bold mb-2">{name}</p>
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <span>Бросок атаки:</span>
-              <span>1d20 {formatModifier(attackBonus)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Урон:</span>
-              <span>
-                {damage}
-                {damageBonus !== 0 && formatModifier(damageBonus)}
+        <div className="text-sm text-muted-foreground">
+          {damage}
+          {damageBonus !== 0 && formatModifier(damageBonus)}{" "}
+          {DAMAGE_TYPE_RU[damageType] || damageType}
+        </div>
+        {properties && properties.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {properties.map((prop, i) => (
+              <span key={i} className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                {prop}
               </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </Tooltip>
+  );
+}
+
+// Компонент заклинания с полным описанием
+function SpellCard({
+  spell,
+  isCantrip,
+  spellSaveDC,
+  spellAttackBonus,
+}: {
+  spell: {
+    id: string;
+    name: string;
+    nameRu: string;
+    level: number;
+    school: string;
+    castingTime: string;
+    range: string;
+    components: string;
+    duration: string;
+    description: string;
+  };
+  isCantrip: boolean;
+  spellSaveDC: number;
+  spellAttackBonus: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const schoolRu: Record<string, string> = {
+    evocation: "Воплощение",
+    abjuration: "Ограждение",
+    conjuration: "Вызов",
+    divination: "Прорицание",
+    enchantment: "Очарование",
+    illusion: "Иллюзия",
+    necromancy: "Некромантия",
+    transmutation: "Преобразование",
+  };
+
+  return (
+    <div className="bg-muted/20 rounded-xl border border-border/50 overflow-hidden">
+      <div
+        className="p-4 cursor-pointer hover:bg-muted/30 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                isCantrip
+                  ? "bg-emerald-500/20 text-emerald-400"
+                  : "bg-purple-500/20 text-purple-400"
+              }`}
+            >
+              {isCantrip ? "∞" : spell.level}
             </div>
-            <div className="flex justify-between">
-              <span>Тип урона:</span>
-              <span>{DAMAGE_TYPE_RU[damageType] || damageType}</span>
+            <div>
+              <p className="font-medium">{spell.nameRu}</p>
+              <p className="text-xs text-muted-foreground">{spell.name}</p>
             </div>
           </div>
-          <p className="mt-2 text-muted-foreground">
-            Бонус атаки = модификатор характеристики + бонус мастерства
-          </p>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {schoolRu[spell.school] || spell.school}
+            </Badge>
+            {expanded ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="px-4 pb-4 border-t border-border/50 pt-3">
+          {/* Параметры заклинания */}
+          <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
+            <div className="bg-muted/30 p-2 rounded">
+              <span className="text-muted-foreground">Время накладывания:</span>
+              <p className="font-medium">{spell.castingTime}</p>
+            </div>
+            <div className="bg-muted/30 p-2 rounded">
+              <span className="text-muted-foreground">Дистанция:</span>
+              <p className="font-medium">{spell.range}</p>
+            </div>
+            <div className="bg-muted/30 p-2 rounded">
+              <span className="text-muted-foreground">Компоненты:</span>
+              <p className="font-medium">{spell.components}</p>
+            </div>
+            <div className="bg-muted/30 p-2 rounded">
+              <span className="text-muted-foreground">Длительность:</span>
+              <p className="font-medium">{spell.duration}</p>
+            </div>
+          </div>
+
+          {/* Описание */}
+          <div className="text-sm text-muted-foreground leading-relaxed mb-4">
+            {spell.description}
+          </div>
+
+          {/* Подсказка по использованию */}
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 text-xs">
+            <p className="font-medium text-purple-400 mb-2">
+              Как использовать:
+            </p>
+            <ul className="space-y-1 text-muted-foreground">
+              {spell.description.toLowerCase().includes("спасбросок") && (
+                <li>
+                  • Цель совершает спасбросок против СЛ{" "}
+                  <strong className="text-purple-400">{spellSaveDC}</strong>
+                </li>
+              )}
+              {spell.description.toLowerCase().includes("атак") && (
+                <li>
+                  • Бросок атаки заклинанием: 1d20{" "}
+                  <strong className="text-purple-400">
+                    {formatModifier(spellAttackBonus)}
+                  </strong>
+                </li>
+              )}
+              {isCantrip && (
+                <li>• Заговор — можно использовать неограниченно, без ячеек</li>
+              )}
+              {!isCantrip && (
+                <li>• Требует ячейку {spell.level} круга или выше</li>
+              )}
+            </ul>
+          </div>
         </div>
       )}
     </div>
@@ -367,6 +570,16 @@ export function CharacterSheet() {
       return Math.max(strMod, dexMod);
     }
     return isMelee ? strMod : dexMod;
+  };
+
+  const getWeaponAbilityUsed = (isMelee: boolean, isFinesse: boolean) => {
+    const strMod = stats.abilityModifiers.strength;
+    const dexMod = stats.abilityModifiers.dexterity;
+
+    if (isFinesse) {
+      return strMod >= dexMod ? "Сила" : "Ловкость";
+    }
+    return isMelee ? "Сила" : "Ловкость";
   };
 
   return (
@@ -447,21 +660,93 @@ export function CharacterSheet() {
         </CardContent>
       </Card>
 
+      {/* Пояснение основных показателей */}
+      <CollapsibleSection
+        title="Как рассчитываются показатели"
+        icon={<Calculator className="w-5 h-5" />}
+        defaultOpen={false}
+        badge="Для новичков"
+      >
+        <div className="space-y-4">
+          <ExplanationBox title="Максимум хитов">
+            <CalculationBlock
+              label="На 1 уровне"
+              formula={`${character.class?.hitDie || 0} (макс. кость хитов) + ${stats.abilityModifiers.constitution} (мод. Телосложения)`}
+              result={stats.hitPointMaximum}
+            />
+            <p className="mt-2">
+              Хиты определяют, сколько урона вы можете получить. Когда хиты
+              падают до 0, персонаж теряет сознание.
+            </p>
+          </ExplanationBox>
+
+          <ExplanationBox title="Класс доспеха (КД)">
+            <CalculationBlock
+              label="Без доспеха"
+              formula={`10 + ${stats.abilityModifiers.dexterity} (мод. Ловкости)`}
+              result={10 + stats.abilityModifiers.dexterity}
+            />
+            <p className="mt-2">
+              КД определяет, насколько сложно вас поразить. Враг должен
+              выбросить на атаке число, равное или превышающее ваш КД.
+            </p>
+          </ExplanationBox>
+
+          <ExplanationBox title="Инициатива">
+            <CalculationBlock
+              label="Формула"
+              formula={`${stats.abilityModifiers.dexterity} (мод. Ловкости)`}
+              result={formatModifier(stats.initiative)}
+            />
+            <p className="mt-2">
+              В начале боя все участники бросают d20 + инициатива. Кто выбросил
+              больше — ходит первым.
+            </p>
+          </ExplanationBox>
+
+          <ExplanationBox title="Бонус мастерства">
+            <p>
+              На 1-4 уровнях бонус мастерства равен <strong>+2</strong>. Он
+              добавляется к:
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>Броскам атаки оружием, которым вы владеете</li>
+              <li>Спасброскам, которыми вы владеете (от класса)</li>
+              <li>Проверкам навыков, которыми вы владеете</li>
+              <li>Броскам атаки заклинаниями</li>
+              <li>Сложности спасброска ваших заклинаний</li>
+            </ul>
+          </ExplanationBox>
+        </div>
+      </CollapsibleSection>
+
       {/* Характеристики */}
       <CollapsibleSection
         title="Характеристики"
         icon={<User className="w-5 h-5" />}
       >
+        <ExplanationBox title="Откуда берутся значения?">
+          <p>
+            Базовые значения были распределены при создании персонажа. К ним
+            могут добавляться бонусы от вида (расы) и предыстории.{" "}
+            <strong>Модификатор</strong> = (Значение - 10) ÷ 2 (округление
+            вниз).
+          </p>
+        </ExplanationBox>
+
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
           {ABILITIES.map((ability) => {
-            const score =
-              character.abilityScores[ability] +
-              (character.abilityScoreIncreases?.[ability] || 0);
+            const baseScore = character.abilityScores[ability];
+            const raceBonus = character.abilityScoreIncreases?.[ability] || 0;
+            const score = baseScore + raceBonus;
             return (
               <AbilityBlock
                 key={ability}
                 ability={ability}
                 score={score}
+                baseScore={baseScore}
+                raceBonus={raceBonus}
+                backgroundBonus={0}
                 modifier={stats.abilityModifiers[ability]}
                 savingThrow={stats.savingThrows[ability]}
                 hasSaveProficiency={
@@ -478,7 +763,17 @@ export function CharacterSheet() {
       <CollapsibleSection
         title="Навыки"
         icon={<BookOpen className="w-5 h-5" />}
+        badge={`${character.skillProficiencies.length} владений`}
       >
+        <ExplanationBox title="Как работают навыки?">
+          <p>
+            При проверке навыка вы бросаете{" "}
+            <strong>d20 + модификатор характеристики</strong>. Если у вас есть{" "}
+            <strong>владение</strong> навыком (★), добавляется ещё{" "}
+            <strong>+{stats.proficiencyBonus}</strong> (бонус мастерства).
+          </p>
+        </ExplanationBox>
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {Object.entries(stats.skills).map(([skillId, bonus]) => {
             const ability = skillAbilityMap[skillId] || "strength";
@@ -504,6 +799,19 @@ export function CharacterSheet() {
           title="Оружие и атаки"
           icon={<Swords className="w-5 h-5" />}
         >
+          <ExplanationBox title="Как атаковать?">
+            <p className="mb-2">
+              <strong>Бросок атаки:</strong> d20 + модификатор характеристики +
+              бонус мастерства. Если результат ≥ КД врага — попадание!
+            </p>
+            <p>
+              <strong>Урон:</strong> кость урона + модификатор характеристики.
+              Оружие ближнего боя использует <strong>Силу</strong>, дальнего —{" "}
+              <strong>Ловкость</strong>. Фехтовальное оружие может использовать
+              любую из них (выгоднее).
+            </p>
+          </ExplanationBox>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {character.equipment
               .filter((e) => e.category === "weapon" && e.damage)
@@ -526,6 +834,8 @@ export function CharacterSheet() {
                     attackBonus={getWeaponAttackBonus(!isRanged, isFinesse)}
                     damageBonus={getWeaponDamageBonus(!isRanged, isFinesse)}
                     properties={weapon.properties}
+                    abilityUsed={getWeaponAbilityUsed(!isRanged, isFinesse)}
+                    profBonus={stats.proficiencyBonus}
                   />
                 );
               })}
@@ -538,20 +848,34 @@ export function CharacterSheet() {
         <CollapsibleSection
           title="Заклинания"
           icon={<Sparkles className="w-5 h-5" />}
+          badge={`${character.cantripsKnown.length + character.spellsKnown.length} известно`}
         >
           {/* Магические характеристики */}
+          <ExplanationBox title="Магия вашего класса">
+            <p>
+              Ваш класс <strong>{character.class?.nameRu}</strong> использует{" "}
+              <strong>
+                {stats.spellcasting.ability
+                  ? getAbilityNameRu(stats.spellcasting.ability)
+                  : "—"}
+              </strong>{" "}
+              для заклинаний. Это влияет на силу ваших заклинаний и сложность их
+              избежать.
+            </p>
+          </ExplanationBox>
+
           <div className="mb-4 p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
-            <div className="grid grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-xs text-muted-foreground">
                   Характеристика
                 </div>
                 <div className="font-bold text-lg">
                   {stats.spellcasting.ability
-                    ? getAbilityAbbr(stats.spellcasting.ability)
+                    ? getAbilityNameRu(stats.spellcasting.ability)
                     : "—"}
                 </div>
-                <div className="text-xs text-purple-600">
+                <div className="text-xs text-purple-400">
                   Мод: {formatModifier(stats.spellcasting.abilityModifier)}
                 </div>
               </div>
@@ -559,7 +883,7 @@ export function CharacterSheet() {
                 <div className="text-xs text-muted-foreground">
                   Сложность спасброска
                 </div>
-                <div className="font-bold text-2xl text-purple-600">
+                <div className="font-bold text-2xl text-purple-400">
                   {stats.spellcasting.spellSaveDC}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -569,29 +893,35 @@ export function CharacterSheet() {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Бонус атаки</div>
-                <div className="font-bold text-2xl text-purple-600">
+                <div className="font-bold text-2xl text-purple-400">
                   {formatModifier(stats.spellcasting.spellAttackBonus)}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  мастерство + мод
+                  {stats.proficiencyBonus} +{" "}
+                  {stats.spellcasting.abilityModifier}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">
-                  Заговоров / Заклинаний
-                </div>
+                <div className="text-xs text-muted-foreground">Известно</div>
                 <div className="font-bold text-lg">
                   {stats.spellcasting.cantripsKnown} /{" "}
                   {stats.spellcasting.spellsKnown}
                 </div>
-                <div className="text-xs text-muted-foreground">известно</div>
+                <div className="text-xs text-muted-foreground">
+                  заговоров / заклинаний
+                </div>
               </div>
             </div>
           </div>
 
           {/* Ячейки заклинаний */}
           <div className="mb-4">
-            <h4 className="font-medium mb-2">Ячейки заклинаний</h4>
+            <h4 className="font-medium mb-2 flex items-center gap-2">
+              Ячейки заклинаний
+              <Badge variant="outline" className="text-xs">
+                Восстанавливаются после длинного отдыха
+              </Badge>
+            </h4>
             <div className="grid grid-cols-9 gap-1">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => {
                 const key =
@@ -602,7 +932,7 @@ export function CharacterSheet() {
                     key={level}
                     className={`text-center p-2 rounded-lg border ${
                       slots > 0
-                        ? "bg-purple-100 border-purple-300 dark:bg-purple-900/30 dark:border-purple-700"
+                        ? "bg-purple-500/20 border-purple-500/50"
                         : "bg-muted/30 border-muted"
                     }`}
                   >
@@ -610,7 +940,7 @@ export function CharacterSheet() {
                       {level} кр
                     </div>
                     <div
-                      className={`font-bold text-lg ${slots > 0 ? "text-purple-600" : "text-muted-foreground"}`}
+                      className={`font-bold text-lg ${slots > 0 ? "text-purple-400" : "text-muted-foreground"}`}
                     >
                       {slots}
                     </div>
@@ -618,38 +948,49 @@ export function CharacterSheet() {
                 );
               })}
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Ячейки восстанавливаются после длительного отдыха
-              {character.class?.id === "warlock" &&
-                " (Колдун: после короткого отдыха)"}
-            </p>
           </div>
 
+          {/* Заговоры с описаниями */}
           {character.cantripsKnown.length > 0 && (
             <div className="mb-4">
-              <h4 className="font-medium mb-2">Заговоры (неограниченно)</h4>
-              <div className="flex flex-wrap gap-2">
+              <h4 className="font-medium mb-3 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+                  ∞
+                </span>
+                Заговоры (неограниченно)
+              </h4>
+              <div className="space-y-2">
                 {character.cantripsKnown.map((spell) => (
-                  <Badge
+                  <SpellCard
                     key={spell.id}
-                    variant="secondary"
-                    className="py-1 px-2"
-                  >
-                    {spell.nameRu}
-                  </Badge>
+                    spell={spell}
+                    isCantrip={true}
+                    spellSaveDC={stats.spellcasting?.spellSaveDC || 10}
+                    spellAttackBonus={stats.spellcasting?.spellAttackBonus || 0}
+                  />
                 ))}
               </div>
             </div>
           )}
 
+          {/* Заклинания 1 круга с описаниями */}
           {character.spellsKnown.length > 0 && (
             <div>
-              <h4 className="font-medium mb-2">Заклинания 1 круга</h4>
-              <div className="flex flex-wrap gap-2">
+              <h4 className="font-medium mb-3 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold">
+                  1
+                </span>
+                Заклинания 1 круга
+              </h4>
+              <div className="space-y-2">
                 {character.spellsKnown.map((spell) => (
-                  <Badge key={spell.id} variant="default" className="py-1 px-2">
-                    {spell.nameRu}
-                  </Badge>
+                  <SpellCard
+                    key={spell.id}
+                    spell={spell}
+                    isCantrip={false}
+                    spellSaveDC={stats.spellcasting?.spellSaveDC || 10}
+                    spellAttackBonus={stats.spellcasting?.spellAttackBonus || 0}
+                  />
                 ))}
               </div>
             </div>
@@ -668,47 +1009,37 @@ export function CharacterSheet() {
             💰 Кошелёк
           </h4>
           <div className="grid grid-cols-5 gap-2">
-            <div className="text-center p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-              <div className="text-xs text-amber-700 dark:text-amber-400">
-                Платина
-              </div>
-              <div className="font-bold text-lg text-amber-600">
+            <div className="text-center p-2 bg-amber-500/20 rounded-lg">
+              <div className="text-xs text-amber-400">Платина</div>
+              <div className="font-bold text-lg text-amber-400">
                 {stats.wallet.platinum}
               </div>
               <div className="text-xs text-muted-foreground">pp</div>
             </div>
-            <div className="text-center p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <div className="text-xs text-yellow-700 dark:text-yellow-400">
-                Золото
-              </div>
-              <div className="font-bold text-lg text-yellow-600">
+            <div className="text-center p-2 bg-yellow-500/20 rounded-lg">
+              <div className="text-xs text-yellow-400">Золото</div>
+              <div className="font-bold text-lg text-yellow-400">
                 {stats.wallet.gold}
               </div>
               <div className="text-xs text-muted-foreground">gp</div>
             </div>
-            <div className="text-center p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <div className="text-xs text-blue-700 dark:text-blue-400">
-                Электрум
-              </div>
-              <div className="font-bold text-lg text-blue-600">
+            <div className="text-center p-2 bg-blue-500/20 rounded-lg">
+              <div className="text-xs text-blue-400">Электрум</div>
+              <div className="font-bold text-lg text-blue-400">
                 {stats.wallet.electrum}
               </div>
               <div className="text-xs text-muted-foreground">ep</div>
             </div>
-            <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <div className="text-xs text-gray-600 dark:text-gray-400">
-                Серебро
-              </div>
-              <div className="font-bold text-lg text-gray-600">
+            <div className="text-center p-2 bg-slate-500/20 rounded-lg">
+              <div className="text-xs text-slate-400">Серебро</div>
+              <div className="font-bold text-lg text-slate-400">
                 {stats.wallet.silver}
               </div>
               <div className="text-xs text-muted-foreground">sp</div>
             </div>
-            <div className="text-center p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-              <div className="text-xs text-orange-700 dark:text-orange-400">
-                Медь
-              </div>
-              <div className="font-bold text-lg text-orange-600">
+            <div className="text-center p-2 bg-orange-500/20 rounded-lg">
+              <div className="text-xs text-orange-400">Медь</div>
+              <div className="font-bold text-lg text-orange-400">
                 {stats.wallet.copper}
               </div>
               <div className="text-xs text-muted-foreground">cp</div>
@@ -737,7 +1068,6 @@ export function CharacterSheet() {
 
         {/* Выбранное снаряжение */}
         <div className="space-y-3">
-          {/* Доспехи */}
           {character.equipment.filter((e) => e.category === "armor").length >
             0 && (
             <div>
@@ -758,7 +1088,6 @@ export function CharacterSheet() {
             </div>
           )}
 
-          {/* Прочее снаряжение */}
           {character.equipment.filter((e) => e.category === "gear").length >
             0 && (
             <div>
@@ -784,11 +1113,21 @@ export function CharacterSheet() {
           icon={<Scroll className="w-5 h-5" />}
           defaultOpen={false}
         >
+          <ExplanationBox title="Что это даёт?">
+            <p>
+              Особенности вида — уникальные способности, которые вы получаете от
+              выбранного вида (расы). Они работают всегда и не требуют ресурсов.
+            </p>
+          </ExplanationBox>
+
           <div className="space-y-3">
             {character.race.traits.map((trait) => (
-              <div key={trait.name} className="p-3 bg-muted/30 rounded-lg">
-                <h4 className="font-medium">{trait.nameRu}</h4>
-                <p className="text-sm text-muted-foreground mt-1">
+              <div
+                key={trait.name}
+                className="p-4 bg-muted/30 rounded-xl border border-border/50"
+              >
+                <h4 className="font-medium text-primary">{trait.nameRu}</h4>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                   {trait.description}
                 </p>
               </div>
@@ -804,18 +1143,29 @@ export function CharacterSheet() {
           icon={<Star className="w-5 h-5" />}
           defaultOpen={false}
         >
+          <ExplanationBox title="Как работают умения класса?">
+            <p>
+              Классовые умения — особые способности вашего класса. Некоторые
+              работают постоянно, другие требуют действия или использования
+              ресурсов. На 1 уровне вы получаете начальные умения класса.
+            </p>
+          </ExplanationBox>
+
           <div className="space-y-3">
             {character.class.features
               .filter((f) => f.level <= character.level)
               .map((feature) => (
-                <div key={feature.name} className="p-3 bg-muted/30 rounded-lg">
-                  <h4 className="font-medium">
+                <div
+                  key={feature.name}
+                  className="p-4 bg-muted/30 rounded-xl border border-border/50"
+                >
+                  <h4 className="font-medium text-primary">
                     {feature.nameRu}
-                    <span className="text-xs text-muted-foreground ml-2">
-                      ({feature.level} уровень)
-                    </span>
+                    <Badge variant="outline" className="ml-2 text-xs">
+                      {feature.level} уровень
+                    </Badge>
                   </h4>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -823,6 +1173,98 @@ export function CharacterSheet() {
           </div>
         </CollapsibleSection>
       )}
+
+      {/* Владения */}
+      <CollapsibleSection
+        title="Владения"
+        icon={<Shield className="w-5 h-5" />}
+        defaultOpen={false}
+      >
+        <ExplanationBox title="Что такое владение?">
+          <p>
+            Владение означает, что вы обучены использовать что-либо. При атаке
+            оружием, которым вы владеете, вы добавляете бонус мастерства (+
+            {stats.proficiencyBonus}) к броску атаки. При проверке навыка,
+            которым владеете — к броску проверки.
+          </p>
+        </ExplanationBox>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {character.class?.armorProficiencies &&
+            character.class.armorProficiencies.length > 0 && (
+              <div className="p-3 bg-muted/30 rounded-xl">
+                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-blue-400" />
+                  Доспехи
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  {character.class.armorProficiencies.map((p) => (
+                    <Badge key={p} variant="secondary">
+                      {p}
+                    </Badge>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  От класса {character.class.nameRu}
+                </p>
+              </div>
+            )}
+
+          {character.class?.weaponProficiencies &&
+            character.class.weaponProficiencies.length > 0 && (
+              <div className="p-3 bg-muted/30 rounded-xl">
+                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                  <Swords className="w-4 h-4 text-red-400" />
+                  Оружие
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  {character.class.weaponProficiencies.map((p) => (
+                    <Badge key={p} variant="outline">
+                      {p}
+                    </Badge>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  От класса {character.class.nameRu}
+                </p>
+              </div>
+            )}
+
+          <div className="p-3 bg-muted/30 rounded-xl">
+            <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+              <Target className="w-4 h-4 text-amber-400" />
+              Спасброски
+            </h4>
+            <div className="flex flex-wrap gap-1">
+              {character.class?.savingThrows.map((s) => (
+                <Badge key={s} variant="secondary">
+                  {getAbilityNameRu(s)}
+                </Badge>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              От класса {character.class?.nameRu}
+            </p>
+          </div>
+
+          <div className="p-3 bg-muted/30 rounded-xl">
+            <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-emerald-400" />
+              Навыки ({character.skillProficiencies.length})
+            </h4>
+            <div className="flex flex-wrap gap-1">
+              {character.skillProficiencies.map((s) => (
+                <Badge key={s} variant="outline">
+                  {getSkillNameRu(s)}
+                </Badge>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              От класса и предыстории
+            </p>
+          </div>
+        </div>
+      </CollapsibleSection>
 
       {/* Характер */}
       {(character.personalityTraits ||

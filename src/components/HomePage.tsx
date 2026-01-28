@@ -1,0 +1,137 @@
+import { UserPlus, Sparkles, BookOpen, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface HomePageProps {
+  onNavigate: (page: string) => void;
+}
+
+const MENU_ITEMS = [
+  {
+    id: "character-wizard",
+    title: "Создание персонажа",
+    description: "Пошаговый мастер создания персонажа по правилам PHB 2024",
+    icon: UserPlus,
+    gradient: "from-primary to-accent",
+  },
+];
+
+export function HomePage({ onNavigate }: HomePageProps) {
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Background */}
+      <div className="app-background" />
+      <div className="ambient-glow ambient-glow-1" />
+      <div className="ambient-glow ambient-glow-2" />
+
+      <div className="relative z-10 flex flex-col flex-1">
+        {/* Header */}
+        <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl">
+          <div className="max-w-5xl mx-auto px-4 py-6">
+            <div className="text-center">
+              <h1
+                className="text-4xl md:text-5xl font-bold text-gradient mb-2"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                D&D Generator
+              </h1>
+              <p className="text-muted-foreground">
+                Инструменты для Dungeons & Dragons 5е — PHB 2024
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-5xl mx-auto px-4 py-8 flex-1">
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-foreground mb-2">
+              Доступные инструменты
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Выберите инструмент для работы с вашей игрой
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {MENU_ITEMS.map((item, index) => (
+              <div
+                key={item.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <button
+                  onClick={() => onNavigate(item.id)}
+                  className="w-full text-left p-6 rounded-2xl border transition-all duration-300 bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:bg-card/80 cursor-pointer group"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div
+                      className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${item.gradient} group-hover:scale-110 transition-transform`}
+                    >
+                      <item.icon className="w-7 h-7 text-white" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-semibold text-lg text-foreground">
+                          {item.title}
+                        </h3>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Info */}
+          <div className="mt-12 bg-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">PHB 2024</h3>
+                <p className="text-sm text-muted-foreground">
+                  Актуальные правила Player's Handbook
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Все инструменты основаны на обновлённых правилах D&D 5th Edition
+              2024 года. Включены все расы, классы, заклинания и предыстории из
+              нового Player's Handbook.
+            </p>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="border-t border-border/50 bg-card/40 backdrop-blur-sm mt-auto">
+          <div className="max-w-5xl mx-auto px-4 py-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-muted-foreground">
+                D&D Generator — Инструменты для мастеров и игроков
+              </p>
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onNavigate("glossary")}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Глоссарий
+                </Button>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}

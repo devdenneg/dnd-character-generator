@@ -4,12 +4,13 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
-  base: "/dnd-character-generator/",
+  // base нужен только для GitHub Pages (production build)
+  base: mode === "production" ? "/dnd-character-generator/" : "/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-});
+}));

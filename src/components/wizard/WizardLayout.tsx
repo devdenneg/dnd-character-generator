@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore, type WizardStep } from "@/store/characterStore";
 import { t } from "@/data/translations/ru";
 
 interface WizardLayoutProps {
   children: ReactNode;
+  onBack?: () => void;
 }
 
 const STEP_INFO: Record<WizardStep, { label: string; icon: string }> = {
@@ -21,7 +22,7 @@ const STEP_INFO: Record<WizardStep, { label: string; icon: string }> = {
   summary: { label: t("steps.summary"), icon: "🏆" },
 };
 
-export function WizardLayout({ children }: WizardLayoutProps) {
+export function WizardLayout({ children, onBack }: WizardLayoutProps) {
   const {
     currentStep,
     nextStep,
@@ -49,31 +50,42 @@ export function WizardLayout({ children }: WizardLayoutProps) {
   const isLastStep = currentStep === "summary";
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* Background */}
       <div className="app-background" />
       <div className="ambient-glow ambient-glow-1" />
       <div className="ambient-glow ambient-glow-2" />
 
       {/* Main Layout */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Step Progress (Desktop) */}
-        <aside className="hidden lg:flex w-64 flex-col fixed left-0 top-0 bottom-0 border-r border-border/50 bg-card/50 backdrop-blur-xl z-40">
+        <aside className="hidden lg:flex w-64 flex-col flex-shrink-0 border-r border-border/50 bg-card/50 backdrop-blur-xl z-40">
           {/* Logo */}
-          <div className="p-6 border-b border-border/50">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+          <div className="p-6 border-b border-border/50 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1
+                    className="text-sm font-bold text-gradient"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    D&D Character
+                  </h1>
+                  <p className="text-xs text-muted-foreground">PHB 2024</p>
+                </div>
               </div>
-              <div>
-                <h1
-                  className="text-sm font-bold text-gradient"
-                  style={{ fontFamily: "var(--font-display)" }}
+              {onBack && (
+                <button
+                  onClick={onBack}
+                  className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  title="На главную"
                 >
-                  D&D Character
-                </h1>
-                <p className="text-xs text-muted-foreground">PHB 2024</p>
-              </div>
+                  <Home className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -90,11 +102,12 @@ export function WizardLayout({ children }: WizardLayoutProps) {
                     key={step}
                     className={`
                       flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                      ${isActive 
-                        ? "bg-primary/15 text-primary" 
-                        : isCompleted || isPast
-                          ? "text-foreground/80 hover:bg-muted/50"
-                          : "text-muted-foreground"
+                      ${
+                        isActive
+                          ? "bg-primary/15 text-primary"
+                          : isCompleted || isPast
+                            ? "text-foreground/80 hover:bg-muted/50"
+                            : "text-muted-foreground"
                       }
                     `}
                   >
@@ -103,11 +116,12 @@ export function WizardLayout({ children }: WizardLayoutProps) {
                       className={`
                         w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium
                         transition-all
-                        ${isActive 
-                          ? "bg-primary text-white shadow-lg shadow-primary/30" 
-                          : isCompleted
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                            : "bg-muted text-muted-foreground"
+                        ${
+                          isActive
+                            ? "bg-primary text-white shadow-lg shadow-primary/30"
+                            : isCompleted
+                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                              : "bg-muted text-muted-foreground"
                         }
                       `}
                     >
@@ -115,7 +129,9 @@ export function WizardLayout({ children }: WizardLayoutProps) {
                     </div>
 
                     {/* Step label */}
-                    <span className={`text-sm ${isActive ? "font-medium" : ""}`}>
+                    <span
+                      className={`text-sm ${isActive ? "font-medium" : ""}`}
+                    >
                       {info.label}
                     </span>
                   </div>
@@ -126,7 +142,7 @@ export function WizardLayout({ children }: WizardLayoutProps) {
 
           {/* Character Preview */}
           {(character.race || character.class) && (
-            <div className="p-4 border-t border-border/50">
+            <div className="p-4 border-t border-border/50 flex-shrink-0">
               <div className="bg-muted/50 rounded-xl p-3">
                 <p className="text-xs text-muted-foreground mb-1">Персонаж</p>
                 <p className="text-sm font-medium">
@@ -143,13 +159,21 @@ export function WizardLayout({ children }: WizardLayoutProps) {
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Mobile Header */}
-          <header className="lg:hidden sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50">
+          <header className="lg:hidden bg-card/80 backdrop-blur-xl border-b border-border/50 flex-shrink-0 z-50">
             <div className="px-4 py-3">
               {/* Top row */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
+                  {onBack && (
+                    <button
+                      onClick={onBack}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors mr-1"
+                    >
+                      <Home className="w-4 h-4" />
+                    </button>
+                  )}
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
@@ -173,8 +197,8 @@ export function WizardLayout({ children }: WizardLayoutProps) {
             </div>
           </header>
 
-          {/* Content */}
-          <main className="flex-1 p-4 lg:p-8">
+          {/* Content - Scrollable */}
+          <main className="flex-1 overflow-y-auto p-4 lg:p-8">
             <div className="max-w-4xl mx-auto animate-fade-in-up">
               {/* Page Title - Desktop */}
               <div className="hidden lg:block mb-8">
@@ -206,7 +230,7 @@ export function WizardLayout({ children }: WizardLayoutProps) {
           </main>
 
           {/* Footer Navigation */}
-          <footer className="sticky bottom-0 z-40 bg-card/80 backdrop-blur-xl border-t border-border/50">
+          <footer className="bg-card/80 backdrop-blur-xl border-t border-border/50 flex-shrink-0 z-40">
             <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
               <Button
                 variant="outline"
@@ -218,7 +242,7 @@ export function WizardLayout({ children }: WizardLayoutProps) {
                 <span className="hidden sm:inline">{t("app.back")}</span>
               </Button>
 
-              {/* Mobile character preview */}
+              {/* Character preview */}
               <div className="lg:hidden flex-1 text-center">
                 {(character.race || character.class) && (
                   <p className="text-xs text-muted-foreground truncate">

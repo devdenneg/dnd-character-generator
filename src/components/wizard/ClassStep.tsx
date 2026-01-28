@@ -1,30 +1,40 @@
 import { useState } from "react";
-import { Search, Check, X, Heart, Sparkles, Shield } from "lucide-react";
+import {
+  Search,
+  Check,
+  Heart,
+  Sparkles,
+  Shield,
+  Info,
+  Swords,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FitText } from "@/components/ui/fit-text";
+import { Modal, ModalContent, ModalFooter } from "@/components/ui/modal";
 import { useCharacterStore } from "@/store/characterStore";
 import { getAllClasses } from "@/data/phb2024";
 import type { CharacterClass, Subclass } from "@/types/character";
 import { t, getAbilityNameRu } from "@/data/translations/ru";
 
-// Визуальные данные классов - обновлённые цвета
-const CLASS_DATA: Record<string, { gradient: string; icon: string }> = {
-  barbarian: { gradient: "from-red-500/90 to-orange-600/90", icon: "🪓" },
-  bard: { gradient: "from-fuchsia-500/90 to-pink-600/90", icon: "🎵" },
-  cleric: { gradient: "from-amber-500/90 to-yellow-600/90", icon: "✝️" },
-  druid: { gradient: "from-emerald-500/90 to-green-600/90", icon: "🌿" },
-  fighter: { gradient: "from-slate-500/90 to-zinc-600/90", icon: "🛡️" },
-  monk: { gradient: "from-amber-500/90 to-orange-600/90", icon: "👊" },
-  paladin: { gradient: "from-sky-500/90 to-blue-600/90", icon: "⚜️" },
-  ranger: { gradient: "from-teal-500/90 to-emerald-600/90", icon: "🏹" },
-  rogue: { gradient: "from-zinc-600/90 to-slate-700/90", icon: "🗡️" },
-  sorcerer: { gradient: "from-rose-500/90 to-red-600/90", icon: "🔥" },
-  warlock: { gradient: "from-violet-600/90 to-purple-700/90", icon: "👁️" },
-  wizard: { gradient: "from-indigo-500/90 to-blue-600/90", icon: "📚" },
+// Визуальные данные классов - акцентные цвета
+const CLASS_DATA: Record<string, { accent: string; icon: string }> = {
+  barbarian: { accent: "text-red-400", icon: "🪓" },
+  bard: { accent: "text-fuchsia-400", icon: "🎵" },
+  cleric: { accent: "text-amber-400", icon: "✝️" },
+  druid: { accent: "text-emerald-400", icon: "🌿" },
+  fighter: { accent: "text-slate-400", icon: "🛡️" },
+  monk: { accent: "text-orange-400", icon: "👊" },
+  paladin: { accent: "text-sky-400", icon: "⚜️" },
+  ranger: { accent: "text-teal-400", icon: "🏹" },
+  rogue: { accent: "text-zinc-400", icon: "🗡️" },
+  sorcerer: { accent: "text-rose-400", icon: "🔥" },
+  warlock: { accent: "text-violet-400", icon: "👁️" },
+  wizard: { accent: "text-indigo-400", icon: "📚" },
 };
 
-const DEFAULT_DATA = { gradient: "from-slate-500/90 to-zinc-600/90", icon: "⚔️" };
+const DEFAULT_DATA = { accent: "text-slate-400", icon: "⚔️" };
 
 export function ClassStep() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,13 +68,13 @@ export function ClassStep() {
           placeholder={t("app.search")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-10 bg-card/50 backdrop-blur border-border/50 focus:border-primary/50"
         />
       </div>
 
       {/* Class grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        {filteredClasses.map((cls) => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredClasses.map((cls, index) => {
           const isSelected = character.class?.id === cls.id;
           const data = getData(cls.id);
 
@@ -72,43 +82,60 @@ export function ClassStep() {
             <div
               key={cls.id}
               onClick={() => handleSelectClass(cls)}
-              className={`
-                relative cursor-pointer rounded-xl overflow-hidden transition-all duration-200
-                ${
-                  isSelected
-                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
-                    : "hover:scale-[1.02] hover:shadow-lg"
-                }
-              `}
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <div
-                className={`bg-gradient-to-br ${data.gradient} p-3 aspect-[4/5]`}
+                className={`
+                  relative group cursor-pointer rounded-2xl p-6 transition-all duration-300
+                  bg-card/60 backdrop-blur-sm border h-full min-h-[200px]
+                  flex flex-col overflow-hidden
+                  ${
+                    isSelected
+                      ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                      : "border-border/50 hover:border-primary/30 hover:bg-card/80"
+                  }
+                `}
               >
                 {/* Icon */}
-                <div className="text-4xl mb-2 drop-shadow-lg">{data.icon}</div>
+                <div className="text-6xl mb-4 transition-transform group-hover:scale-110 flex-shrink-0">
+                  {data.icon}
+                </div>
 
                 {/* Name */}
-                <h3 className="text-white font-bold text-sm leading-tight drop-shadow">
+                <FitText
+                  maxFontSize={18}
+                  minFontSize={12}
+                  className="font-semibold text-foreground mb-1"
+                >
                   {cls.nameRu}
-                </h3>
-                <p className="text-white/60 text-[10px] mb-2">{cls.name}</p>
+                </FitText>
+                <FitText
+                  maxFontSize={14}
+                  minFontSize={10}
+                  className="text-muted-foreground mb-4"
+                >
+                  {cls.name}
+                </FitText>
 
                 {/* Stats */}
-                <div className="flex gap-1 flex-wrap">
-                  <Badge className="bg-black/30 text-white border-0 text-[10px] px-1.5 py-0">
-                    <Heart className="w-2.5 h-2.5 mr-0.5" />d{cls.hitDie}
-                  </Badge>
+                <div className="flex gap-2 flex-wrap mt-auto">
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg">
+                    <Heart className="w-4 h-4 text-rose-400" />
+                    <span>d{cls.hitDie}</span>
+                  </div>
                   {cls.spellcasting && (
-                    <Badge className="bg-purple-500/50 text-white border-0 text-[10px] px-1.5 py-0">
-                      <Sparkles className="w-2.5 h-2.5" />
-                    </Badge>
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-accent/10 px-3 py-1.5 rounded-lg">
+                      <Sparkles className="w-4 h-4 text-accent" />
+                      <span>Маг</span>
+                    </div>
                   )}
                 </div>
 
                 {/* Selected indicator */}
                 {isSelected && (
-                  <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                    <Check className="w-3 h-3 text-primary-foreground" />
+                  <div className="absolute top-4 right-4 bg-primary rounded-full p-1.5 shadow-lg shadow-primary/30">
+                    <Check className="w-4 h-4 text-primary-foreground" />
                   </div>
                 )}
 
@@ -118,9 +145,9 @@ export function ClassStep() {
                     e.stopPropagation();
                     setModalClass(cls);
                   }}
-                  className="absolute bottom-2 right-2 bg-white/20 hover:bg-white/30 rounded-full px-2 py-0.5 text-white text-[10px] transition-colors"
+                  className="absolute bottom-4 right-4 p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all opacity-0 group-hover:opacity-100"
                 >
-                  Инфо
+                  <Info className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -129,51 +156,29 @@ export function ClassStep() {
       </div>
 
       {/* Modal */}
-      {modalClass && (
-        <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
-        >
-          <div
-            className="bg-card rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal header */}
-            <div
-              className={`bg-gradient-to-br ${getData(modalClass.id).gradient} p-5 rounded-t-2xl flex-shrink-0`}
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-4">
-                  <span className="text-5xl">
-                    {getData(modalClass.id).icon}
-                  </span>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">
-                      {modalClass.nameRu}
-                    </h2>
-                    <p className="text-white/70">{modalClass.name}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setModalClass(null)}
-                  className="bg-black/30 hover:bg-black/50 rounded-full p-2 text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Quick stats */}
-              <div className="flex gap-2 mt-4 flex-wrap">
-                <Badge className="bg-black/30 text-white border-0">
+      <Modal
+        isOpen={!!modalClass}
+        onClose={() => setModalClass(null)}
+        title={modalClass?.nameRu}
+        subtitle={modalClass?.name}
+        icon={modalClass ? getData(modalClass.id).icon : undefined}
+        maxWidth="max-w-2xl"
+      >
+        {modalClass && (
+          <>
+            {/* Quick stats in header area */}
+            <div className="px-6 pb-4 border-b border-border/50">
+              <div className="flex gap-2 flex-wrap">
+                <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20">
                   <Heart className="w-3 h-3 mr-1" />d{modalClass.hitDie}
                 </Badge>
-                <Badge className="bg-black/30 text-white border-0">
+                <Badge className="bg-primary/10 text-primary border-primary/20">
                   {modalClass.primaryAbility
                     .map((a) => getAbilityNameRu(a))
                     .join("/")}
                 </Badge>
                 {modalClass.spellcasting && (
-                  <Badge className="bg-purple-500/50 text-white border-0">
+                  <Badge className="bg-accent/10 text-accent border-accent/20">
                     <Sparkles className="w-3 h-3 mr-1" />
                     Заклинатель
                   </Badge>
@@ -181,54 +186,70 @@ export function ClassStep() {
               </div>
             </div>
 
-            {/* Modal content - scrollable */}
-            <div className="p-5 overflow-y-auto flex-1">
-              <p className="text-muted-foreground mb-4 text-sm">
+            <ModalContent>
+              <p className="text-muted-foreground mb-5 text-sm leading-relaxed">
                 {modalClass.description}
               </p>
 
               {/* Stats grid */}
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                <div className="bg-muted/30 p-3 rounded-lg text-center">
-                  <p className="text-xs text-muted-foreground">Хиты</p>
-                  <p className="text-lg font-bold">d{modalClass.hitDie}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+                <div className="bg-muted/20 p-3 rounded-xl text-center border border-border/30">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Кость хитов
+                  </p>
+                  <p className="text-lg font-bold text-foreground">
+                    d{modalClass.hitDie}
+                  </p>
                 </div>
-                <div className="bg-muted/30 p-3 rounded-lg text-center">
-                  <p className="text-xs text-muted-foreground">Основная</p>
-                  <p className="text-sm font-bold">
+                <div className="bg-muted/20 p-3 rounded-xl text-center border border-border/30">
+                  <p className="text-xs text-muted-foreground mb-1">Основная</p>
+                  <p className="text-sm font-semibold text-foreground">
                     {modalClass.primaryAbility
                       .map((a) => getAbilityNameRu(a))
                       .join("/")}
                   </p>
                 </div>
-                <div className="bg-muted/30 p-3 rounded-lg text-center">
-                  <p className="text-xs text-muted-foreground">Спасброски</p>
-                  <p className="text-sm font-bold">
+                <div className="bg-muted/20 p-3 rounded-xl text-center border border-border/30">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Спасброски
+                  </p>
+                  <p className="text-sm font-semibold text-foreground">
                     {modalClass.savingThrows
                       .map((s) => getAbilityNameRu(s))
                       .join(", ")}
                   </p>
                 </div>
-                <div className="bg-muted/30 p-3 rounded-lg text-center">
-                  <p className="text-xs text-muted-foreground">Навыки</p>
-                  <p className="text-lg font-bold">{modalClass.skillCount}</p>
+                <div className="bg-muted/20 p-3 rounded-xl text-center border border-border/30">
+                  <p className="text-xs text-muted-foreground mb-1">Навыков</p>
+                  <p className="text-lg font-bold text-foreground">
+                    {modalClass.skillCount}
+                  </p>
                 </div>
               </div>
 
               {/* Proficiencies */}
-              <div className="mb-4">
-                <h4 className="font-bold mb-2 text-sm">
+              <div className="mb-5">
+                <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                   {t("character.proficiencies")}
                 </h4>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-2">
                   {modalClass.armorProficiencies.map((p) => (
-                    <Badge key={p} variant="secondary" className="text-xs">
-                      <Shield className="w-3 h-3 mr-1" />
+                    <Badge
+                      key={p}
+                      className="bg-muted/30 text-foreground/80 border-border/50"
+                    >
+                      <Shield className="w-3 h-3 mr-1 text-primary" />
                       {p}
                     </Badge>
                   ))}
                   {modalClass.weaponProficiencies.map((p) => (
-                    <Badge key={p} variant="outline" className="text-xs">
+                    <Badge
+                      key={p}
+                      variant="outline"
+                      className="border-border/50"
+                    >
+                      <Swords className="w-3 h-3 mr-1 text-muted-foreground" />
                       {p}
                     </Badge>
                   ))}
@@ -236,8 +257,9 @@ export function ClassStep() {
               </div>
 
               {/* Features */}
-              <div className="mb-4">
-                <h4 className="font-bold mb-2 text-sm">
+              <div className="mb-5">
+                <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                   {t("character.features")} (1 уровень)
                 </h4>
                 <div className="space-y-2">
@@ -246,12 +268,12 @@ export function ClassStep() {
                     .map((feature) => (
                       <div
                         key={feature.name}
-                        className="bg-muted/20 p-3 rounded-lg"
+                        className="bg-muted/20 p-4 rounded-xl border border-border/30"
                       >
-                        <p className="font-medium text-primary text-sm">
+                        <p className="font-medium text-primary text-sm mb-1">
                           {feature.nameRu}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
                           {feature.description}
                         </p>
                       </div>
@@ -262,27 +284,28 @@ export function ClassStep() {
               {/* Subclasses */}
               {modalClass.subclassLevel === 1 && (
                 <div>
-                  <h4 className="font-bold mb-2 text-sm">
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                     {t("character.subclass")}
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {modalClass.subclasses.map((sub) => (
                       <div
                         key={sub.id}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
                           character.subclass?.id === sub.id
                             ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
+                            : "border-border/50 hover:border-primary/30 bg-muted/10"
                         }`}
                         onClick={() => handleSelectSubclass(sub)}
                       >
-                        <p className="font-medium text-sm flex items-center gap-2">
+                        <p className="font-medium text-sm flex items-center gap-2 text-foreground">
                           {sub.nameRu}
                           {character.subclass?.id === sub.id && (
                             <Check className="w-3 h-3 text-primary" />
                           )}
                         </p>
-                        <p className="text-xs text-muted-foreground line-clamp-1">
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
                           {sub.description}
                         </p>
                       </div>
@@ -292,14 +315,18 @@ export function ClassStep() {
               )}
 
               {modalClass.subclassLevel > 1 && (
-                <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
-                  Подкласс выбирается на {modalClass.subclassLevel} уровне
-                </p>
+                <div className="bg-muted/20 p-4 rounded-xl border border-border/30">
+                  <p className="text-sm text-muted-foreground">
+                    Подкласс выбирается на{" "}
+                    <span className="text-foreground font-medium">
+                      {modalClass.subclassLevel} уровне
+                    </span>
+                  </p>
+                </div>
               )}
-            </div>
+            </ModalContent>
 
-            {/* Modal footer */}
-            <div className="p-4 border-t border-border flex gap-3 flex-shrink-0">
+            <ModalFooter>
               <Button
                 variant="outline"
                 className="flex-1"
@@ -308,24 +335,28 @@ export function ClassStep() {
                 Закрыть
               </Button>
               <Button
-                className="flex-1"
+                className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90"
                 onClick={() => handleSelectClass(modalClass)}
               >
                 <Check className="w-4 h-4 mr-2" />
                 Выбрать
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </ModalFooter>
+          </>
+        )}
+      </Modal>
 
       {/* Selected indicator bar */}
       {character.class && (
-        <div className="bg-card border border-primary/30 rounded-xl p-4 flex items-center justify-between shadow-lg shadow-primary/5">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{getData(character.class.id).icon}</span>
+        <div className="bg-card/80 backdrop-blur border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-lg animate-fade-in-up">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
+              {getData(character.class.id).icon}
+            </div>
             <div>
-              <p className="font-semibold text-foreground">{character.class.nameRu}</p>
+              <p className="font-semibold text-foreground">
+                {character.class.nameRu}
+              </p>
               <p className="text-sm text-muted-foreground">
                 d{character.class.hitDie} •{" "}
                 {character.subclass
@@ -334,7 +365,10 @@ export function ClassStep() {
               </p>
             </div>
           </div>
-          <Badge className="bg-primary/15 text-primary border-primary/30">Выбрано</Badge>
+          <Badge className="bg-primary/15 text-primary border-primary/30 px-3 py-1">
+            <Check className="w-3 h-3 mr-1" />
+            Выбрано
+          </Badge>
         </div>
       )}
     </div>
