@@ -38,6 +38,7 @@ export const authApi = {
     email: string;
     password: string;
     name?: string;
+    role?: "player" | "master";
   }) => {
     const response = await apiClient.post("/auth/register", data);
     return response.data;

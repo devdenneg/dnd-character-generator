@@ -8,6 +8,7 @@ export interface RegisterInput {
   email: string;
   password: string;
   name?: string;
+  role?: "player" | "master";
 }
 
 export interface LoginInput {
@@ -20,6 +21,7 @@ export interface AuthResponse {
     id: string;
     email: string;
     name: string | null;
+    role: string;
   };
   token: string;
 }
@@ -29,7 +31,7 @@ const SALT_ROUNDS = 10;
 export async function registerUser(
   input: RegisterInput,
 ): Promise<AuthResponse> {
-  const { email, password, name } = input;
+  const { email, password, name, role } = input;
 
   // Check if user exists
   const existingUser = await prisma.user.findUnique({
@@ -49,6 +51,7 @@ export async function registerUser(
       email,
       password: hashedPassword,
       name,
+      role: role || "player",
     },
   });
 
@@ -60,6 +63,7 @@ export async function registerUser(
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     },
     token,
   };
@@ -92,6 +96,7 @@ export async function loginUser(input: LoginInput): Promise<AuthResponse> {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     },
     token,
   };
@@ -104,6 +109,7 @@ export async function getUserById(userId: string) {
       id: true,
       email: true,
       name: true,
+      role: true,
       createdAt: true,
     },
   });

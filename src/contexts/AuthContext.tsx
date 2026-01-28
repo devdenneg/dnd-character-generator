@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   name: string | null;
+  role: "player" | "master";
 }
 
 interface AuthContextType {
@@ -13,7 +14,12 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name?: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    name?: string,
+    role?: "player" | "master",
+  ) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -60,8 +66,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string, name?: string) => {
-    const response = await authApi.register({ email, password, name });
+  const register = async (
+    email: string,
+    password: string,
+    name?: string,
+    role?: "player" | "master",
+  ) => {
+    const response = await authApi.register({ email, password, name, role });
 
     if (response.success) {
       const { user, token } = response.data;

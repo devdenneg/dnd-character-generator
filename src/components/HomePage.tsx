@@ -7,6 +7,7 @@ import {
   LogOut,
   User,
   Users,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,9 +71,22 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 ) : isAuthenticated ? (
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
-                      <User className="w-4 h-4 text-muted-foreground" />
+                      {user?.role === "master" ? (
+                        <Crown className="w-4 h-4 text-amber-500" />
+                      ) : (
+                        <User className="w-4 h-4 text-primary" />
+                      )}
                       <span className="text-sm text-foreground">
                         {user?.name || user?.email}
+                      </span>
+                      <span
+                        className={`text-xs px-1.5 py-0.5 rounded ${
+                          user?.role === "master"
+                            ? "bg-amber-500/20 text-amber-500"
+                            : "bg-primary/20 text-primary"
+                        }`}
+                      >
+                        {user?.role === "master" ? "Мастер" : "Игрок"}
                       </span>
                     </div>
                     <Button

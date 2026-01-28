@@ -22,7 +22,7 @@ import { RegisterPage } from "@/components/auth/RegisterPage";
 import { MyCharactersPage } from "@/components/MyCharactersPage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import "@/i18n";
 
 const queryClient = new QueryClient({
@@ -38,6 +38,41 @@ function CharacterWizardPage() {
   const navigate = useNavigate();
   const { currentStep } = useCharacterStore();
   const [showGlossary, setShowGlossary] = useState(false);
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Show login required message
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="app-background" />
+        <div className="ambient-glow ambient-glow-1" />
+        <div className="ambient-glow ambient-glow-2" />
+
+        <div className="relative z-10 max-w-md w-full bg-card/80 backdrop-blur-xl rounded-2xl border border-border/50 p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/20 flex items-center justify-center">
+            <Home className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Требуется вход</h2>
+          <p className="text-muted-foreground mb-6">
+            Для создания персонажа необходимо войти в аккаунт
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => navigate("/login")}>Войти</Button>
+            <Button variant="outline" onClick={() => navigate("/register")}>
+              Регистрация
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            className="mt-4"
+            onClick={() => navigate("/")}
+          >
+            ← На главную
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const renderStep = () => {
     const stepContent = (() => {

@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { UserPlus, Mail, Lock, User, AlertCircle } from "lucide-react";
+import {
+  UserPlus,
+  Mail,
+  Lock,
+  User,
+  AlertCircle,
+  Crown,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +23,7 @@ export function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<"player" | "master">("player");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,7 +44,7 @@ export function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register(email, password, name || undefined);
+      await register(email, password, name || undefined, role);
       navigate("/");
     } catch (err: any) {
       setError(
@@ -72,6 +81,55 @@ export function RegisterPage() {
                 {error}
               </div>
             )}
+
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <Label>Кто вы? *</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRole("player")}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    role === "player"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <Users
+                    className={`w-6 h-6 mx-auto mb-2 ${role === "player" ? "text-primary" : "text-muted-foreground"}`}
+                  />
+                  <div
+                    className={`font-medium ${role === "player" ? "text-primary" : "text-foreground"}`}
+                  >
+                    Игрок
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Создаю персонажей
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("master")}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    role === "master"
+                      ? "border-amber-500 bg-amber-500/10"
+                      : "border-border hover:border-amber-500/50"
+                  }`}
+                >
+                  <Crown
+                    className={`w-6 h-6 mx-auto mb-2 ${role === "master" ? "text-amber-500" : "text-muted-foreground"}`}
+                  />
+                  <div
+                    className={`font-medium ${role === "master" ? "text-amber-500" : "text-foreground"}`}
+                  >
+                    Мастер
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Веду игры
+                  </div>
+                </button>
+              </div>
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="name">Имя (необязательно)</Label>

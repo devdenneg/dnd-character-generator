@@ -7,6 +7,7 @@ const registerSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().optional(),
+  role: z.enum(["player", "master"]).optional(),
 });
 
 const loginSchema = z.object({

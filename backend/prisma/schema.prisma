@@ -15,6 +15,7 @@ model User {
   email     String   @unique
   password  String
   name      String?
+  role      String   @default("player") // "player" or "master"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
