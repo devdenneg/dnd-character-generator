@@ -455,6 +455,90 @@ select:focus {
 }
 
 /* ========================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ
+   ======================================== */
+
+/* Кастомный скроллбар для десктопа */
+@media (min-width: 768px) {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-soft);
+  }
+}
+
+/* Скрытие скроллбара на мобильных */
+@media (max-width: 767px) {
+  .scrollbar-thin {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Оптимизация тапов на мобильных */
+@media (max-width: 767px) {
+  button,
+  a,
+  [role="button"] {
+    -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2);
+    touch-action: manipulation;
+  }
+
+  /* Увеличиваем область нажатия для маленьких элементов */
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Отключаем зум при фокусе на инпутах */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Адаптивная типографика */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Уменьшение отступов на мобильных */
+@media (max-width: 767px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* ========================================
    СТИЛИ ДЛЯ ПЕЧАТИ
    ======================================== */
 @media print {

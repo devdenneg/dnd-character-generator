@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipHeader, TooltipDescription } from "@/components/ui/tooltip";
+import { FitText } from "@/components/ui/fit-text";
 import {
   Play,
   Users,
@@ -166,75 +168,46 @@ export function MasterRoomView({
   }, [selectedPlayer]);
 
   return (
-    <div className="space-y-6">
-      {/* Start Game Button */}
-      {!room.isStarted && (
-        <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/30 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Готовы начать игру?
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                После начала игры новые игроки не смогут присоединиться
-              </p>
-            </div>
-            <Button
-              onClick={onStartGame}
-              disabled={isStarting || players.length === 0}
-              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 gap-2"
-            >
-              <Play className="w-4 h-4" />
-              {isStarting ? "Запуск..." : "Начать игру"}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {room.isStarted && (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-center">
-          <p className="text-emerald-500 font-semibold">🎮 Игра началась!</p>
-        </div>
-      )}
+    <div className="space-y-4 md:space-y-6">
 
       {/* Players Tabs */}
       {players.length === 0 ? (
-        <div className="text-center py-12 bg-card/40 rounded-2xl">
-          <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h3 className="text-xl font-semibold text-foreground mb-2">
+        <div className="text-center py-8 md:py-12 bg-card/40 rounded-xl md:rounded-2xl px-4">
+          <Users className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 text-muted-foreground opacity-50" />
+          <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2">
             Нет игроков
           </h3>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             Поделитесь ссылкой для приглашения игроков
           </p>
         </div>
       ) : (
         <>
           {/* Player Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
             {players.map((player) => (
               <button
                 key={player.id}
                 onClick={() => setSelectedPlayerId(player.id)}
-                className={`flex-shrink-0 px-4 py-3 rounded-xl border-2 transition-all ${
+                className={`flex-shrink-0 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl border-2 transition-all ${
                   selectedPlayerId === player.id
                     ? "border-primary bg-primary/10"
                     : "border-border/50 bg-card/40 hover:border-primary/50"
                 }`}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 md:gap-2">
                   <Circle
-                    className={`w-2 h-2 ${
+                    className={`w-1.5 h-1.5 md:w-2 md:h-2 flex-shrink-0 ${
                       player.isOnline
                         ? "fill-emerald-500 text-emerald-500"
                         : "fill-muted text-muted"
                     }`}
                   />
-                  <div className="text-left">
-                    <p className="font-semibold text-sm text-foreground">
+                  <div className="text-left min-w-0">
+                    <p className="font-semibold text-xs md:text-sm text-foreground truncate max-w-[120px] md:max-w-none">
                       {player.character?.name || "Без персонажа"}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-[10px] md:text-xs text-muted-foreground truncate max-w-[120px] md:max-w-none">
                       {player.user.name || player.user.email}
                     </p>
                   </div>
@@ -244,17 +217,17 @@ export function MasterRoomView({
             {/* Overall Tab */}
             <button
               onClick={() => setSelectedPlayerId("__overall__")}
-              className={`flex-shrink-0 px-4 py-3 rounded-xl border-2 transition-all ${
+              className={`flex-shrink-0 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl border-2 transition-all ${
                 selectedPlayerId === "__overall__"
                   ? "border-primary bg-primary/10"
                   : "border-border/50 bg-card/40 hover:border-primary/50"
               }`}
             >
               <div className="text-left">
-                <p className="font-semibold text-sm text-foreground">
+                <p className="font-semibold text-xs md:text-sm text-foreground whitespace-nowrap">
                   📊 Общее
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] md:text-xs text-muted-foreground whitespace-nowrap">
                   Сводная информация
                 </p>
               </div>
@@ -263,17 +236,17 @@ export function MasterRoomView({
 
           {/* Overall View */}
           {selectedPlayerId === "__overall__" ? (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Characters Stats Table */}
-              <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Users className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-semibold text-foreground">
+              <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl md:rounded-2xl p-4 md:p-6">
+                <div className="flex items-center gap-2 mb-3 md:mb-4">
+                  <Users className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
+                  <h3 className="text-base md:text-lg font-semibold text-foreground">
                     Характеристики персонажей
                   </h3>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                  <table className="w-full text-xs md:text-sm min-w-[600px]">
                     <thead>
                       <tr className="border-b border-border/50">
                         <th className="text-left py-3 px-4 text-muted-foreground font-semibold">
@@ -383,15 +356,15 @@ export function MasterRoomView({
               </div>
 
               {/* Equipment Registry */}
-              <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Swords className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-semibold text-foreground">
+              <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl md:rounded-2xl p-4 md:p-6">
+                <div className="flex items-center gap-2 mb-3 md:mb-4">
+                  <Swords className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
+                  <h3 className="text-base md:text-lg font-semibold text-foreground">
                     Реестр снаряжения партии
                   </h3>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
+                <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                  <table className="w-full text-[10px] md:text-xs min-w-[500px]">
                     <thead>
                       <tr className="border-b border-border/50">
                         <th className="text-left py-2 px-2 text-muted-foreground font-semibold">
@@ -492,6 +465,165 @@ export function MasterRoomView({
                   </table>
                 </div>
               </div>
+
+              {/* Spells Registry */}
+              {players.some(
+                (p) =>
+                  p.character?.data?.cantripsKnown?.length > 0 ||
+                  p.character?.data?.spellsKnown?.length > 0,
+              ) && (
+                <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl md:rounded-2xl p-4 md:p-6">
+                  <div className="flex items-center gap-2 mb-3 md:mb-4">
+                    <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
+                    <h3 className="text-base md:text-lg font-semibold text-foreground">
+                      Реестр заклинаний партии
+                    </h3>
+                  </div>
+                  <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                    <table className="w-full text-[10px] md:text-xs min-w-[500px]">
+                      <thead>
+                        <tr className="border-b border-border/50">
+                          <th className="text-left py-2 px-2 text-muted-foreground font-semibold">
+                            Персонаж
+                          </th>
+                          <th className="text-left py-2 px-2 text-muted-foreground font-semibold">
+                            ✨ Заговоры
+                          </th>
+                          <th className="text-left py-2 px-2 text-muted-foreground font-semibold">
+                            🔮 Заклинания 1 круга
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {players.map((player) => {
+                          if (!player.character?.data) return null;
+
+                          const cantrips =
+                            player.character.data.cantripsKnown || [];
+                          const spells = player.character.data.spellsKnown || [];
+
+                          // Skip if no spells
+                          if (cantrips.length === 0 && spells.length === 0)
+                            return null;
+
+                          return (
+                            <tr
+                              key={player.id}
+                              className="border-b border-border/30 hover:bg-muted/20"
+                            >
+                              <td className="py-3 px-2 align-top">
+                                <div className="font-semibold text-foreground whitespace-nowrap">
+                                  {player.character.name}
+                                </div>
+                              </td>
+                              <td className="py-3 px-2 align-top">
+                                {cantrips.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {cantrips.map((spell: any, idx: number) => (
+                                      <Tooltip
+                                        key={idx}
+                                        content={
+                                          <div>
+                                            <TooltipHeader>
+                                              {spell.nameRu}
+                                            </TooltipHeader>
+                                            <div className="space-y-2 text-xs">
+                                              <div className="flex gap-4 text-muted-foreground">
+                                                <span>⏱️ {spell.castingTime}</span>
+                                                <span>📏 {spell.range}</span>
+                                              </div>
+                                              <div className="flex gap-4 text-muted-foreground">
+                                                {spell.components && (
+                                                  <span>🎯 {spell.components}</span>
+                                                )}
+                                                {spell.duration && (
+                                                  <span>⏳ {spell.duration}</span>
+                                                )}
+                                              </div>
+                                              {spell.school && (
+                                                <div className="text-purple-400">
+                                                  Школа: {spell.school}
+                                                </div>
+                                              )}
+                                            </div>
+                                            <TooltipDescription>
+                                              {spell.description}
+                                            </TooltipDescription>
+                                          </div>
+                                        }
+                                        maxWidth="max-w-md"
+                                      >
+                                        <Badge
+                                          variant="outline"
+                                          className="text-[10px] py-0 px-1.5 h-5 cursor-help hover:border-purple-500/50 transition-colors"
+                                        >
+                                          {spell.nameRu}
+                                        </Badge>
+                                      </Tooltip>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-2 align-top">
+                                {spells.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {spells.map((spell: any, idx: number) => (
+                                      <Tooltip
+                                        key={idx}
+                                        content={
+                                          <div>
+                                            <TooltipHeader>
+                                              {spell.nameRu}
+                                            </TooltipHeader>
+                                            <div className="space-y-2 text-xs">
+                                              <div className="flex gap-4 text-muted-foreground">
+                                                <span>⏱️ {spell.castingTime}</span>
+                                                <span>📏 {spell.range}</span>
+                                              </div>
+                                              <div className="flex gap-4 text-muted-foreground">
+                                                {spell.components && (
+                                                  <span>🎯 {spell.components}</span>
+                                                )}
+                                                {spell.duration && (
+                                                  <span>⏳ {spell.duration}</span>
+                                                )}
+                                              </div>
+                                              {spell.school && (
+                                                <div className="text-purple-400">
+                                                  Школа: {spell.school}
+                                                </div>
+                                              )}
+                                            </div>
+                                            <TooltipDescription>
+                                              {spell.description}
+                                            </TooltipDescription>
+                                          </div>
+                                        }
+                                        maxWidth="max-w-md"
+                                      >
+                                        <Badge
+                                          variant="outline"
+                                          className="text-[10px] py-0 px-1.5 h-5 cursor-help hover:border-purple-500/50 transition-colors"
+                                        >
+                                          {spell.nameRu}
+                                        </Badge>
+                                      </Tooltip>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           ) : selectedPlayer?.character?.data ? (
             <div className="space-y-4">
@@ -966,14 +1098,40 @@ export function MasterRoomView({
                           <div className="flex flex-wrap gap-1">
                             {selectedPlayer.character.data.cantripsKnown.map(
                               (spell: any) => (
-                                <Badge
+                                <Tooltip
                                   key={spell.id}
-                                  variant="outline"
-                                  className="text-xs"
-                                  title={spell.description}
+                                  content={
+                                    <div>
+                                      <TooltipHeader>{spell.nameRu}</TooltipHeader>
+                                      <div className="space-y-2 text-xs">
+                                        <div className="flex gap-4 text-muted-foreground">
+                                          <span>⏱️ {spell.castingTime}</span>
+                                          <span>📏 {spell.range}</span>
+                                        </div>
+                                        <div className="flex gap-4 text-muted-foreground">
+                                          {spell.components && <span>🎯 {spell.components}</span>}
+                                          {spell.duration && <span>⏳ {spell.duration}</span>}
+                                        </div>
+                                        {spell.school && (
+                                          <div className="text-purple-400">
+                                            Школа: {spell.school}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <TooltipDescription>
+                                        {spell.description}
+                                      </TooltipDescription>
+                                    </div>
+                                  }
+                                  maxWidth="max-w-md"
                                 >
-                                  {spell.nameRu}
-                                </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs cursor-help hover:border-primary/50 transition-colors"
+                                  >
+                                    {spell.nameRu}
+                                  </Badge>
+                                </Tooltip>
                               ),
                             )}
                           </div>
@@ -989,14 +1147,40 @@ export function MasterRoomView({
                           <div className="flex flex-wrap gap-1">
                             {selectedPlayer.character.data.spellsKnown.map(
                               (spell: any) => (
-                                <Badge
+                                <Tooltip
                                   key={spell.id}
-                                  variant="outline"
-                                  className="text-xs"
-                                  title={spell.description}
+                                  content={
+                                    <div>
+                                      <TooltipHeader>{spell.nameRu}</TooltipHeader>
+                                      <div className="space-y-2 text-xs">
+                                        <div className="flex gap-4 text-muted-foreground">
+                                          <span>⏱️ {spell.castingTime}</span>
+                                          <span>📏 {spell.range}</span>
+                                        </div>
+                                        <div className="flex gap-4 text-muted-foreground">
+                                          {spell.components && <span>🎯 {spell.components}</span>}
+                                          {spell.duration && <span>⏳ {spell.duration}</span>}
+                                        </div>
+                                        {spell.school && (
+                                          <div className="text-purple-400">
+                                            Школа: {spell.school}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <TooltipDescription>
+                                        {spell.description}
+                                      </TooltipDescription>
+                                    </div>
+                                  }
+                                  maxWidth="max-w-md"
                                 >
-                                  {spell.nameRu}
-                                </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs cursor-help hover:border-primary/50 transition-colors"
+                                  >
+                                    {spell.nameRu}
+                                  </Badge>
+                                </Tooltip>
                               ),
                             )}
                           </div>

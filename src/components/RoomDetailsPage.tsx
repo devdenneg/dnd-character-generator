@@ -10,9 +10,11 @@ import {
   Shield,
   Circle,
   User,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Modal } from "@/components/ui/modal";
 import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocket } from "@/contexts/SocketContext";
@@ -62,6 +64,7 @@ export function RoomDetailsPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const isMaster = user?.id === room?.master.id;
 
@@ -265,54 +268,70 @@ export function RoomDetailsPage() {
             </div>
           </div>
 
-          {/* Invite Section */}
+          {/* Invite Button */}
           {isMaster && !room.isStarted && (
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/30 rounded-2xl p-6 mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <LinkIcon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    Пригласить игроков
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Отправьте эту ссылку вашим игрокам
-                  </p>
-                </div>
-              </div>
+            <div className="mb-6">
+              <Button
+                onClick={() => setShowInviteModal(true)}
+                className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                size="lg"
+              >
+                <UserPlus className="w-5 h-5" />
+                Пригласить игроков
+              </Button>
+            </div>
+          )}
+
+          {/* Invite Modal */}
+          <Modal
+            isOpen={showInviteModal}
+            onClose={() => {
+              setShowInviteModal(false);
+              setCopied(false);
+            }}
+            title="Пригласить игроков"
+          >
+            <div className="space-y-6">
+              <p className="text-sm text-muted-foreground">
+                Отправьте эту ссылку вашим игрокам для присоединения к комнате
+              </p>
 
               {/* Invite Link */}
               <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Input
-                    value={generateInviteCode()}
-                    readOnly
-                    className="bg-card/60 backdrop-blur-sm border-border/50 font-mono text-sm"
-                  />
-                  <Button
-                    onClick={handleCopyInviteLink}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Скопировано
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Копировать
-                      </>
-                    )}
-                  </Button>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Ссылка-приглашение:
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={generateInviteCode()}
+                      readOnly
+                      className="bg-card/60 backdrop-blur-sm border-border/50 font-mono text-sm"
+                    />
+                    <Button
+                      onClick={handleCopyInviteLink}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      {copied ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Скопировано
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Копировать
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Room ID */}
                 <div>
-                  <p className="text-xs text-muted-foreground mb-2">
+                  <label className="text-sm font-medium text-foreground mb-2 block">
                     Или отправьте ID комнаты:
-                  </p>
+                  </label>
                   <div className="flex gap-2">
                     <Input
                       value={id!}
@@ -322,15 +341,32 @@ export function RoomDetailsPage() {
                     <Button
                       variant="outline"
                       onClick={handleCopyRoomId}
-                      size="sm"
                     >
-                      <Copy className="w-4 h-4" />
+                      {copied ? (
+                        <CheckCircle className="w-4 h-4" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
               </div>
+
+              {/* Instructions */}
+              <div className="bg-muted/30 rounded-xl p-4">
+                <h4 className="font-semibold text-foreground mb-2 text-sm flex items-center gap-2">
+                  <LinkIcon className="w-4 h-4" />
+                  Как пригласить игроков:
+                </h4>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  <li>Скопируйте ссылку приглашения</li>
+                  <li>Отправьте игрокам (Discord, WhatsApp, Telegram и т.д.)</li>
+                  <li>Игроки перейдут по ссылке и выберут персонажа</li>
+                  <li>Введут пароль комнаты: <span className="font-mono text-foreground">•••••••••</span></li>
+                </ol>
+              </div>
             </div>
-          )}
+          </Modal>
 
           {/* Master View or Player List */}
           {isMaster ? (
