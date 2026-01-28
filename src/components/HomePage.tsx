@@ -265,9 +265,14 @@ export function HomePage({ onNavigate }: HomePageProps) {
         <footer className="border-t border-border/50 bg-card/40 backdrop-blur-sm mt-auto">
           <div className="max-w-5xl mx-auto px-4 py-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                D&D Generator — Инструменты для мастеров и игроков
-              </p>
+              <div className="text-center sm:text-left">
+                <p className="text-sm text-muted-foreground">
+                  D&D Generator — Инструменты для мастеров и игроков
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  Создано <span className="text-primary font-medium">antonchik</span>
+                </p>
+              </div>
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
