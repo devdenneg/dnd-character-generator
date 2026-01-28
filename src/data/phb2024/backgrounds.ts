@@ -49,7 +49,7 @@ export const phb2024Backgrounds: Background[] = [
     nameRu: "Шарлатан",
     description:
       "Когда-то вы были успешным мошенником. С помощью тщательно продуманных личин вы обманывали других, выдавая себя за того, кем не являетесь. Ваши уловки принесли вам богатство, но и немало врагов.",
-    skillProficiencies: ["deception", "sleight-of-hand"],
+    skillProficiencies: ["deception", "sleight_of_hand"],
     toolProficiencies: ["Набор для подделок"],
     languages: 1,
     equipment: ["Набор для подделок", "Костюм", "Красивая одежда", "15 зм"],
@@ -66,7 +66,7 @@ export const phb2024Backgrounds: Background[] = [
     nameRu: "Преступник",
     description:
       "Вы зарабатывали на жизнь в тёмных переулках, срезая кошельки или грабя лавки. Возможно, вы были членом преступной гильдии или действовали в одиночку. Закон — не для вас.",
-    skillProficiencies: ["sleight-of-hand", "stealth"],
+    skillProficiencies: ["sleight_of_hand", "stealth"],
     toolProficiencies: ["Воровские инструменты"],
     languages: 1,
     equipment: [
@@ -105,7 +105,7 @@ export const phb2024Backgrounds: Background[] = [
     nameRu: "Фермер",
     description:
       "Вы выросли, работая на земле, ухаживая за урожаем или животными. Тяжёлый труд закалил ваше тело и дух. Вы знаете цену честному труду и простым радостям жизни.",
-    skillProficiencies: ["animal-handling", "nature"],
+    skillProficiencies: ["animal_handling", "nature"],
     toolProficiencies: ["Инструменты плотника"],
     languages: 1,
     equipment: [
@@ -199,7 +199,7 @@ export const phb2024Backgrounds: Background[] = [
     nameRu: "Торговец",
     description:
       "Вы зарабатывали на жизнь куплей-продажей товаров. Вы знаете, как заключить выгодную сделку, и умеете находить общий язык с самыми разными людьми. Торговые пути — ваша стихия.",
-    skillProficiencies: ["animal-handling", "persuasion"],
+    skillProficiencies: ["animal_handling", "persuasion"],
     toolProficiencies: ["Инструменты навигатора"],
     languages: 1,
     equipment: [
