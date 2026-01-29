@@ -76,28 +76,25 @@ model RoomPlayer {
 
 model Achievement {
   id          String   @id @default(uuid())
+  key         String
   name        String
   description String
   icon        String
+  category    String
   xpReward    Int      @default(0)
-  roomId      String
-  createdById String
+  rarity      String
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
 
-  // room      Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  // createdBy User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
   playerAchievements PlayerAchievement[]
 }
 
 model PlayerAchievement {
   id            String   @id @default(uuid())
-  achievementId String
-  userId        String
-  characterId   String?
-  grantedById   String
-  grantedAt     DateTime @default(now())
+  achievementId String   @map("achievementid")
+  userId        String   @map("userid")
+  characterId   String?  @map("characterid")
+  grantedById   String   @map("grantedbyid")
+  grantedAt     DateTime @default(now()) @map("grantedat")
 
   achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
   character    Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
