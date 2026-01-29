@@ -90,11 +90,11 @@ model Achievement {
 
 model PlayerAchievement {
   id            String   @id @default(uuid())
-  achievementId String   @map("achievementid")
-  userId        String   @map("userid")
-  characterId   String?  @map("characterid")
-  grantedById   String   @map("grantedbyid")
-  grantedAt     DateTime @default(now()) @map("grantedat")
+  achievementId String
+  userId        String
+  characterId   String?
+  grantedById   String
+  grantedAt     DateTime @default(now())
 
   achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
   character    Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
