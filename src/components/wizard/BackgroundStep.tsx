@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal, ModalContent, ModalFooter } from "@/components/ui/modal";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useCharacterStore } from "@/store/characterStore";
 import { getAllBackgrounds } from "@/data/phb2024";
 import { getFeatByName } from "@/data/phb2024/feats";
@@ -224,18 +225,43 @@ export function BackgroundStep() {
                 </div>
 
                 {/* Черта */}
-                {bg.originFeat && (
-                  <div className="mt-2 p-2 bg-amber-500/10 rounded-lg border border-amber-500/30">
-                    <div className="flex items-center gap-1 text-xs text-amber-600">
-                      <Star className="w-3 h-3" />
-                      <span className="font-medium">{bg.originFeat}</span>
-                    </div>
-                    {feat && (
+                {bg.originFeat && feat && (
+                  <Tooltip
+                    content={
+                      <div className="space-y-2">
+                        <p className="font-semibold text-amber-500 flex items-center gap-2">
+                          <Star className="w-4 h-4" />
+                          {bg.originFeat}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {feat.description}
+                        </p>
+                        <div className="space-y-1">
+                          {feat.benefits.map((benefit, i) => (
+                            <div
+                              key={i}
+                              className="flex items-start gap-2 text-sm"
+                            >
+                              <span className="text-amber-500 mt-0.5">•</span>
+                              <span>{benefit}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    }
+                    position="top"
+                    maxWidth="max-w-md"
+                  >
+                    <div className="mt-2 p-2 bg-amber-500/10 rounded-lg border border-amber-500/30 cursor-help hidden md:block">
+                      <div className="flex items-center gap-1 text-xs text-amber-600">
+                        <Star className="w-3 h-3" />
+                        <span className="font-medium">{bg.originFeat}</span>
+                      </div>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
                         {feat.benefits[0]}
                       </p>
-                    )}
-                  </div>
+                    </div>
+                  </Tooltip>
                 )}
               </CardContent>
             </Card>

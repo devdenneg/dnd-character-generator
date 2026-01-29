@@ -15,8 +15,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { charactersApi } from "@/api/client";
 
 export function SummaryStep() {
-  const { character, getStats, resetCharacter, getCharacterData } =
-    useCharacterStore();
+  const {
+    character,
+    getStats,
+    resetCharacter,
+    getCharacterData,
+    loadedCharacterId,
+  } = useCharacterStore();
   const { isAuthenticated } = useAuth();
   const stats = getStats();
 
@@ -58,13 +63,25 @@ export function SummaryStep() {
       return;
     }
 
+    // Предотвращаем повторное сохранение
+    if (isSaving) {
+      return;
+    }
+
+    // Если персонаж был загружен и не менялся - не сохраняем
+    if (loadedCharacterId) {
+      setSaveError("Персонаж уже сохранён. Внесите изменения для обновления.");
+      return;
+    }
+
     try {
       setIsSaving(true);
       setSaveError("");
       setSaveSuccess(false);
 
       const characterData = getCharacterData();
-      await charactersApi.create({
+
+      const response = await charactersApi.create({
         name: character.name || "Безымянный герой",
         data: characterData,
       });
@@ -84,7 +101,7 @@ export function SummaryStep() {
       <div className="flex gap-3 flex-wrap">
         <Button
           onClick={handleSaveToCloud}
-          disabled={isSaving}
+          disabled={isSaving || loadedCharacterId !== null}
           className="gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90"
         >
           {isSaving ? (
@@ -94,7 +111,11 @@ export function SummaryStep() {
           ) : (
             <Save className="w-4 h-4" />
           )}
-          {saveSuccess ? "Сохранено!" : "Сохранить в облако"}
+          {saveSuccess
+            ? "Сохранено!"
+            : loadedCharacterId
+              ? "Уже сохранён"
+              : "Сохранить в облако"}
         </Button>
         <Button onClick={handleExportPdf} className="gap-2">
           <FileText className="w-4 h-4" />

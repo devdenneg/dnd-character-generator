@@ -616,6 +616,7 @@ interface CharacterState {
   // Wizard state
   currentStep: WizardStep;
   completedSteps: WizardStep[];
+  loadedCharacterId: string | null;
 
   // Actions - Navigation
   setStep: (step: WizardStep) => void;
@@ -658,7 +659,7 @@ interface CharacterState {
 
   // Actions - Save/Load
   getCharacterData: () => Character;
-  loadCharacter: (data: Character) => void;
+  loadCharacter: (data: Character, characterId?: string) => void;
 }
 
 // Calculate ability modifier
@@ -675,6 +676,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
   character: { ...initialCharacter },
   currentStep: "race",
   completedSteps: [],
+  loadedCharacterId: null,
 
   // Navigation
   setStep: (step) => set({ currentStep: step }),
@@ -737,17 +739,58 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         ).length;
         return classSkillCount >= character.class.skillCount;
       case "abilities":
-        return true; // Always can proceed with default scores
+        // Проверяем, что все значения из стандартного набора распределены
+        const scores = Object.values(character.abilityScores);
+        const standardArray = [15, 14, 13, 12, 10, 8];
+        const sortedScores = [...scores].sort((a, b) => b - a);
+        const sortedStandard = [...standardArray].sort((a, b) => b - a);
+        // Проверяем, что распределены именно значения из стандартного набора
+        return sortedScores.every(
+          (score, idx) => score === sortedStandard[idx],
+        );
       case "background":
         return character.background !== null;
       case "abilityIncrease":
-        // Проверяем, что выбраны +2 и +1
+        // Проверяем, что выбраны бонусы (+2 и +1 ИЛИ три раза +1)
         const increases = character.abilityScoreIncreases;
-        const hasPlus2 = Object.values(increases).some((v) => v === 2);
-        const hasPlus1 = Object.values(increases).some((v) => v === 1);
-        return hasPlus2 && hasPlus1;
+        const plus2Count = Object.values(increases).filter(
+          (v) => v === 2,
+        ).length;
+        const plus1Count = Object.values(increases).filter(
+          (v) => v === 1,
+        ).length;
+        // Стратегия +2/+1 или +1/+1/+1
+        return (
+          (plus2Count === 1 && plus1Count === 1) ||
+          (plus2Count === 0 && plus1Count === 3)
+        );
       case "equipment":
-        return true; // Equipment is optional
+        // Проверяем обязательное снаряжение
+        const hasGearPack = character.equipment.some(
+          (e) => e.category === "gear",
+        );
+        const weaponCount = character.equipment.filter(
+          (e) => e.category === "weapon",
+        ).length;
+        const armorCount = character.equipment.filter(
+          (e) => e.category === "armor" && e.id !== "shield",
+        ).length;
+
+        // Проверка оружия: если класс владеет оружием, нужно минимум 1
+        const hasWeaponProf =
+          (character.class?.weaponProficiencies || []).length > 0;
+        const needsWeapon = hasWeaponProf && weaponCount === 0;
+
+        // Проверка доспеха: если класс владеет доспехами (кроме варвара/монаха), нужен доспех или щит
+        const hasArmorProf =
+          (character.class?.armorProficiencies || []).length > 0;
+        const isBarbarianOrMonk =
+          character.class?.id === "barbarian" || character.class?.id === "monk";
+        const hasAnyArmor =
+          armorCount > 0 || character.equipment.some((e) => e.id === "shield");
+        const needsArmor = hasArmorProf && !isBarbarianOrMonk && !hasAnyArmor;
+
+        return hasGearPack && !needsWeapon && !needsArmor;
       case "spells":
         return true; // Spells are optional (non-casters can skip)
       case "details":
@@ -1115,6 +1158,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       character: { ...initialCharacter },
       currentStep: "race",
       completedSteps: [],
+      loadedCharacterId: null,
     }),
 
   resetStep: (step) => {
@@ -1171,10 +1215,23 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     return get().character;
   },
 
-  loadCharacter: (data: Character) => {
+  loadCharacter: (data: Character, characterId?: string) => {
+    console.log("loadCharacter called with:", data);
+    console.log("Race data:", data?.race);
+    console.log("Class data:", data?.class);
+    console.log("Background data:", data?.background);
+    console.log("Data keys:", Object.keys(data || {}));
+
+    // Проверяем что data не null/undefined
+    if (!data) {
+      console.error("loadCharacter: data is null or undefined");
+      return;
+    }
+
     set({
       character: { ...data },
       currentStep: "summary",
+      loadedCharacterId: characterId || null,
       completedSteps: [
         "race",
         "class",
@@ -1187,5 +1244,10 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         "details",
       ],
     });
+
+    // Проверяем что сохранилось
+    const newState = get();
+    console.log("After set - character.race:", newState.character.race);
+    console.log("After set - character.class:", newState.character.class);
   },
 }));

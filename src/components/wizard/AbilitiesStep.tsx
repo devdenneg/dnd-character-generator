@@ -174,180 +174,93 @@ export function AbilitiesStep() {
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-primary mt-0.5" />
             <div>
-              <p className="font-medium">Характеристики в PHB 2024</p>
+              <p className="font-medium">Стандартный набор характеристик</p>
               <p className="text-sm text-muted-foreground">
-                Характеристики определяют базовые способности персонажа.
-                Выберите один из трёх официальных методов генерации. После
-                выбора предыстории вы распределите <strong>+2 и +1</strong> к
-                любым характеристикам.
+                Распределите стандартные значения (15, 14, 13, 12, 10, 8) между
+                характеристиками персонажа. После выбора предыстории вы
+                распределите <strong>+2 и +1</strong> к любым характеристикам.
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Method selection */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {(["standard", "pointbuy", "roll"] as const).map((m) => (
-          <Card
-            key={m}
-            className={`cursor-pointer transition-all hover:border-primary/50 ${
-              method === m ? "border-primary ring-2 ring-primary/20" : ""
-            }`}
-            onClick={() => handleMethodChange(m)}
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">
-                {t(`abilityMethods.${m}.name`)}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground">
-                {t(`abilityMethods.${m}.description`)}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Point buy remaining points */}
-      {method === "pointbuy" && (
-        <Card className="bg-muted/30">
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">
-                {t("abilities.pointsRemaining")}:
-              </span>
-              <Badge
-                variant={remainingPoints > 0 ? "secondary" : "default"}
-                className="text-lg px-4"
-              >
-                {remainingPoints}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Roll button */}
-      {method === "roll" && (
-        <Button onClick={rollAbilities} className="w-full gap-2">
-          <Dices className="w-4 h-4" />
-          Бросить характеристики (4d6, отбросить наименьший)
-        </Button>
-      )}
-
       {/* Standard array available values */}
-      {method === "standard" && (
-        <Card className="bg-muted/30">
-          <CardContent className="py-4">
-            <div className="flex items-center gap-4 flex-wrap">
-              <span className="font-medium text-sm">Доступные значения:</span>
-              <div className="flex gap-2">
-                {availableStandard.map((value, index) => (
-                  <Badge
-                    key={`${value}-${index}`}
-                    variant="secondary"
-                    className="text-lg px-3"
-                  >
-                    {value}
-                  </Badge>
-                ))}
-              </div>
+      <Card className="bg-muted/30">
+        <CardContent className="py-3 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+            <span className="font-medium text-xs sm:text-sm">Доступные:</span>
+            <div className="flex gap-1.5 sm:gap-2 flex-wrap">
+              {availableStandard.map((value, index) => (
+                <Badge
+                  key={`${value}-${index}`}
+                  variant="secondary"
+                  className="text-sm sm:text-lg px-2 sm:px-3"
+                >
+                  {value}
+                </Badge>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Ability scores */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         {ABILITIES.map((ability) => {
           const score = character.abilityScores[ability];
           const modifier = calculateModifier(score);
 
           return (
             <Card key={ability} className="relative overflow-hidden">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-sm sm:text-lg truncate">
                       {getAbilityNameRu(ability)}
                     </CardTitle>
                     <CardDescription className="text-xs">
                       {getAbilityAbbr(ability)}
                     </CardDescription>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">{score}</div>
-                    <Badge variant={modifier >= 0 ? "default" : "secondary"}>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <div className="text-xl sm:text-2xl font-bold">{score}</div>
+                    <Badge
+                      variant={modifier >= 0 ? "default" : "secondary"}
+                      className="text-xs"
+                    >
                       {formatModifier(modifier)}
                     </Badge>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1 leading-tight">
                   {ABILITY_HINTS[ability]}
                 </p>
               </CardHeader>
-              <CardContent>
-                {method === "pointbuy" && (
-                  <div className="flex items-center justify-center gap-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handlePointBuyChange(ability, -1)}
-                      disabled={score <= 8}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <span className="w-8 text-center font-mono text-lg">
-                      {score}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handlePointBuyChange(ability, 1)}
-                      disabled={
-                        score >= 15 ||
-                        remainingPoints <
-                          POINT_BUY_COSTS[score + 1] - POINT_BUY_COSTS[score]
-                      }
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+              <CardContent className="px-3 sm:px-6">
+                <div className="flex flex-wrap gap-1 justify-center">
+                  {[...STANDARD_ARRAY]
+                    .sort((a, b) => b - a)
+                    .map((value) => {
+                      const isAssigned =
+                        character.abilityScores[ability] === value;
+                      const isAvailable =
+                        availableStandard.includes(value) || isAssigned;
 
-                {method === "standard" && (
-                  <div className="flex flex-wrap gap-1 justify-center">
-                    {[...STANDARD_ARRAY]
-                      .sort((a, b) => b - a)
-                      .map((value) => {
-                        const isAssigned =
-                          character.abilityScores[ability] === value;
-                        const isAvailable =
-                          availableStandard.includes(value) || isAssigned;
-
-                        return (
-                          <Button
-                            key={value}
-                            variant={isAssigned ? "default" : "outline"}
-                            size="sm"
-                            className="w-10 h-8"
-                            disabled={!isAvailable}
-                            onClick={() => handleStandardAssign(ability, value)}
-                          >
-                            {value}
-                          </Button>
-                        );
-                      })}
-                  </div>
-                )}
-
-                {method === "roll" && (
-                  <div className="text-center text-sm text-muted-foreground">
-                    Нажмите кнопку выше для переброса
-                  </div>
-                )}
+                      return (
+                        <Button
+                          key={value}
+                          variant={isAssigned ? "default" : "outline"}
+                          size="sm"
+                          className="w-8 h-7 sm:w-10 sm:h-8 text-xs sm:text-sm"
+                          disabled={!isAvailable}
+                          onClick={() => handleStandardAssign(ability, value)}
+                        >
+                          {value}
+                        </Button>
+                      );
+                    })}
+                </div>
               </CardContent>
             </Card>
           );

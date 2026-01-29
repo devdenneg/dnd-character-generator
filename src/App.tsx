@@ -43,16 +43,20 @@ const queryClient = new QueryClient({
 
 function CharacterWizardPage() {
   const navigate = useNavigate();
-  const { currentStep, resetCharacter } = useCharacterStore();
+  const { currentStep, resetCharacter, character, loadedCharacterId } =
+    useCharacterStore();
   const [showGlossary, setShowGlossary] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Clear character store when leaving the page
   useEffect(() => {
     return () => {
-      resetCharacter();
+      // Не сбрасываем если персонаж был загружен из сохранения
+      if (!loadedCharacterId) {
+        resetCharacter();
+      }
     };
-  }, [resetCharacter]);
+  }, [resetCharacter, loadedCharacterId]);
 
   // Show login required message
   if (!authLoading && !isAuthenticated) {

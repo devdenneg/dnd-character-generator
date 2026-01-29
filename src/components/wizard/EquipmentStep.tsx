@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package, Check, Info, Swords } from "lucide-react";
 import {
   Card,
@@ -629,7 +629,13 @@ const COMMON_WEAPONS: WeaponWithProps[] = [
     cost: { quantity: 50, unit: "gp" },
     weight: 18,
     damage: { dice: "1d10", type: "колющий" },
-    properties: ["Боеприпас", "Тяжёлое", "Перезарядка", "Двуручное", "Дистанция (100/400)"],
+    properties: [
+      "Боеприпас",
+      "Тяжёлое",
+      "Перезарядка",
+      "Двуручное",
+      "Дистанция (100/400)",
+    ],
     isRanged: true,
     isTwoHanded: true,
   },
@@ -795,19 +801,26 @@ function getAvailableArmor(
   return COMMON_ARMOR.filter((armor) => {
     if (isDruid && armor.isMetal) return false;
 
-    const hasLight = armorProficiencies.some(
-      (p) =>
-        p.toLowerCase().includes("лёгкие") ||
-        p.toLowerCase().includes("легкие"),
+    const hasAll = armorProficiencies.some((p) =>
+      p.toLowerCase().includes("все доспехи"),
     );
-    const hasMedium = armorProficiencies.some((p) =>
-      p.toLowerCase().includes("средние"),
-    );
-    const hasHeavy = armorProficiencies.some(
-      (p) =>
-        p.toLowerCase().includes("тяжёлые") ||
-        p.toLowerCase().includes("тяжелые"),
-    );
+    const hasLight =
+      hasAll ||
+      armorProficiencies.some(
+        (p) =>
+          p.toLowerCase().includes("лёгкие") ||
+          p.toLowerCase().includes("легкие"),
+      );
+    const hasMedium =
+      hasAll ||
+      armorProficiencies.some((p) => p.toLowerCase().includes("средние"));
+    const hasHeavy =
+      hasAll ||
+      armorProficiencies.some(
+        (p) =>
+          p.toLowerCase().includes("тяжёлые") ||
+          p.toLowerCase().includes("тяжелые"),
+      );
     const hasShield = armorProficiencies.some((p) =>
       p.toLowerCase().includes("щит"),
     );
@@ -970,6 +983,30 @@ export function EquipmentStep() {
       return counts;
     },
   );
+
+  // Синхронизация с загруженными данными
+  useEffect(() => {
+    // Обновляем selectedPack
+    for (const [key, items] of Object.entries(EQUIPMENT_PACKS)) {
+      const allItemsPresent = items.every((packItem) =>
+        character.equipment.some((e) => e.id === packItem.id),
+      );
+      if (allItemsPresent && items.length > 0) {
+        setSelectedPack(key);
+        break;
+      }
+    }
+
+    // Обновляем weaponCounts
+    const counts: Record<string, number> = {};
+    character.equipment.forEach((e) => {
+      if (e.category === "weapon") {
+        const baseId = e.id.replace(/-2$/, "");
+        counts[baseId] = (counts[baseId] || 0) + 1;
+      }
+    });
+    setWeaponCounts(counts);
+  }, [character.equipment]);
 
   const armorProficiencies = character.class?.armorProficiencies || [];
   const weaponProficiencies = character.class?.weaponProficiencies || [];

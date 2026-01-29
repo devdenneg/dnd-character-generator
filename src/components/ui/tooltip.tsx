@@ -23,86 +23,78 @@ export function Tooltip({
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isVisible && triggerRef.current) {
+    if (isVisible && triggerRef.current && tooltipRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const tooltipEl = tooltipRef.current;
+      const tooltipRect = tooltipEl.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const padding = 16;
 
       let top = 0;
       let left = 0;
+      let actualPosition = position;
 
+      // Определяем начальную позицию
       switch (position) {
         case "top":
-          top = rect.top - 8;
-          left = rect.left + rect.width / 2;
+          top = rect.top - tooltipRect.height - 8;
+          left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+          // Проверяем, влезает ли сверху
+          if (top < padding) {
+            actualPosition = "bottom";
+            top = rect.bottom + 8;
+          }
           break;
         case "bottom":
           top = rect.bottom + 8;
-          left = rect.left + rect.width / 2;
+          left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+          // Проверяем, влезает ли снизу
+          if (top + tooltipRect.height > viewportHeight - padding) {
+            actualPosition = "top";
+            top = rect.top - tooltipRect.height - 8;
+          }
           break;
         case "left":
-          top = rect.top + rect.height / 2;
-          left = rect.left - 8;
+          top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+          left = rect.left - tooltipRect.width - 8;
+          // Проверяем, влезает ли слева
+          if (left < padding) {
+            actualPosition = "right";
+            left = rect.right + 8;
+          }
           break;
         case "right":
-          top = rect.top + rect.height / 2;
+          top = rect.top + rect.height / 2 - tooltipRect.height / 2;
           left = rect.right + 8;
+          // Проверяем, влезает ли справа
+          if (left + tooltipRect.width > viewportWidth - padding) {
+            actualPosition = "left";
+            left = rect.left - tooltipRect.width - 8;
+          }
           break;
+      }
+
+      // Корректируем горизонтальное положение
+      if (left < padding) {
+        left = padding;
+      } else if (left + tooltipRect.width > viewportWidth - padding) {
+        left = viewportWidth - tooltipRect.width - padding;
+      }
+
+      // Корректируем вертикальное положение
+      if (top < padding) {
+        top = padding;
+      } else if (top + tooltipRect.height > viewportHeight - padding) {
+        top = viewportHeight - tooltipRect.height - padding;
       }
 
       setCoords({ top, left });
-
-      // Adjust if tooltip goes out of viewport
-      if (tooltipEl) {
-        const tooltipRect = tooltipEl.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        // Horizontal adjustment
-        if (tooltipRect.right > viewportWidth - 10) {
-          setCoords((prev) => ({
-            ...prev,
-            left: prev.left - (tooltipRect.right - viewportWidth + 20),
-          }));
-        }
-        if (tooltipRect.left < 10) {
-          setCoords((prev) => ({
-            ...prev,
-            left: prev.left + (10 - tooltipRect.left),
-          }));
-        }
-
-        // Vertical adjustment
-        if (tooltipRect.top < 10 && position === "top") {
-          // Switch to bottom
-          setCoords({
-            top: rect.bottom + 8,
-            left: rect.left + rect.width / 2,
-          });
-        }
-        if (tooltipRect.bottom > viewportHeight - 10 && position === "bottom") {
-          // Switch to top
-          setCoords({
-            top: rect.top - 8,
-            left: rect.left + rect.width / 2,
-          });
-        }
-      }
     }
   }, [isVisible, position]);
 
   const getTransformOrigin = () => {
-    switch (position) {
-      case "top":
-        return "translateX(-50%) translateY(-100%)";
-      case "bottom":
-        return "translateX(-50%)";
-      case "left":
-        return "translateX(-100%) translateY(-50%)";
-      case "right":
-        return "translateY(-50%)";
-      default:
-        return "translateX(-50%) translateY(-100%)";
-    }
+    return "none";
   };
 
   return (

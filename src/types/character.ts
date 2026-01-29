@@ -58,6 +58,7 @@ export interface CharacterClass {
   features: ClassFeature[];
   subclasses: Subclass[];
   subclassLevel: number;
+  startingEquipment?: string[];
   spellcasting?: {
     ability: AbilityName;
     cantripsKnown: number[];

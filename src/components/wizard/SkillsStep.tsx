@@ -110,11 +110,11 @@ export function SkillsStep() {
       {/* Информация о выборе */}
       <Card className="bg-primary/5 border-primary/20">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Info className="w-5 h-5 text-primary" />
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+            <Info className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             Выбор навыков
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Класс <strong>{character.class.nameRu}</strong> позволяет выбрать{" "}
             <strong>{maxSkillCount}</strong> навыка из списка.
             {backgroundSkills.length > 0 && (
@@ -131,18 +131,20 @@ export function SkillsStep() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="bg-muted/50 px-4 py-2 rounded-lg">
-              <span className="text-sm text-muted-foreground">Выбрано: </span>
-              <span className="font-bold text-lg">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+            <div className="bg-muted/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg">
+              <span className="text-xs sm:text-sm text-muted-foreground">
+                Выбрано:{" "}
+              </span>
+              <span className="font-bold text-base sm:text-lg">
                 {selectedClassSkills.length} / {maxSkillCount}
               </span>
             </div>
-            <div className="bg-muted/50 px-4 py-2 rounded-lg">
-              <span className="text-sm text-muted-foreground">
-                Бонус мастерства:{" "}
+            <div className="bg-muted/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg">
+              <span className="text-xs sm:text-sm text-muted-foreground">
+                Бонус:{" "}
               </span>
-              <span className="font-bold text-lg text-primary">
+              <span className="font-bold text-base sm:text-lg text-primary">
                 +{proficiencyBonus}
               </span>
             </div>
@@ -152,10 +154,10 @@ export function SkillsStep() {
 
       {/* Навыки от класса */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
           Навыки класса (выберите {maxSkillCount})
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
           {classSkillChoices.map((skillId) => {
             const skill = ALL_SKILLS.find((s) => s.id === skillId);
             if (!skill) return null;

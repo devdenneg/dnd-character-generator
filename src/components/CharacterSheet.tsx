@@ -91,13 +91,13 @@ function CollapsibleSection({
   return (
     <Card className="overflow-hidden">
       <CardHeader
-        className="cursor-pointer hover:bg-muted/50 transition-colors py-3"
+        className="cursor-pointer hover:bg-muted/50 transition-colors py-2 sm:py-3"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <CardTitle className="text-lg flex items-center justify-between">
-          <span className="flex items-center gap-2">
+        <CardTitle className="text-base sm:text-lg flex items-center justify-between">
+          <span className="flex items-center gap-1.5 sm:gap-2">
             {icon}
-            {title}
+            <span className="truncate">{title}</span>
             {badge && (
               <Badge variant="secondary" className="ml-2 text-xs">
                 {badge}
@@ -216,20 +216,23 @@ function AbilityBlock({
 
   return (
     <Tooltip content={tooltipContent} maxWidth="max-w-xs">
-      <div className="text-center bg-gradient-to-b from-muted/50 to-muted/30 p-4 rounded-xl border-2 border-border hover:border-primary/50 transition-all cursor-help">
-        <div className="text-xs font-bold text-primary mb-1">
+      <div className="text-center bg-gradient-to-b from-muted/50 to-muted/30 p-3 sm:p-4 rounded-xl border-2 border-border hover:border-primary/50 transition-all cursor-help">
+        <div className="text-xs font-bold text-primary mb-1 truncate">
           {getAbilityAbbr(ability)}
         </div>
-        <div className="text-3xl font-bold">{formatModifier(modifier)}</div>
-        <div className="w-10 h-10 mx-auto mt-2 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+        <div className="text-2xl sm:text-3xl font-bold">
+          {formatModifier(modifier)}
+        </div>
+        <div className="w-9 h-9 sm:w-10 sm:h-10 mx-auto mt-1.5 sm:mt-2 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm sm:text-base">
           {score}
         </div>
-        <div className="mt-2 text-xs text-muted-foreground">
-          Спасбросок:{" "}
+        <div className="mt-1.5 sm:mt-2 text-xs text-muted-foreground flex items-center justify-center gap-1 leading-tight">
+          <span className="hidden sm:inline">Спасбросок:</span>
+          <span className="sm:hidden">Спас:</span>
           <span className={hasSaveProficiency ? "text-primary font-bold" : ""}>
             {formatModifier(savingThrow)}
           </span>
-          {hasSaveProficiency && <span className="ml-1">●</span>}
+          {hasSaveProficiency && <span>●</span>}
         </div>
       </div>
     </Tooltip>
@@ -289,19 +292,22 @@ function SkillRow({
   return (
     <Tooltip content={tooltipContent} maxWidth="max-w-xs">
       <div
-        className={`flex items-center justify-between p-2 rounded-lg cursor-help transition-colors ${
+        className={`flex items-center justify-between gap-2 p-2 rounded-lg cursor-help transition-colors ${
           isProficient
             ? "bg-primary/10 hover:bg-primary/20"
             : "bg-muted/20 hover:bg-muted/40"
         }`}
       >
-        <span className="text-sm flex items-center gap-2">
+        <span className="text-xs sm:text-sm flex items-center gap-1.5 min-w-0 flex-1">
           {isProficient && (
-            <Star className="w-3 h-3 text-primary fill-primary" />
+            <Star className="w-3 h-3 text-primary fill-primary flex-shrink-0" />
           )}
-          {skillName}
+          <span className="truncate">{skillName}</span>
         </span>
-        <Badge variant={isProficient ? "default" : "secondary"}>
+        <Badge
+          variant={isProficient ? "default" : "secondary"}
+          className="flex-shrink-0 text-xs"
+        >
           {formatModifier(bonus)}
         </Badge>
       </div>
@@ -608,30 +614,42 @@ export function CharacterSheet() {
             </div>
 
             {/* Основные показатели */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="text-center bg-card p-3 rounded-xl border-2 border-red-500/30">
-                <Heart className="w-5 h-5 mx-auto text-red-500 mb-1" />
-                <div className="text-2xl font-bold">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <div className="text-center bg-card p-2.5 sm:p-3 rounded-xl border-2 border-red-500/30">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 mx-auto text-red-500 mb-1" />
+                <div className="text-xl sm:text-2xl font-bold">
                   {stats.hitPointMaximum}
                 </div>
-                <div className="text-xs text-muted-foreground">Хиты</div>
+                <div className="text-xs text-muted-foreground leading-tight">
+                  Хиты
+                </div>
               </div>
-              <div className="text-center bg-card p-3 rounded-xl border-2 border-blue-500/30">
-                <Shield className="w-5 h-5 mx-auto text-blue-500 mb-1" />
-                <div className="text-2xl font-bold">{stats.armorClass}</div>
-                <div className="text-xs text-muted-foreground">КД</div>
+              <div className="text-center bg-card p-2.5 sm:p-3 rounded-xl border-2 border-blue-500/30">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 mx-auto text-blue-500 mb-1" />
+                <div className="text-xl sm:text-2xl font-bold">
+                  {stats.armorClass}
+                </div>
+                <div className="text-xs text-muted-foreground leading-tight">
+                  КД
+                </div>
               </div>
-              <div className="text-center bg-card p-3 rounded-xl border-2 border-green-500/30">
-                <Footprints className="w-5 h-5 mx-auto text-green-500 mb-1" />
-                <div className="text-2xl font-bold">{stats.speed}</div>
-                <div className="text-xs text-muted-foreground">Скорость</div>
+              <div className="text-center bg-card p-2.5 sm:p-3 rounded-xl border-2 border-green-500/30">
+                <Footprints className="w-4 h-4 sm:w-5 sm:h-5 mx-auto text-green-500 mb-1" />
+                <div className="text-xl sm:text-2xl font-bold">
+                  {stats.speed}
+                </div>
+                <div className="text-xs text-muted-foreground leading-tight">
+                  Скорость
+                </div>
               </div>
-              <div className="text-center bg-card p-3 rounded-xl border-2 border-amber-500/30">
-                <Star className="w-5 h-5 mx-auto text-amber-500 mb-1" />
-                <div className="text-2xl font-bold">
+              <div className="text-center bg-card p-2.5 sm:p-3 rounded-xl border-2 border-amber-500/30">
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 mx-auto text-amber-500 mb-1" />
+                <div className="text-xl sm:text-2xl font-bold">
                   +{stats.proficiencyBonus}
                 </div>
-                <div className="text-xs text-muted-foreground">Мастерство</div>
+                <div className="text-xs text-muted-foreground leading-tight px-0.5">
+                  Бонус
+                </div>
               </div>
             </div>
           </div>
@@ -662,8 +680,8 @@ export function CharacterSheet() {
 
       {/* Пояснение основных показателей */}
       <CollapsibleSection
-        title="Как рассчитываются показатели"
-        icon={<Calculator className="w-5 h-5" />}
+        title="Расчёт показателей"
+        icon={<Calculator className="w-4 h-4 sm:w-5 sm:h-5" />}
         defaultOpen={false}
         badge="Для новичков"
       >
@@ -734,7 +752,7 @@ export function CharacterSheet() {
           </p>
         </ExplanationBox>
 
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
           {ABILITIES.map((ability) => {
             const baseScore = character.abilityScores[ability];
             const raceBonus = character.abilityScoreIncreases?.[ability] || 0;
@@ -763,7 +781,7 @@ export function CharacterSheet() {
       <CollapsibleSection
         title="Навыки"
         icon={<BookOpen className="w-5 h-5" />}
-        badge={`${character.skillProficiencies.length} владений`}
+        badge={`${character.skillProficiencies?.length || 0} владений`}
       >
         <ExplanationBox title="Как работают навыки?">
           <p>
@@ -774,7 +792,7 @@ export function CharacterSheet() {
           </p>
         </ExplanationBox>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {Object.entries(stats.skills).map(([skillId, bonus]) => {
             const ability = skillAbilityMap[skillId] || "strength";
             return (
@@ -793,7 +811,7 @@ export function CharacterSheet() {
       </CollapsibleSection>
 
       {/* Оружие и атаки */}
-      {character.equipment.filter((e) => e.category === "weapon").length >
+      {character.equipment?.filter((e) => e.category === "weapon").length >
         0 && (
         <CollapsibleSection
           title="Оружие и атаки"
@@ -848,7 +866,7 @@ export function CharacterSheet() {
         <CollapsibleSection
           title="Заклинания"
           icon={<Sparkles className="w-5 h-5" />}
-          badge={`${character.cantripsKnown.length + character.spellsKnown.length} известно`}
+          badge={`${(character.cantripsKnown?.length || 0) + (character.spellsKnown?.length || 0)} известно`}
         >
           {/* Магические характеристики */}
           <ExplanationBox title="Магия вашего класса">
@@ -951,7 +969,7 @@ export function CharacterSheet() {
           </div>
 
           {/* Заговоры с описаниями */}
-          {character.cantripsKnown.length > 0 && (
+          {character.cantripsKnown && character.cantripsKnown.length > 0 && (
             <div className="mb-4">
               <h4 className="font-medium mb-3 flex items-center gap-2">
                 <span className="w-6 h-6 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
@@ -974,7 +992,7 @@ export function CharacterSheet() {
           )}
 
           {/* Заклинания 1 круга с описаниями */}
-          {character.spellsKnown.length > 0 && (
+          {character.spellsKnown && character.spellsKnown.length > 0 && (
             <div>
               <h4 className="font-medium mb-3 flex items-center gap-2">
                 <span className="w-6 h-6 rounded bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold">
@@ -1068,7 +1086,7 @@ export function CharacterSheet() {
 
         {/* Выбранное снаряжение */}
         <div className="space-y-3">
-          {character.equipment.filter((e) => e.category === "armor").length >
+          {character.equipment?.filter((e) => e.category === "armor").length >
             0 && (
             <div>
               <h4 className="font-medium text-sm mb-2">Доспехи:</h4>
@@ -1088,7 +1106,7 @@ export function CharacterSheet() {
             </div>
           )}
 
-          {character.equipment.filter((e) => e.category === "gear").length >
+          {character.equipment?.filter((e) => e.category === "gear").length >
             0 && (
             <div>
               <h4 className="font-medium text-sm mb-2">Снаряжение:</h4>
@@ -1250,10 +1268,10 @@ export function CharacterSheet() {
           <div className="p-3 bg-muted/30 rounded-xl">
             <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-emerald-400" />
-              Навыки ({character.skillProficiencies.length})
+              Навыки ({character.skillProficiencies?.length || 0})
             </h4>
             <div className="flex flex-wrap gap-1">
-              {character.skillProficiencies.map((s) => (
+              {character.skillProficiencies?.map((s) => (
                 <Badge key={s} variant="outline">
                   {getSkillNameRu(s)}
                 </Badge>

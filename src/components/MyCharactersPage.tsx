@@ -73,7 +73,22 @@ export function MyCharactersPage() {
   };
 
   const handleLoad = (character: SavedCharacter) => {
-    loadCharacter(character.data);
+    console.log("Loading character:", character);
+    console.log("Character data:", character.data);
+    console.log("Character data type:", typeof character.data);
+    console.log("Character data.race:", character.data?.race);
+    console.log(
+      "Character data stringified:",
+      JSON.stringify(character.data, null, 2),
+    );
+    loadCharacter(character.data, character.id);
+
+    // Проверим что в store после загрузки
+    setTimeout(() => {
+      const storeState = useCharacterStore.getState();
+      console.log("Store after load:", storeState.character);
+    }, 100);
+
     navigate("/character");
   };
 

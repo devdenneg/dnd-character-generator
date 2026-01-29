@@ -123,96 +123,108 @@ export function DetailsStep() {
             быть изменены.
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
             {/* Скорость */}
-            <div className="bg-card rounded-xl p-3 border border-border text-center">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mx-auto mb-2">
-                <Footprints className="w-5 h-5 text-emerald-500" />
+            <div className="bg-card rounded-xl p-2.5 sm:p-3 border border-border text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+                <Footprints className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
               </div>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.speed}
               </div>
-              <div className="text-xs text-muted-foreground">Скорость (фт)</div>
+              <div className="text-xs text-muted-foreground leading-tight px-0.5">
+                Скорость
+              </div>
               {character.race && (
-                <div className="text-[10px] text-emerald-600 mt-1">
+                <div className="text-[10px] text-emerald-600 mt-0.5 sm:mt-1">
                   от {character.race.nameRu}
                 </div>
               )}
             </div>
 
             {/* Размер */}
-            <div className="bg-card rounded-xl p-3 border border-border text-center">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mx-auto mb-2">
-                <Ruler className="w-5 h-5 text-blue-500" />
+            <div className="bg-card rounded-xl p-2.5 sm:p-3 border border-border text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+                <Ruler className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
               </div>
-              <div className="text-2xl font-bold text-foreground">
-                {character.race?.size === "Small" ? "Маленький" : "Средний"}
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {character.race?.size === "Small" ? "М" : "С"}
               </div>
-              <div className="text-xs text-muted-foreground">Размер</div>
+              <div className="text-xs text-muted-foreground leading-tight px-0.5">
+                Размер
+              </div>
               {character.race && (
-                <div className="text-[10px] text-blue-600 mt-1">
+                <div className="text-[10px] text-blue-600 mt-0.5 sm:mt-1 truncate">
                   от {character.race.nameRu}
                 </div>
               )}
             </div>
 
             {/* Хиты */}
-            <div className="bg-card rounded-xl p-3 border border-border text-center">
-              <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center mx-auto mb-2">
-                <Heart className="w-5 h-5 text-red-500" />
+            <div className="bg-card rounded-xl p-2.5 sm:p-3 border border-border text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-red-500/10 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
               </div>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.hitPointMaximum}
               </div>
-              <div className="text-xs text-muted-foreground">Макс. хиты</div>
+              <div className="text-xs text-muted-foreground leading-tight px-0.5">
+                Хиты
+              </div>
               {character.class && (
-                <div className="text-[10px] text-red-600 mt-1">
+                <div className="text-[10px] text-red-600 mt-0.5 sm:mt-1">
                   d{character.class.hitDie} + ТЕЛ
                 </div>
               )}
             </div>
 
             {/* КД */}
-            <div className="bg-card rounded-xl p-3 border border-border text-center">
-              <div className="w-10 h-10 rounded-lg bg-sky-500/10 flex items-center justify-center mx-auto mb-2">
-                <Shield className="w-5 h-5 text-sky-500" />
+            <div className="bg-card rounded-xl p-2.5 sm:p-3 border border-border text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-sky-500/10 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-sky-500" />
               </div>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.armorClass}
               </div>
-              <div className="text-xs text-muted-foreground">Класс доспеха</div>
-              <div className="text-[10px] text-sky-600 mt-1">
-                10 + ЛОВ + броня
+              <div className="text-xs text-muted-foreground leading-tight px-0.5">
+                КД
+              </div>
+              <div className="text-[10px] text-sky-600 mt-0.5 sm:mt-1">
+                10 + ЛОВ
               </div>
             </div>
 
             {/* Мастерство */}
-            <div className="bg-card rounded-xl p-3 border border-border text-center">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center mx-auto mb-2">
-                <Star className="w-5 h-5 text-amber-500" />
+            <div className="bg-card rounded-xl p-2.5 sm:p-3 border border-border text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-amber-500/10 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
               </div>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
                 +{stats.proficiencyBonus}
               </div>
-              <div className="text-xs text-muted-foreground">Мастерство</div>
-              <div className="text-[10px] text-amber-600 mt-1">
-                {character.level} уровень
+              <div className="text-xs text-muted-foreground leading-tight px-0.5">
+                Бонус
+              </div>
+              <div className="text-[10px] text-amber-600 mt-0.5 sm:mt-1">
+                {character.level} ур
               </div>
             </div>
 
             {/* Инициатива */}
-            <div className="bg-card rounded-xl p-3 border border-border text-center">
-              <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center mx-auto mb-2">
-                <Zap className="w-5 h-5 text-violet-500" />
+            <div className="bg-card rounded-xl p-2.5 sm:p-3 border border-border text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-violet-500/10 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-violet-500" />
               </div>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.initiative >= 0
                   ? `+${stats.initiative}`
                   : stats.initiative}
               </div>
-              <div className="text-xs text-muted-foreground">Инициатива</div>
-              <div className="text-[10px] text-violet-600 mt-1">
-                мод. Ловкости
+              <div className="text-xs text-muted-foreground leading-tight px-0.5">
+                Иниц.
+              </div>
+              <div className="text-[10px] text-violet-600 mt-0.5 sm:mt-1">
+                ЛОВ
               </div>
             </div>
           </div>

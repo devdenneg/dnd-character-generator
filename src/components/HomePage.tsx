@@ -10,9 +10,13 @@ import {
   Crown,
   DoorOpen,
   Plus,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { PREMADE_CHARACTERS } from "@/data/premadeCharacters";
+import { useCharacterStore } from "@/store/characterStore";
+import { useNavigate } from "react-router-dom";
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -63,9 +67,24 @@ const MENU_ITEMS = [
 
 export function HomePage({ onNavigate }: HomePageProps) {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const { loadCharacter } = useCharacterStore();
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleLoadPremadeCharacter = (
+    characterData: any,
+    premadeId: string,
+  ) => {
+    console.log("Loading premade character:", characterData);
+    console.log("Character race:", characterData.race);
+    console.log("Character class:", characterData.class);
+    // Передаем ID готового персонажа как characterId, чтобы он не сбрасывался
+    loadCharacter(characterData, `premade-${premadeId}`);
+    console.log("Character loaded, navigating...");
+    navigate("/character");
   };
 
   // Filter menu items based on user role
@@ -227,6 +246,59 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </div>
           )}
 
+          {/* Готовые персонажи */}
+          <div className="mt-12">
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Готовые персонажи
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Быстрый старт для новичков
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {PREMADE_CHARACTERS.map((premade, index) => (
+                <button
+                  key={premade.id}
+                  onClick={() =>
+                    handleLoadPremadeCharacter(premade.character, premade.id)
+                  }
+                  className="animate-fade-in-up text-left p-4 rounded-xl border transition-all duration-300 bg-card/60 backdrop-blur-sm border-border/50 hover:border-amber-500/50 hover:bg-card/80 cursor-pointer group"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="text-3xl flex-shrink-0">{premade.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base text-foreground mb-1 truncate">
+                        {premade.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {premade.description}
+                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                          {premade.character.race?.nameRu}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+                          {premade.character.class?.nameRu}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-amber-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Auth Info for non-authenticated users */}
           {!isAuthenticated && (
             <div className="mt-8 bg-primary/5 border border-primary/20 rounded-2xl p-6">
@@ -291,7 +363,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
                   D&D Generator — Инструменты для мастеров и игроков
                 </p>
                 <p className="text-xs text-muted-foreground/70 mt-1">
-                  Создано <span className="text-primary font-medium">antonchik</span>
+                  Создано{" "}
+                  <span className="text-primary font-medium">antonchik</span>
                 </p>
               </div>
               <div className="flex items-center gap-4">

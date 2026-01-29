@@ -1,6 +1,13 @@
 import type { ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Sparkles, Home } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Home,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useCharacterStore, type WizardStep } from "@/store/characterStore";
 import { t } from "@/data/translations/ru";
 
@@ -30,9 +37,109 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
     canProceed,
     completedSteps,
     character,
+    setStep,
   } = useCharacterStore();
 
   const isSpellcaster = character.class?.spellcasting !== undefined;
+  const canProceedToNext = canProceed();
+
+  // Функция для получения сообщения о том, что нужно заполнить
+  const getRequiredFieldsMessage = (): string => {
+    switch (currentStep) {
+      case "race":
+        return "Выберите расу персонажа";
+      case "class":
+        return "Выберите класс персонажа";
+      case "skills":
+        if (!character.class) return "Сначала выберите класс";
+        const backgroundSkills = character.background?.skillProficiencies || [];
+        const classSkillCount = character.skillProficiencies.filter(
+          (s) => !backgroundSkills.includes(s),
+        ).length;
+        const required = character.class.skillCount;
+        return `Выберите навыки от класса (${classSkillCount}/${required})`;
+      case "abilities":
+        const scores = Object.values(character.abilityScores);
+        const standardArray = [15, 14, 13, 12, 10, 8];
+        const remaining = standardArray.filter((val) => !scores.includes(val));
+        if (remaining.length > 0) {
+          return `Распределите все значения: ${remaining.join(", ")}`;
+        }
+        return "Распределите характеристики";
+      case "background":
+        return "Выберите предысторию персонажа";
+      case "abilityIncrease":
+        const increases = character.abilityScoreIncreases;
+        const plus2Count = Object.values(increases).filter(
+          (v) => v === 2,
+        ).length;
+        const plus1Count = Object.values(increases).filter(
+          (v) => v === 1,
+        ).length;
+
+        if (plus2Count === 0 && plus1Count === 0) {
+          return "Выберите стратегию и распределите бонусы";
+        }
+
+        // Стратегия +2/+1
+        if (plus2Count === 1 && plus1Count === 0) {
+          return "Выберите характеристику для бонуса +1";
+        }
+        if (plus2Count === 0 && plus1Count === 1) {
+          return "Выберите характеристику для бонуса +2";
+        }
+
+        // Стратегия +1/+1/+1
+        if (plus2Count === 0 && plus1Count < 3) {
+          return `Выберите ещё ${3 - plus1Count} характеристик(и) для +1`;
+        }
+
+        return "Распределите бонусы";
+      case "equipment":
+        const hasGearPack = character.equipment.some(
+          (e) => e.category === "gear",
+        );
+        const weaponCount = character.equipment.filter(
+          (e) => e.category === "weapon",
+        ).length;
+        const armorCount = character.equipment.filter(
+          (e) => e.category === "armor" && e.id !== "shield",
+        ).length;
+        const hasShield = character.equipment.some((e) => e.id === "shield");
+
+        const messages: string[] = [];
+        if (!hasGearPack) messages.push("набор снаряжения");
+
+        const hasWeaponProf =
+          (character.class?.weaponProficiencies || []).length > 0;
+        if (hasWeaponProf && weaponCount === 0) messages.push("оружие");
+
+        const hasArmorProf =
+          (character.class?.armorProficiencies || []).length > 0;
+        const isBarbarianOrMonk =
+          character.class?.id === "barbarian" || character.class?.id === "monk";
+        const hasAnyArmor = armorCount > 0 || hasShield;
+        if (hasArmorProf && !isBarbarianOrMonk && !hasAnyArmor) {
+          messages.push("доспех или щит");
+        }
+
+        if (messages.length > 0) {
+          return `Выберите: ${messages.join(", ")}`;
+        }
+        return "Выберите снаряжение";
+      case "spells":
+        return "Выберите заклинания (необязательно)";
+      case "details":
+        if (!character.name || character.name.trim().length === 0) {
+          return "Введите имя персонажа";
+        }
+        return "Заполните детали персонажа";
+      case "summary":
+        return "Просмотрите и экспортируйте персонажа";
+      default:
+        return "Заполните необходимые поля";
+    }
+  };
 
   const visibleSteps = Object.entries(STEP_INFO).filter(([step]) => {
     if (step === "spells" && !isSpellcaster) return false;
@@ -96,18 +203,29 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
                 const isActive = currentStep === step;
                 const isCompleted = completedSteps.includes(step as WizardStep);
                 const isPast = idx < currentVisibleIndex;
+                const isSummary = step === "summary";
+                const allStepsCompleted = visibleSteps
+                  .filter(([s]) => s !== "summary")
+                  .every(([s]) => completedSteps.includes(s as WizardStep));
+                const isClickable =
+                  isCompleted ||
+                  isPast ||
+                  isActive ||
+                  (isSummary && allStepsCompleted);
 
                 return (
-                  <div
+                  <button
                     key={step}
+                    onClick={() => isClickable && setStep(step as WizardStep)}
+                    disabled={!isClickable}
                     className={`
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
+                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all w-full
                       ${
                         isActive
                           ? "bg-primary/15 text-primary"
                           : isCompleted || isPast
-                            ? "text-foreground/80 hover:bg-muted/50"
-                            : "text-muted-foreground"
+                            ? "text-foreground/80 hover:bg-muted/50 cursor-pointer"
+                            : "text-muted-foreground cursor-not-allowed"
                       }
                     `}
                   >
@@ -134,7 +252,7 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
                     >
                       {info.label}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -253,23 +371,52 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
                 )}
               </div>
 
-              <Button
-                onClick={nextStep}
-                disabled={!canProceed() && !isLastStep}
-                className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
-              >
-                {isLastStep ? (
-                  <>
-                    <span className="hidden sm:inline">Экспорт PDF</span>
-                    <span>📄</span>
-                  </>
-                ) : (
-                  <>
+              {!canProceedToNext && !isLastStep ? (
+                <Tooltip
+                  content={
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-foreground mb-1">
+                          Необходимо заполнить поля
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {getRequiredFieldsMessage()}
+                        </p>
+                      </div>
+                    </div>
+                  }
+                  position="top"
+                  maxWidth="max-w-xs"
+                >
+                  <Button
+                    onClick={nextStep}
+                    disabled={true}
+                    className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                  >
                     <span className="hidden sm:inline">{t("app.next")}</span>
                     <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Button
+                  onClick={nextStep}
+                  disabled={!canProceedToNext && !isLastStep}
+                  className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                >
+                  {isLastStep ? (
+                    <>
+                      <span className="hidden sm:inline">Экспорт PDF</span>
+                      <span>📄</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">{t("app.next")}</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </footer>
         </div>

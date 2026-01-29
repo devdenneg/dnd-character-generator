@@ -73,7 +73,7 @@ export function ClassStep() {
       </div>
 
       {/* Class grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {filteredClasses.map((cls, index) => {
           const isSelected = character.class?.id === cls.id;
           const data = getData(cls.id);
@@ -87,8 +87,8 @@ export function ClassStep() {
             >
               <div
                 className={`
-                  relative group cursor-pointer rounded-2xl p-6 transition-all duration-300
-                  bg-card/60 backdrop-blur-sm border h-full min-h-[200px]
+                  relative group cursor-pointer rounded-2xl p-4 sm:p-6 transition-all duration-300
+                  bg-card/60 backdrop-blur-sm border h-full min-h-[160px] sm:min-h-[200px]
                   flex flex-col overflow-hidden
                   ${
                     isSelected
@@ -98,35 +98,35 @@ export function ClassStep() {
                 `}
               >
                 {/* Icon */}
-                <div className="text-6xl mb-4 transition-transform group-hover:scale-110 flex-shrink-0">
+                <div className="text-4xl sm:text-6xl mb-2 sm:mb-4 transition-transform group-hover:scale-110 flex-shrink-0">
                   {data.icon}
                 </div>
 
                 {/* Name */}
                 <FitText
                   maxFontSize={18}
-                  minFontSize={12}
-                  className="font-semibold text-foreground mb-1"
+                  minFontSize={11}
+                  className="font-semibold text-foreground mb-0.5 sm:mb-1"
                 >
                   {cls.nameRu}
                 </FitText>
                 <FitText
                   maxFontSize={14}
-                  minFontSize={10}
-                  className="text-muted-foreground mb-4"
+                  minFontSize={9}
+                  className="text-muted-foreground mb-2 sm:mb-4"
                 >
                   {cls.name}
                 </FitText>
 
                 {/* Stats */}
-                <div className="flex gap-2 flex-wrap mt-auto">
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg">
-                    <Heart className="w-4 h-4 text-rose-400" />
+                <div className="flex gap-1.5 sm:gap-2 flex-wrap mt-auto">
+                  <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
+                    <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-rose-400" />
                     <span>d{cls.hitDie}</span>
                   </div>
                   {cls.spellcasting && (
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-accent/10 px-3 py-1.5 rounded-lg">
-                      <Sparkles className="w-4 h-4 text-accent" />
+                    <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground bg-accent/10 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
+                      <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-accent" />
                       <span>Маг</span>
                     </div>
                   )}
@@ -134,8 +134,8 @@ export function ClassStep() {
 
                 {/* Selected indicator */}
                 {isSelected && (
-                  <div className="absolute top-4 right-4 bg-primary rounded-full p-1.5 shadow-lg shadow-primary/30">
-                    <Check className="w-4 h-4 text-primary-foreground" />
+                  <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-primary rounded-full p-1 sm:p-1.5 shadow-lg shadow-primary/30">
+                    <Check className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
                   </div>
                 )}
 
@@ -145,9 +145,9 @@ export function ClassStep() {
                     e.stopPropagation();
                     setModalClass(cls);
                   }}
-                  className="absolute bottom-4 right-4 p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                 >
-                  <Info className="w-4 h-4" />
+                  <Info className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
@@ -348,16 +348,16 @@ export function ClassStep() {
 
       {/* Selected indicator bar */}
       {character.class && (
-        <div className="bg-card/80 backdrop-blur border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-lg animate-fade-in-up">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
+        <div className="bg-card/80 backdrop-blur border border-primary/30 rounded-2xl p-3 sm:p-4 flex items-center justify-between shadow-lg animate-fade-in-up">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl sm:text-2xl flex-shrink-0">
               {getData(character.class.id).icon}
             </div>
-            <div>
-              <p className="font-semibold text-foreground">
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-foreground text-sm sm:text-base truncate">
                 {character.class.nameRu}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                 d{character.class.hitDie} •{" "}
                 {character.subclass
                   ? character.subclass.nameRu
@@ -365,9 +365,10 @@ export function ClassStep() {
               </p>
             </div>
           </div>
-          <Badge className="bg-primary/15 text-primary border-primary/30 px-3 py-1">
+          <Badge className="bg-primary/15 text-primary border-primary/30 px-2 sm:px-3 py-1 text-xs sm:text-sm flex-shrink-0">
             <Check className="w-3 h-3 mr-1" />
-            Выбрано
+            <span className="hidden sm:inline">Выбрано</span>
+            <span className="sm:hidden">✓</span>
           </Badge>
         </div>
       )}

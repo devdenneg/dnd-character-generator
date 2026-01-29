@@ -33,6 +33,9 @@ function formatModifier(mod: number): string {
 export function AbilityIncreaseStep() {
   const { character, setAbilityScoreIncreases } = useCharacterStore();
 
+  // Стратегия распределения: +2/+1 или +1/+1/+1
+  const [strategy, setStrategy] = useState<"2-1" | "1-1-1">("2-1");
+
   // Локальное состояние для выбора бонусов
   const [plus2Ability, setPlus2Ability] = useState<AbilityName | null>(
     character.abilityScoreIncreases
@@ -41,55 +44,92 @@ export function AbilityIncreaseStep() {
         )?.[0] as AbilityName | undefined) || null
       : null,
   );
-  const [plus1Ability, setPlus1Ability] = useState<AbilityName | null>(
+  const [plus1Abilities, setPlus1Abilities] = useState<AbilityName[]>(
     character.abilityScoreIncreases
-      ? (Object.entries(character.abilityScoreIncreases).find(
-          ([_, v]) => v === 1,
-        )?.[0] as AbilityName | undefined) || null
-      : null,
+      ? Object.entries(character.abilityScoreIncreases)
+          .filter(([_, v]) => v === 1)
+          .map(([k]) => k as AbilityName)
+      : [],
   );
 
   // Рекомендуемые характеристики от предыстории
   const recommendedAbilities =
     character.background?.abilityScoreIncrease.options || [];
 
+  // Синхронизация с загруженными данными
+  useEffect(() => {
+    if (character.abilityScoreIncreases) {
+      const plus2 = Object.entries(character.abilityScoreIncreases).find(
+        ([_, v]) => v === 2,
+      );
+      const plus1s = Object.entries(character.abilityScoreIncreases)
+        .filter(([_, v]) => v === 1)
+        .map(([k]) => k as AbilityName);
+
+      if (plus2) {
+        setPlus2Ability(plus2[0] as AbilityName);
+        setStrategy("2-1");
+      } else if (plus1s.length === 3) {
+        setStrategy("1-1-1");
+      }
+
+      if (plus1s.length > 0) {
+        setPlus1Abilities(plus1s);
+      }
+    }
+  }, [character.abilityScoreIncreases]);
+
   // Обновляем store при изменении выбора
   useEffect(() => {
     const increases: Partial<Record<AbilityName, number>> = {};
-    if (plus2Ability) increases[plus2Ability] = 2;
-    if (plus1Ability) increases[plus1Ability] = 1;
+    if (strategy === "2-1") {
+      if (plus2Ability) increases[plus2Ability] = 2;
+      if (plus1Abilities[0]) increases[plus1Abilities[0]] = 1;
+    } else {
+      plus1Abilities.forEach((ability) => {
+        increases[ability] = 1;
+      });
+    }
     setAbilityScoreIncreases(increases);
-  }, [plus2Ability, plus1Ability, setAbilityScoreIncreases]);
+  }, [plus2Ability, plus1Abilities, strategy, setAbilityScoreIncreases]);
+
+  // Сброс выбора при смене стратегии
+  useEffect(() => {
+    setPlus2Ability(null);
+    setPlus1Abilities([]);
+  }, [strategy]);
 
   const handleSelectPlus2 = (ability: AbilityName) => {
     if (plus2Ability === ability) {
       setPlus2Ability(null);
     } else {
-      // Если эта характеристика уже выбрана для +1, снимаем выбор
-      if (plus1Ability === ability) {
-        setPlus1Ability(null);
-      }
+      // Убираем из +1 если там есть
+      setPlus1Abilities((prev) => prev.filter((a) => a !== ability));
       setPlus2Ability(ability);
     }
   };
 
   const handleSelectPlus1 = (ability: AbilityName) => {
-    if (plus1Ability === ability) {
-      setPlus1Ability(null);
+    const maxPlus1 = strategy === "2-1" ? 1 : 3;
+
+    if (plus1Abilities.includes(ability)) {
+      setPlus1Abilities((prev) => prev.filter((a) => a !== ability));
     } else {
-      // Если эта характеристика уже выбрана для +2, снимаем выбор
-      if (plus2Ability === ability) {
-        setPlus2Ability(null);
+      if (plus1Abilities.length < maxPlus1) {
+        // Убираем из +2 если там есть (только для стратегии 2-1)
+        if (strategy === "2-1" && plus2Ability === ability) {
+          setPlus2Ability(null);
+        }
+        setPlus1Abilities((prev) => [...prev, ability]);
       }
-      setPlus1Ability(ability);
     }
   };
 
   // Рассчитываем итоговые значения
   const getFinalScore = (ability: AbilityName): number => {
     let score = character.abilityScores[ability];
-    if (plus2Ability === ability) score += 2;
-    if (plus1Ability === ability) score += 1;
+    if (strategy === "2-1" && plus2Ability === ability) score += 2;
+    if (plus1Abilities.includes(ability)) score += 1;
     return score;
   };
 
@@ -105,9 +145,7 @@ export function AbilityIncreaseStep() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-3">
-            В Книге игрока 2024 года вы можете распределить <strong>+2</strong>{" "}
-            и <strong>+1</strong> между любыми двумя разными характеристиками
-            вместо фиксированных расовых бонусов.
+            Выберите стратегию распределения бонусов к характеристикам.
           </p>
           {character.background && recommendedAbilities.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -124,48 +162,133 @@ export function AbilityIncreaseStep() {
         </CardContent>
       </Card>
 
-      {/* Статус выбора */}
-      <div className="flex gap-4 flex-wrap">
+      {/* Выбор стратегии */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card
-          className={`flex-1 min-w-[200px] ${plus2Ability ? "border-primary" : "border-dashed"}`}
+          className={`cursor-pointer transition-all hover:border-primary/50 ${
+            strategy === "2-1" ? "border-primary ring-2 ring-primary/20" : ""
+          }`}
+          onClick={() => setStrategy("2-1")}
         >
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Бонус +2</p>
-                <p className="text-lg font-bold">
-                  {plus2Ability ? getAbilityNameRu(plus2Ability) : "Не выбрано"}
-                </p>
-              </div>
-              {plus2Ability && <Check className="w-5 h-5 text-primary" />}
-            </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              +2 и +1
+              {strategy === "2-1" && <Check className="w-5 h-5 text-primary" />}
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Стандартный вариант
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Распределите +2 к одной характеристике и +1 к другой
+            </p>
           </CardContent>
         </Card>
+
         <Card
-          className={`flex-1 min-w-[200px] ${plus1Ability ? "border-primary" : "border-dashed"}`}
+          className={`cursor-pointer transition-all hover:border-primary/50 ${
+            strategy === "1-1-1" ? "border-primary ring-2 ring-primary/20" : ""
+          }`}
+          onClick={() => setStrategy("1-1-1")}
         >
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Бонус +1</p>
-                <p className="text-lg font-bold">
-                  {plus1Ability ? getAbilityNameRu(plus1Ability) : "Не выбрано"}
-                </p>
-              </div>
-              {plus1Ability && <Check className="w-5 h-5 text-primary" />}
-            </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              +1, +1 и +1
+              {strategy === "1-1-1" && (
+                <Check className="w-5 h-5 text-primary" />
+              )}
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Более сбалансированный вариант
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Распределите +1 к трём разным характеристикам
+            </p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Статус выбора */}
+      <div className="flex gap-4 flex-wrap">
+        {strategy === "2-1" && (
+          <Card
+            className={`flex-1 min-w-[200px] ${plus2Ability ? "border-primary" : "border-dashed"}`}
+          >
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Бонус +2</p>
+                  <p className="text-lg font-bold">
+                    {plus2Ability
+                      ? getAbilityNameRu(plus2Ability)
+                      : "Не выбрано"}
+                  </p>
+                </div>
+                {plus2Ability && <Check className="w-5 h-5 text-primary" />}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {strategy === "2-1" ? (
+          <Card
+            className={`flex-1 min-w-[200px] ${plus1Abilities.length > 0 ? "border-primary" : "border-dashed"}`}
+          >
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Бонус +1</p>
+                  <p className="text-lg font-bold">
+                    {plus1Abilities[0]
+                      ? getAbilityNameRu(plus1Abilities[0])
+                      : "Не выбрано"}
+                  </p>
+                </div>
+                {plus1Abilities[0] && (
+                  <Check className="w-5 h-5 text-primary" />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {[0, 1, 2].map((index) => (
+              <Card
+                key={index}
+                className={`flex-1 min-w-[150px] ${plus1Abilities[index] ? "border-primary" : "border-dashed"}`}
+              >
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Бонус +1</p>
+                      <p className="text-lg font-bold">
+                        {plus1Abilities[index]
+                          ? getAbilityNameRu(plus1Abilities[index])
+                          : "Не выбрано"}
+                      </p>
+                    </div>
+                    {plus1Abilities[index] && (
+                      <Check className="w-5 h-5 text-primary" />
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </>
+        )}
+      </div>
+
       {/* Выбор характеристик */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         {ABILITIES.map((ability) => {
           const baseScore = character.abilityScores[ability];
           const finalScore = getFinalScore(ability);
           const modifier = calculateModifier(finalScore);
-          const isPlus2 = plus2Ability === ability;
-          const isPlus1 = plus1Ability === ability;
+          const isPlus2 = strategy === "2-1" && plus2Ability === ability;
+          const isPlus1 = plus1Abilities.includes(ability);
           const isRecommended = recommendedAbilities.includes(ability);
 
           return (
@@ -179,59 +302,71 @@ export function AbilityIncreaseStep() {
             >
               {isRecommended && (
                 <div className="absolute top-0 right-0 bg-accent text-accent-foreground text-xs px-2 py-0.5 rounded-bl">
-                  Рекоменд.
+                  Рек.
                 </div>
               )}
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">
+              <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+                <CardTitle className="text-base sm:text-lg truncate">
                   {getAbilityNameRu(ability)}
                 </CardTitle>
                 <CardDescription className="text-xs uppercase">
                   {t(`abilities.${ability.substring(0, 3)}`)}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center mb-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-lg text-muted-foreground">
+              <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                <div className="text-center mb-3 sm:mb-4">
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2">
+                    <span className="text-base sm:text-lg text-muted-foreground">
                       {baseScore}
                     </span>
                     {(isPlus2 || isPlus1) && (
                       <>
-                        <span className="text-primary">→</span>
-                        <span className="text-2xl font-bold text-primary">
+                        <span className="text-primary text-sm sm:text-base">
+                          →
+                        </span>
+                        <span className="text-xl sm:text-2xl font-bold text-primary">
                           {finalScore}
                         </span>
                       </>
                     )}
                     {!isPlus2 && !isPlus1 && (
-                      <span className="text-2xl font-bold">{finalScore}</span>
+                      <span className="text-xl sm:text-2xl font-bold">
+                        {finalScore}
+                      </span>
                     )}
                   </div>
                   <Badge
                     variant={modifier >= 0 ? "default" : "secondary"}
-                    className="mt-1"
+                    className="text-xs"
                   >
                     {formatModifier(modifier)}
                   </Badge>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant={isPlus2 ? "default" : "outline"}
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => handleSelectPlus2(ability)}
-                    disabled={isPlus1}
-                  >
-                    +2
-                  </Button>
+                <div className="text-xs sm:text-sm text-muted-foreground text-center mb-2">
+                  Спасбросок: {formatModifier(modifier)}
+                  {character.class?.savingThrows.includes(ability) &&
+                    ` +${character.level >= 1 ? Math.ceil(character.level / 4) + 1 : 2}`}
+                </div>
+
+                <div className="flex gap-1.5 sm:gap-2">
+                  {strategy === "2-1" && (
+                    <Button
+                      variant={isPlus2 ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1 text-xs sm:text-sm h-8 sm:h-9"
+                      onClick={() => handleSelectPlus2(ability)}
+                      disabled={isPlus1}
+                    >
+                      +2
+                    </Button>
+                  )}
                   <Button
                     variant={isPlus1 ? "default" : "outline"}
                     size="sm"
-                    className="flex-1"
+                    className="flex-1 text-xs sm:text-sm h-8 sm:h-9"
                     onClick={() => handleSelectPlus1(ability)}
-                    disabled={isPlus2}
+                    disabled={strategy === "2-1" && isPlus2}
                   >
                     +1
                   </Button>
@@ -243,7 +378,7 @@ export function AbilityIncreaseStep() {
       </div>
 
       {/* Итоговая таблица характеристик */}
-      {(plus2Ability || plus1Ability) && (
+      {(plus2Ability || plus1Abilities.length > 0) && (
         <Card className="bg-muted/30">
           <CardHeader>
             <CardTitle className="text-lg">Итоговые характеристики</CardTitle>
@@ -254,7 +389,7 @@ export function AbilityIncreaseStep() {
                 const finalScore = getFinalScore(ability);
                 const modifier = calculateModifier(finalScore);
                 const hasBonus =
-                  plus2Ability === ability || plus1Ability === ability;
+                  plus2Ability === ability || plus1Abilities.includes(ability);
 
                 return (
                   <div

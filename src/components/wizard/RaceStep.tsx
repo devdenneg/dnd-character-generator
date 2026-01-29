@@ -34,6 +34,13 @@ export function RaceStep() {
   const { character, setRace } = useCharacterStore();
   const races = getAllRaces();
 
+  // Debug logging
+  console.log("RaceStep - character.race:", character.race);
+  console.log(
+    "RaceStep - all races:",
+    races.map((r) => ({ id: r.id, name: r.name })),
+  );
+
   const filteredRaces = races.filter(
     (race) =>
       race.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,10 +68,17 @@ export function RaceStep() {
       </div>
 
       {/* Race grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {filteredRaces.map((race, index) => {
           const isSelected = character.race?.id === race.id;
           const data = getData(race.id);
+
+          // Debug each race
+          if (character.race?.id) {
+            console.log(
+              `Comparing: character.race.id="${character.race.id}" vs race.id="${race.id}" => ${isSelected}`,
+            );
+          }
 
           return (
             <div
@@ -75,8 +89,8 @@ export function RaceStep() {
             >
               <div
                 className={`
-                  relative group cursor-pointer rounded-2xl p-6 transition-all duration-300
-                  bg-card/60 backdrop-blur-sm border h-full min-h-[200px]
+                  relative group cursor-pointer rounded-2xl p-4 sm:p-6 transition-all duration-300
+                  bg-card/60 backdrop-blur-sm border h-full min-h-[160px] sm:min-h-[200px]
                   flex flex-col overflow-hidden
                   ${
                     isSelected
@@ -86,42 +100,42 @@ export function RaceStep() {
                 `}
               >
                 {/* Icon */}
-                <div className="text-6xl mb-4 transition-transform group-hover:scale-110 flex-shrink-0">
+                <div className="text-4xl sm:text-6xl mb-2 sm:mb-4 transition-transform group-hover:scale-110 flex-shrink-0">
                   {data.icon}
                 </div>
 
                 {/* Name */}
                 <FitText
                   maxFontSize={18}
-                  minFontSize={12}
-                  className="font-semibold text-foreground mb-1"
+                  minFontSize={11}
+                  className="font-semibold text-foreground mb-0.5 sm:mb-1"
                 >
                   {race.nameRu}
                 </FitText>
                 <FitText
                   maxFontSize={14}
-                  minFontSize={10}
-                  className="text-muted-foreground mb-4"
+                  minFontSize={9}
+                  className="text-muted-foreground mb-2 sm:mb-4"
                 >
                   {race.name}
                 </FitText>
 
                 {/* Stats */}
-                <div className="flex gap-2 flex-wrap mt-auto">
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg">
-                    <Zap className="w-4 h-4 text-primary" />
-                    <span>{race.speed} фт</span>
+                <div className="flex gap-1.5 sm:gap-2 flex-wrap mt-auto">
+                  <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
+                    <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                    <span>{race.speed}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg">
-                    <Ruler className="w-4 h-4 text-primary" />
+                  <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
+                    <Ruler className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
                     <span>{race.size === "Small" ? "S" : "M"}</span>
                   </div>
                 </div>
 
                 {/* Selected indicator */}
                 {isSelected && (
-                  <div className="absolute top-4 right-4 bg-primary rounded-full p-1.5 shadow-lg shadow-primary/30">
-                    <Check className="w-4 h-4 text-primary-foreground" />
+                  <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-primary rounded-full p-1 sm:p-1.5 shadow-lg shadow-primary/30">
+                    <Check className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
                   </div>
                 )}
 
@@ -131,9 +145,9 @@ export function RaceStep() {
                     e.stopPropagation();
                     setModalRace(race);
                   }}
-                  className="absolute bottom-4 right-4 p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                 >
-                  <Info className="w-4 h-4" />
+                  <Info className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
@@ -219,24 +233,25 @@ export function RaceStep() {
 
       {/* Selected indicator bar */}
       {character.race && (
-        <div className="bg-card/80 backdrop-blur border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-lg animate-fade-in-up">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
+        <div className="bg-card/80 backdrop-blur border border-primary/30 rounded-2xl p-3 sm:p-4 flex items-center justify-between shadow-lg animate-fade-in-up">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl sm:text-2xl flex-shrink-0">
               {getData(character.race.id).icon}
             </div>
-            <div>
-              <p className="font-semibold text-foreground">
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-foreground text-sm sm:text-base truncate">
                 {character.race.nameRu}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {character.race.speed} фт •{" "}
                 {t(`sizes.${character.race.size.toLowerCase()}`)}
               </p>
             </div>
           </div>
-          <Badge className="bg-primary/15 text-primary border-primary/30 px-3 py-1">
+          <Badge className="bg-primary/15 text-primary border-primary/30 px-2 sm:px-3 py-1 text-xs sm:text-sm flex-shrink-0">
             <Check className="w-3 h-3 mr-1" />
-            Выбрано
+            <span className="hidden sm:inline">Выбрано</span>
+            <span className="sm:hidden">✓</span>
           </Badge>
         </div>
       )}
