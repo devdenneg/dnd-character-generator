@@ -244,16 +244,20 @@ function SkillRow({
   skillName,
   bonus,
   isProficient,
+  hasExpertise,
   abilityMod,
   proficiencyBonus,
   ability,
+  source,
 }: {
   skillName: string;
   bonus: number;
   isProficient: boolean;
+  hasExpertise: boolean;
   abilityMod: number;
   proficiencyBonus: number;
   ability: string;
+  source?: "class" | "background";
 }) {
   const tooltipContent = (
     <>
@@ -267,10 +271,16 @@ function SkillRow({
           label={`Модификатор ${getAbilityAbbr(ability)}:`}
           value={formatModifier(abilityMod)}
         />
-        {isProficient && (
+        {isProficient && !hasExpertise && (
           <div className="flex justify-between text-primary">
             <span>Бонус мастерства:</span>
             <span>+{proficiencyBonus}</span>
+          </div>
+        )}
+        {hasExpertise && (
+          <div className="flex justify-between text-amber-400">
+            <span>Мастерство (×2):</span>
+            <span>+{proficiencyBonus * 2}</span>
           </div>
         )}
         <TooltipCalcRow
@@ -281,9 +291,15 @@ function SkillRow({
         />
       </TooltipCalc>
 
-      {isProficient && (
+      {hasExpertise && (
         <TooltipHighlight>
-          ✓ Владение навыком (от класса или предыстории)
+          ⚡ <strong>Мастерство (Expertise):</strong> бонус мастерства удвоен!
+        </TooltipHighlight>
+      )}
+      {isProficient && !hasExpertise && source && (
+        <TooltipHighlight>
+          ✓ Владение навыком от{" "}
+          {source === "background" ? "предыстории" : "класса"}
         </TooltipHighlight>
       )}
     </>
@@ -293,20 +309,40 @@ function SkillRow({
     <Tooltip content={tooltipContent} maxWidth="max-w-xs">
       <div
         className={`flex items-center justify-between gap-2 p-2 rounded-lg cursor-help transition-colors ${
-          isProficient
-            ? "bg-primary/10 hover:bg-primary/20"
-            : "bg-muted/20 hover:bg-muted/40"
+          hasExpertise
+            ? "bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30"
+            : isProficient
+              ? "bg-primary/10 hover:bg-primary/20"
+              : "bg-muted/20 hover:bg-muted/40"
         }`}
       >
         <span className="text-xs sm:text-sm flex items-center gap-1.5 min-w-0 flex-1">
-          {isProficient && (
+          {hasExpertise ? (
+            <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />
+          ) : isProficient ? (
             <Star className="w-3 h-3 text-primary fill-primary flex-shrink-0" />
-          )}
+          ) : null}
           <span className="truncate">{skillName}</span>
+          {source === "background" && isProficient && !hasExpertise && (
+            <Badge
+              variant="outline"
+              className="text-[10px] px-1 py-0 h-4 flex-shrink-0"
+            >
+              предыстория
+            </Badge>
+          )}
+          {hasExpertise && (
+            <Badge
+              variant="outline"
+              className="text-[10px] px-1 py-0 h-4 flex-shrink-0 bg-amber-500/10 border-amber-500/50 text-amber-400"
+            >
+              мастерство
+            </Badge>
+          )}
         </span>
         <Badge
           variant={isProficient ? "default" : "secondary"}
-          className="flex-shrink-0 text-xs"
+          className={`flex-shrink-0 text-xs ${hasExpertise ? "bg-amber-500 text-amber-950" : ""}`}
         >
           {formatModifier(bonus)}
         </Badge>
@@ -790,20 +826,64 @@ export function CharacterSheet() {
             <strong>владение</strong> навыком (★), добавляется ещё{" "}
             <strong>+{stats.proficiencyBonus}</strong> (бонус мастерства).
           </p>
+          {character.expertiseSkills.length > 0 && (
+            <p className="mt-2 text-amber-400 text-xs">
+              ⚡ <strong>Мастерство (Expertise):</strong> для некоторых навыков
+              бонус мастерства удваивается (+{stats.proficiencyBonus * 2})!
+            </p>
+          )}
+          <p className="mt-2 text-xs">
+            <strong>Источники навыков:</strong>
+          </p>
+          <ul className="mt-1 text-xs space-y-1">
+            <li>
+              • От класса: {character.class?.nameRu} даёт{" "}
+              {character.skillProficiencies.filter(
+                (s) =>
+                  !character.background?.skillProficiencies.includes(s),
+              ).length}{" "}
+              навыков
+            </li>
+            {character.background && (
+              <li>
+                • От предыстории: {character.background.nameRu} даёт{" "}
+                {character.background.skillProficiencies.length} навыков
+              </li>
+            )}
+            {character.expertiseSkills.length > 0 && (
+              <li className="text-amber-400">
+                • Мастерство: {character.expertiseSkills.length} навыков с
+                удвоенным бонусом
+              </li>
+            )}
+          </ul>
         </ExplanationBox>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {Object.entries(stats.skills).map(([skillId, bonus]) => {
             const ability = skillAbilityMap[skillId] || "strength";
+            const isFromBackground =
+              character.background?.skillProficiencies.includes(skillId) ||
+              false;
+            const isProficient = character.skillProficiencies.includes(skillId);
+            const hasExpertise = character.expertiseSkills.includes(skillId);
+            const source = isProficient && !hasExpertise
+              ? isFromBackground
+                ? "background"
+                : "class"
+              : undefined;
+
             return (
               <SkillRow
                 key={skillId}
                 skillName={getSkillNameRu(skillId)}
                 bonus={bonus}
-                isProficient={character.skillProficiencies.includes(skillId)}
+                isProficient={isProficient}
+                hasExpertise={hasExpertise}
                 abilityMod={stats.abilityModifiers[ability]}
                 proficiencyBonus={stats.proficiencyBonus}
                 ability={ability}
+                source={source}
               />
             );
           })}

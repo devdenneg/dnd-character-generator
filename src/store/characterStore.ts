@@ -587,6 +587,7 @@ const initialCharacter: Character = {
   abilityScoreMethod: "standard",
   abilityScoreIncreases: {},
   skillProficiencies: [],
+  expertiseSkills: [],
   toolProficiencies: [],
   languages: ["Common"],
   equipment: [],
@@ -1054,8 +1055,13 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
 
     for (const [skill, ability] of Object.entries(skillAbilityMap)) {
       const isProficient = character.skillProficiencies.includes(skill);
-      skills[skill] =
-        abilityModifiers[ability] + (isProficient ? proficiencyBonus : 0);
+      const hasExpertise = character.expertiseSkills.includes(skill);
+      const profBonus = isProficient
+        ? hasExpertise
+          ? proficiencyBonus * 2
+          : proficiencyBonus
+        : 0;
+      skills[skill] = abilityModifiers[ability] + profBonus;
     }
 
     // Магические характеристики (PHB 2024)

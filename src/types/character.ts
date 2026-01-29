@@ -131,6 +131,7 @@ export interface Character {
 
   // Skills & Proficiencies
   skillProficiencies: string[];
+  expertiseSkills: string[]; // Навыки с удвоенным бонусом мастерства (от класса, например Плут/Бард)
   toolProficiencies: string[];
   languages: string[];
 

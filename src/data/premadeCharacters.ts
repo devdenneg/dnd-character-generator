@@ -69,6 +69,7 @@ export const PREMADE_CHARACTERS: Array<{
         "perception",
         "survival",
       ],
+      expertiseSkills: [],
       equipment: [
         {
           id: "explorer",
@@ -138,6 +139,7 @@ export const PREMADE_CHARACTERS: Array<{
         wisdom: 1,
       },
       skillProficiencies: ["arcana", "history", "investigation", "perception"],
+      expertiseSkills: [],
       equipment: [
         {
           id: "scholar",
@@ -189,6 +191,7 @@ export const PREMADE_CHARACTERS: Array<{
         constitution: 1,
       },
       skillProficiencies: ["insight", "medicine", "persuasion", "religion"],
+      expertiseSkills: [],
       equipment: [
         {
           id: "priest",
@@ -257,6 +260,7 @@ export const PREMADE_CHARACTERS: Array<{
         "investigation",
         "perception",
       ],
+      expertiseSkills: [],
       equipment: [
         {
           id: "burglar",
@@ -323,6 +327,7 @@ export const PREMADE_CHARACTERS: Array<{
         "intimidation",
         "persuasion",
       ],
+      expertiseSkills: [],
       equipment: [
         {
           id: "explorer",
@@ -391,6 +396,7 @@ export const PREMADE_CHARACTERS: Array<{
         "stealth",
         "survival",
       ],
+      expertiseSkills: [],
       equipment: [
         {
           id: "explorer",
