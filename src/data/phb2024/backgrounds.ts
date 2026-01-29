@@ -36,7 +36,7 @@ export const phb2024Backgrounds: Background[] = [
     toolProficiencies: ["Инструменты ремесленника (на выбор)"],
     languages: 1,
     equipment: ["Инструменты ремесленника", "Одежда путешественника", "25 зм"],
-    originFeat: "Мастер",
+    originFeat: "Самоделкин",
     abilityScoreIncrease: {
       options: ["strength", "dexterity", "intelligence"],
       amount: [2, 1, 0],
@@ -53,7 +53,7 @@ export const phb2024Backgrounds: Background[] = [
     toolProficiencies: ["Набор для подделок"],
     languages: 1,
     equipment: ["Набор для подделок", "Костюм", "Красивая одежда", "15 зм"],
-    originFeat: "Умелец",
+    originFeat: "Одарённый",
     abilityScoreIncrease: {
       options: ["dexterity", "constitution", "charisma"],
       amount: [2, 1, 0],
@@ -75,7 +75,7 @@ export const phb2024Backgrounds: Background[] = [
       "Тёмная одежда с капюшоном",
       "15 зм",
     ],
-    originFeat: "Бдительность",
+    originFeat: "Бдительный",
     abilityScoreIncrease: {
       options: ["dexterity", "constitution", "intelligence"],
       amount: [2, 1, 0],
@@ -144,7 +144,7 @@ export const phb2024Backgrounds: Background[] = [
       "Одежда путешественника",
       "12 зм",
     ],
-    originFeat: "Бдительность",
+    originFeat: "Бдительный",
     abilityScoreIncrease: {
       options: ["strength", "intelligence", "wisdom"],
       amount: [2, 1, 0],
@@ -194,7 +194,7 @@ export const phb2024Backgrounds: Background[] = [
       "Одежда путешественника",
       "16 зм",
     ],
-    originFeat: "Целитель",
+    originFeat: "Лекарь",
     abilityScoreIncrease: {
       options: ["constitution", "wisdom", "charisma"],
       amount: [2, 1, 0],
@@ -240,7 +240,7 @@ export const phb2024Backgrounds: Background[] = [
       "Перстень с печатью",
       "29 зм",
     ],
-    originFeat: "Умелец",
+    originFeat: "Одарённый",
     abilityScoreIncrease: {
       options: ["strength", "intelligence", "charisma"],
       amount: [2, 1, 0],
@@ -287,7 +287,7 @@ export const phb2024Backgrounds: Background[] = [
       "Дорожная одежда",
       "20 зм",
     ],
-    originFeat: "Драчун",
+    originFeat: "Дебошир",
     abilityScoreIncrease: {
       options: ["strength", "dexterity", "wisdom"],
       amount: [2, 1, 0],
@@ -337,7 +337,7 @@ export const phb2024Backgrounds: Background[] = [
       "Дорожная одежда",
       "14 зм",
     ],
-    originFeat: "Дикий боец",
+    originFeat: "Дикий атакующий",
     abilityScoreIncrease: {
       options: ["strength", "dexterity", "constitution"],
       amount: [2, 1, 0],
