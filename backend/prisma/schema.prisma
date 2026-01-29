@@ -75,3 +75,22 @@ model RoomPlayer {
   @@index([userId])
   @@index([characterId])
 }
+
+model CharacterExperience {
+  id          String   @id @default(uuid())
+  characterId String
+  userId      String
+  experience  Int
+  source      String   // battle, quest, discovery, roleplay, dm_award, treasure, achievement
+  reason      String?
+  levelBefore Int
+  levelAfter  Int
+  createdAt   DateTime @default(now())
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+  @@index([userId])
+  @@index([createdAt])
+}

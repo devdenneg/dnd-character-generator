@@ -3,6 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth";
 import characterRoutes from "./routes/characters";
 import roomRoutes from "./routes/rooms";
+import experienceRoutes from "./routes/experience";
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/characters", characterRoutes);
 app.use("/api/rooms", roomRoutes);
+app.use("/api", experienceRoutes);
 
 // 404 handler
 app.use((_req, res) => {

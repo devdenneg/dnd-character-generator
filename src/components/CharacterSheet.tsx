@@ -17,9 +17,13 @@ import {
   BookOpen,
   HelpCircle,
   Calculator,
+  Plus,
+  Award,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipHeader,
@@ -28,7 +32,9 @@ import {
   TooltipCalcRow,
   TooltipHighlight,
 } from "@/components/ui/tooltip";
+import { ExperienceBar } from "@/components/ui/experience-bar";
 import { useCharacterStore } from "@/store/characterStore";
+import { useExperience } from "@/hooks/useExperience";
 import {
   getSkillNameRu,
   getAbilityNameRu,
@@ -519,6 +525,7 @@ function SpellCard({
 export function CharacterSheet() {
   const { character, getStats } = useCharacterStore();
   const stats = getStats();
+  const { progress, testAddExperience } = useExperience(character.id || '');
 
   const ABILITIES: AbilityName[] = [
     "strength",
@@ -605,10 +612,50 @@ export function CharacterSheet() {
                   Предыстория: {character.background.nameRu}
                 </p>
               )}
+
+              {/* Прогресс уровня и опыта */}
+              {progress && (
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Award className="w-4 h-4 text-amber-500" />
+                    <span>Опыт</span>
+                  </div>
+                  <ExperienceBar
+                    currentExperience={progress.experience}
+                    level={progress.level}
+                    size="sm"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Основные показатели */}
             <div className="grid grid-cols-4 gap-3">
+              {/* Кнопка теста опыта (только для разработки) */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-center bg-card p-3 rounded-xl border-2 border-purple-500/30 group">
+                  <Plus className="w-5 h-5 mx-auto text-purple-500 mb-1" />
+                  <div className="text-xs text-muted-foreground mb-1">Тест опыта</div>
+                  <div className="space-y-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full h-6 text-xs"
+                      onClick={() => testAddExperience(100, 'quest')}
+                    >
+                      +100
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full h-6 text-xs"
+                      onClick={() => testAddExperience(500, 'battle')}
+                    >
+                      +500
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div className="text-center bg-card p-3 rounded-xl border-2 border-red-500/30">
                 <Heart className="w-5 h-5 mx-auto text-red-500 mb-1" />
                 <div className="text-2xl font-bold">
