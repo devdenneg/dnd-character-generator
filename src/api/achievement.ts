@@ -2,6 +2,12 @@ import { apiClient } from "./client";
 import { Achievement, PlayerAchievement } from "../types/achievement";
 
 export const achievementApi = {
+  // Создание новой ачивки
+  createAchievement: async (roomId: string, data: Omit<Achievement, 'id' | 'key' | 'createdAt' | 'totalGiven'>) => {
+    const response = await apiClient.post<Achievement>(`/achievements/rooms/${roomId}`, data);
+    return response.data;
+  },
+
   // Получение всех ачивок комнаты
   getRoomAchievements: async (roomId: string) => {
     const response = await apiClient.get<Achievement[]>(`/achievements/rooms/${roomId}`);

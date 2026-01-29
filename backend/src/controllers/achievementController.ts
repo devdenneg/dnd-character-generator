@@ -1,6 +1,27 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
-import { AchievementService } from "../services/achievementService";
+import { AchievementService, AchievementInput } from "../services/achievementService";
+
+export const createAchievement = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const data = req.body as AchievementInput;
+
+    const achievement = await AchievementService.createAchievement(data);
+
+    return res.status(201).json(achievement);
+  } catch (error: any) {
+    return res.status(400).json({ error: error.message });
+  }
+};
 
 export const getRoomAchievements = async (
   req: AuthenticatedRequest,

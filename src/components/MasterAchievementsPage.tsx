@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Trophy, User, CheckCircle } from "lucide-react";
-import { Achievement, PlayerAchievement } from "../types/achievement";
+import { Achievement, PlayerAchievement, ACHIEVEMENT_ICONS, AchievementIcon } from "../types/achievement";
 import { achievementApi } from "../api/achievement";
 import { roomsApi } from "../api/client";
 import { AchievementCard } from "../components/AchievementCard";
 import { PlayerAchievementCard } from "../components/PlayerAchievementCard";
 import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
 
 interface RoomPlayer {
   id: string;
@@ -35,7 +37,22 @@ export const MasterAchievementsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Форма создания ачивки - удалено, используются готовые ачивки из БД
+  // Форма создания ачивки
+  const [newAchievement, setNewAchievement] = useState<{
+    name: string;
+    description: string;
+    icon: AchievementIcon;
+    category: string;
+    rarity: string;
+    xpReward: number;
+  }>({
+    name: "",
+    description: "",
+    icon: ACHIEVEMENT_ICONS[0],
+    category: "combat",
+    rarity: "common",
+    xpReward: 0
+  });
 
   // Выдача ачивки
   const [grantAchievement, setGrantAchievement] = useState({
@@ -80,7 +97,32 @@ export const MasterAchievementsPage: React.FC = () => {
     fetchData();
   }, [roomId]);
 
-  // Создание ачивок удалено - используются готовые из БД
+  const handleCreateAchievement = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!roomId) {
+      setError("Room ID is required");
+      return;
+    }
+
+    try {
+      const created = await achievementApi.createAchievement(roomId, newAchievement);
+      setAchievements([created, ...achievements]);
+      setNewAchievement({
+        name: "",
+        description: "",
+        icon: ACHIEVEMENT_ICONS[0],
+        category: "combat",
+        rarity: "common",
+        xpReward: 0
+      });
+      setSuccessMessage("Achievement created successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError("Failed to create achievement");
+      console.error(err);
+    }
+  };
 
   const handleGrantAchievement = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,6 +254,93 @@ export const MasterAchievementsPage: React.FC = () => {
 
         {activeTab === 'achievements' ? (
           <div className="space-y-6">
+            {/* Форма создания ачивки */}
+            <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
+              <h2 className="text-xl font-semibold mb-4">Создать новую ачивку</h2>
+              <form onSubmit={handleCreateAchievement} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Название</label>
+                    <Input
+                      value={newAchievement.name}
+                      onChange={(e) => setNewAchievement({...newAchievement, name: e.target.value})}
+                      placeholder="Название ачивки"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Категория</label>
+                    <Input
+                      value={newAchievement.category}
+                      onChange={(e) => setNewAchievement({...newAchievement, category: e.target.value})}
+                      placeholder="combat, social, exploration"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Описание</label>
+                  <Textarea
+                    value={newAchievement.description}
+                    onChange={(e) => setNewAchievement({...newAchievement, description: e.target.value})}
+                    placeholder="Описание ачивки"
+                    rows={3}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Иконка</label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {ACHIEVEMENT_ICONS.map((icon) => (
+                        <button
+                          key={icon}
+                          type="button"
+                          onClick={() => setNewAchievement({...newAchievement, icon})}
+                          className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all ${
+                            newAchievement.icon === icon
+                              ? 'border-amber-500 bg-amber-500/20'
+                              : 'border-border/50 hover:border-amber-500/50'
+                          }`}
+                        >
+                          <span className="text-2xl">{icon}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Редкость</label>
+                    <Input
+                      value={newAchievement.rarity}
+                      onChange={(e) => setNewAchievement({...newAchievement, rarity: e.target.value})}
+                      placeholder="common, rare, legendary"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Награда XP</label>
+                    <Input
+                      type="number"
+                      value={newAchievement.xpReward}
+                      onChange={(e) => setNewAchievement({...newAchievement, xpReward: parseInt(e.target.value) || 0})}
+                      min="0"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full md:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90">
+                  <Trophy className="w-4 h-4 mr-2" />
+                  Создать ачивку
+                </Button>
+              </form>
+            </div>
+
             {/* Список ачивок */}
             <div>
               <h2 className="text-xl font-semibold mb-4">Ачивки комнаты ({achievements.length})</h2>

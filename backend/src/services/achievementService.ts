@@ -1,6 +1,15 @@
 import prisma from "../db";
 import { ACHIEVEMENT_ICONS, AchievementIcon } from "../types/achievement";
 
+export interface AchievementInput {
+  name: string;
+  description: string;
+  icon: AchievementIcon;
+  category: string;
+  rarity: string;
+  xpReward?: number;
+}
+
 export interface AchievementWithStats {
   id: string;
   key: string;
@@ -38,6 +47,38 @@ export interface PlayerAchievementWithDetails {
 }
 
 export class AchievementService {
+  /**
+   * Создание новой ачивки
+   */
+  static async createAchievement(
+    data: AchievementInput
+  ): Promise<AchievementWithStats> {
+    if (!ACHIEVEMENT_ICONS.includes(data.icon)) {
+      throw new Error(`Invalid achievement icon: ${data.icon}`);
+    }
+
+    // Генерируем уникальный ключ из названия
+    const key = data.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+    const achievement = await prisma.achievement.create({
+      data: {
+        key,
+        name: data.name,
+        description: data.description,
+        icon: data.icon,
+        category: data.category,
+        rarity: data.rarity,
+        xpReward: data.xpReward || 0,
+      },
+    });
+
+    return {
+      ...achievement,
+      icon: achievement.icon as AchievementIcon,
+      totalGiven: 0
+    };
+  }
+
   /**
    * Получение всех ачивок
    */

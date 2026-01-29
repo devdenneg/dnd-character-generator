@@ -8,6 +8,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // Ачивки
+router.post("/rooms/:roomId", achievementController.createAchievement);
 router.get("/rooms/:roomId", achievementController.getRoomAchievements);
 
 // Выдача ачивок
