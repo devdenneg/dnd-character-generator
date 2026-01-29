@@ -254,11 +254,13 @@ export const PREMADE_CHARACTERS: Array<{
       },
       skillProficiencies: [
         "acrobatics",
+        "athletics",
         "deception",
-        "sleight_of_hand",
-        "stealth",
+        "insight",
         "investigation",
         "perception",
+        "sleight_of_hand",
+        "stealth",
       ],
       expertiseSkills: [],
       equipment: [

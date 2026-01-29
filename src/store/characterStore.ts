@@ -824,9 +824,30 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     })),
 
   setBackground: (background) =>
-    set((state) => ({
-      character: { ...state.character, background },
-    })),
+    set((state) => {
+      const currentSkills = state.character.skillProficiencies;
+      const oldBackgroundSkills = state.character.background?.skillProficiencies || [];
+      
+      // Удаляем навыки старой предыстории
+      const skillsWithoutOldBackground = currentSkills.filter(
+        (skill) => !oldBackgroundSkills.includes(skill)
+      );
+      
+      // Добавляем навыки новой предыстории
+      const newBackgroundSkills = background?.skillProficiencies || [];
+      const updatedSkills = [
+        ...skillsWithoutOldBackground,
+        ...newBackgroundSkills,
+      ];
+      
+      return {
+        character: {
+          ...state.character,
+          background,
+          skillProficiencies: updatedSkills,
+        },
+      };
+    }),
 
   setAbilityScores: (abilityScores) =>
     set((state) => ({

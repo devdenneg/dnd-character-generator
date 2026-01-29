@@ -1528,7 +1528,7 @@ export const phb2024Classes: CharacterClass[] = [
       "sleight_of_hand",
       "stealth",
     ],
-    skillCount: 4,
+    skillCount: 6,
     features: [
       {
         name: "Expertise",
