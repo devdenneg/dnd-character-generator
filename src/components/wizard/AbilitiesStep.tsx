@@ -35,20 +35,6 @@ const ABILITY_HINTS: Record<AbilityName, string> = {
   charisma: "Магия Барда/Чародея/Колдуна, Убеждение, Обман, Запугивание",
 };
 
-// Point buy costs
-const POINT_BUY_COSTS: Record<number, number> = {
-  8: 0,
-  9: 1,
-  10: 2,
-  11: 3,
-  12: 4,
-  13: 5,
-  14: 7,
-  15: 9,
-};
-
-const POINT_BUY_TOTAL = 27;
-
 function calculateModifier(score: number): number {
   return Math.floor((score - 10) / 2);
 }
