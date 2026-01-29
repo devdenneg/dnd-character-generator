@@ -39,11 +39,6 @@ export const PlayerAchievementCard: React.FC<PlayerAchievementCardProps> = ({ pl
                   year: "numeric"
                 })}
               </span>
-              {playerAchievement.achievement.roomName && (
-                <span className="text-xs text-muted-foreground">
-                  Комната: {playerAchievement.achievement.roomName}
-                </span>
-              )}
             </div>
           </div>
         </div>

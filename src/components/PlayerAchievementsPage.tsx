@@ -61,7 +61,6 @@ export const PlayerAchievementsPage: React.FC = () => {
   // Статистика
   const totalAchievements = playerAchievements.length;
   const totalXP = playerAchievements.reduce((sum, pa) => sum + (pa.achievement.xpReward || 0), 0);
-  const uniqueRooms = new Set(playerAchievements.map(pa => pa.achievement.roomId)).size;
   const uniqueCharacters = sortedCharacters.length;
 
   if (loading) {
@@ -161,8 +160,8 @@ export const PlayerAchievementsPage: React.FC = () => {
                 <Award className="w-5 h-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{uniqueRooms}</p>
-                <p className="text-xs text-muted-foreground">Активных комнат</p>
+                <p className="text-2xl font-bold text-foreground">{uniqueCharacters}</p>
+                <p className="text-xs text-muted-foreground">Персонажей</p>
               </div>
             </div>
           </div>
@@ -242,11 +241,6 @@ export const PlayerAchievementsPage: React.FC = () => {
                                 year: "numeric"
                               })}
                             </span>
-                            {playerAchievement.achievement.roomName && (
-                              <span className="text-xs text-muted-foreground">
-                                Комната: {playerAchievement.achievement.roomName}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>

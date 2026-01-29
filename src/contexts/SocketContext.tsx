@@ -17,6 +17,7 @@ interface SocketContextType {
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
+  showAchievementNotification: () => {},
 });
 
 export const useSocket = () => useContext(SocketContext);

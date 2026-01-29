@@ -1,15 +1,13 @@
 export interface Achievement {
   id: string;
+  key: string;
   name: string;
   description: string;
-  icon: string;
+  icon: AchievementIcon;
+  category: string;
   xpReward: number;
-  roomId: string;
-  roomName?: string;
-  createdById: string;
+  rarity: string;
   createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
   totalGiven: number;
 }
 
