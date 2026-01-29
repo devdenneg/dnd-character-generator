@@ -25,6 +25,8 @@ import { MyRoomsPage } from "@/components/MyRoomsPage";
 import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { JoinRoomPage } from "@/components/JoinRoomPage";
 import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
+import { MasterAchievementsPage } from "@/components/MasterAchievementsPage";
+import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -252,6 +254,9 @@ function HomePageWrapper() {
       case "my-characters":
         navigate("/my-characters");
         break;
+      case "my-achievements":
+        navigate("/achievements");
+        break;
       case "join-room":
         navigate("/join-room");
         break;
@@ -304,6 +309,8 @@ function AppRoutes() {
       <Route path="/my-rooms" element={<MyRoomsPage />} />
       <Route path="/create-room" element={<CreateRoomPage />} />
       <Route path="/room/:id" element={<RoomDetailsPage />} />
+      <Route path="/room/:roomId/achievements" element={<MasterAchievementsPage />} />
+      <Route path="/achievements" element={<PlayerAchievementsPage />} />
       <Route path="/glossary" element={<GlossaryPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

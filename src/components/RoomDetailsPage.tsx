@@ -11,6 +11,7 @@ import {
   Circle,
   User,
   UserPlus,
+  Trophy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -254,16 +255,40 @@ export function RoomDetailsPage() {
             </div>
           </div>
 
-          {/* Invite Button */}
+          {/* Invite & Achievements Buttons */}
           {isMaster && !room.isStarted && (
-            <div className="mb-4 md:mb-6">
+            <div className="flex flex-col sm:flex-row gap-3 mb-4 md:mb-6">
               <Button
                 onClick={() => setShowInviteModal(true)}
-                className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 w-full md:w-auto"
+                className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 flex-1 sm:flex-none"
                 size="lg"
               >
                 <UserPlus className="w-4 h-4 md:w-5 md:h-5" />
                 Пригласить игроков
+              </Button>
+              <Button
+                onClick={() => navigate(`/room/${id}/achievements`)}
+                variant="outline"
+                className="gap-2 border-amber-500/50 hover:bg-amber-500/10 flex-1 sm:flex-none"
+                size="lg"
+              >
+                <Trophy className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
+                Управление ачивками
+              </Button>
+            </div>
+          )}
+
+          {/* Player Achievements Button */}
+          {!isMaster && (
+            <div className="mb-4 md:mb-6">
+              <Button
+                onClick={() => navigate("/achievements")}
+                variant="outline"
+                className="gap-2 border-amber-500/50 hover:bg-amber-500/10 w-full md:w-auto"
+                size="lg"
+              >
+                <Trophy className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
+                Мои достижения
               </Button>
             </div>
           )}

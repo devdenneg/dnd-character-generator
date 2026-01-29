@@ -33,8 +33,9 @@ model Character {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roomPlayers RoomPlayer[]
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomPlayers  RoomPlayer[]
+  playerAchievements PlayerAchievement[]
 
   @@index([userId])
 }
@@ -52,9 +53,6 @@ model Room {
 
   master  User         @relation(fields: [masterId], references: [id], onDelete: Cascade)
   players RoomPlayer[]
-
-  @@index([masterId])
-  @@index([isActive])
 }
 
 model RoomPlayer {
@@ -74,4 +72,36 @@ model RoomPlayer {
   @@index([roomId])
   @@index([userId])
   @@index([characterId])
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  icon        String
+  xpReward    Int      @default(0)
+  roomId      String
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  // room      Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  // createdBy User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  playerAchievements PlayerAchievement[]
+}
+
+model PlayerAchievement {
+  id            String   @id @default(uuid())
+  achievementId String
+  userId        String
+  characterId   String?
+  grantedById   String
+  grantedAt     DateTime @default(now())
+
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  character    Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+  @@index([userId])
 }

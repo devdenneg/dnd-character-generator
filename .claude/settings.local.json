@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(pg_isready -d dnd_generator)",
+      "Bash(psql -l)",
+      "Bash(npm run prisma:migrate)",
+      "Bash(npm run prisma:generate)",
+      "Bash(npx prisma migrate dev --name init)",
+      "Bash(curl:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npm run dev:*)"
+    ]
+  }
+}
