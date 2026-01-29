@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dices, Minus, Plus, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,8 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCharacterStore } from "@/store/characterStore";
-import type { AbilityName, AbilityScores } from "@/types/character";
-import { t, getAbilityNameRu, getAbilityAbbr } from "@/data/translations/ru";
+import type { AbilityName } from "@/types/character";
+import { getAbilityNameRu, getAbilityAbbr } from "@/data/translations/ru";
 
 const ABILITIES: AbilityName[] = [
   "strength",
@@ -58,61 +58,10 @@ function formatModifier(mod: number): string {
 }
 
 export function AbilitiesStep() {
-  const {
-    character,
-    setAbilityScores,
-    setAbilityScore,
-    setAbilityScoreMethod,
-  } = useCharacterStore();
+  const { character, setAbilityScore } = useCharacterStore();
   const [availableStandard, setAvailableStandard] = useState<number[]>([
     ...STANDARD_ARRAY,
   ]);
-
-  const method = character.abilityScoreMethod;
-
-  // Calculate remaining points for point buy
-  const usedPoints = ABILITIES.reduce((sum, ability) => {
-    return sum + (POINT_BUY_COSTS[character.abilityScores[ability]] || 0);
-  }, 0);
-  const remainingPoints = POINT_BUY_TOTAL - usedPoints;
-
-  const handleMethodChange = (newMethod: "standard" | "pointbuy" | "roll") => {
-    setAbilityScoreMethod(newMethod);
-
-    // Reset scores when changing method
-    if (newMethod === "pointbuy") {
-      setAbilityScores({
-        strength: 8,
-        dexterity: 8,
-        constitution: 8,
-        intelligence: 8,
-        wisdom: 8,
-        charisma: 8,
-      });
-    } else if (newMethod === "standard") {
-      setAbilityScores({
-        strength: 10,
-        dexterity: 10,
-        constitution: 10,
-        intelligence: 10,
-        wisdom: 10,
-        charisma: 10,
-      });
-      setAvailableStandard([...STANDARD_ARRAY]);
-    } else if (newMethod === "roll") {
-      // Roll 4d6 drop lowest for each ability
-      const rolled: AbilityScores = {} as AbilityScores;
-      ABILITIES.forEach((ability) => {
-        const rolls = Array.from(
-          { length: 4 },
-          () => Math.floor(Math.random() * 6) + 1,
-        );
-        rolls.sort((a, b) => b - a);
-        rolled[ability] = rolls[0] + rolls[1] + rolls[2];
-      });
-      setAbilityScores(rolled);
-    }
-  };
 
   const handleStandardAssign = (ability: AbilityName, value: number) => {
     const currentValue = character.abilityScores[ability];
@@ -136,34 +85,6 @@ export function AbilitiesStep() {
     });
 
     setAbilityScore(ability, value);
-  };
-
-  const handlePointBuyChange = (ability: AbilityName, delta: number) => {
-    const currentScore = character.abilityScores[ability];
-    const newScore = currentScore + delta;
-
-    if (newScore < 8 || newScore > 15) return;
-
-    const currentCost = POINT_BUY_COSTS[currentScore];
-    const newCost = POINT_BUY_COSTS[newScore];
-    const costDelta = newCost - currentCost;
-
-    if (remainingPoints - costDelta < 0) return;
-
-    setAbilityScore(ability, newScore);
-  };
-
-  const rollAbilities = () => {
-    const rolled: AbilityScores = {} as AbilityScores;
-    ABILITIES.forEach((ability) => {
-      const rolls = Array.from(
-        { length: 4 },
-        () => Math.floor(Math.random() * 6) + 1,
-      );
-      rolls.sort((a, b) => b - a);
-      rolled[ability] = rolls[0] + rolls[1] + rolls[2];
-    });
-    setAbilityScores(rolled);
   };
 
   return (

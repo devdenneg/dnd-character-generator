@@ -81,7 +81,7 @@ export function SummaryStep() {
 
       const characterData = getCharacterData();
 
-      const response = await charactersApi.create({
+      await charactersApi.create({
         name: character.name || "Безымянный герой",
         data: characterData,
       });

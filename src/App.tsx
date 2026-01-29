@@ -43,7 +43,7 @@ const queryClient = new QueryClient({
 
 function CharacterWizardPage() {
   const navigate = useNavigate();
-  const { currentStep, resetCharacter, character, loadedCharacterId } =
+  const { currentStep, resetCharacter, loadedCharacterId } =
     useCharacterStore();
   const [showGlossary, setShowGlossary] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();

@@ -33,7 +33,6 @@ export function Tooltip({
 
       let top = 0;
       let left = 0;
-      let actualPosition = position;
 
       // Определяем начальную позицию
       switch (position) {
@@ -42,7 +41,6 @@ export function Tooltip({
           left = rect.left + rect.width / 2 - tooltipRect.width / 2;
           // Проверяем, влезает ли сверху
           if (top < padding) {
-            actualPosition = "bottom";
             top = rect.bottom + 8;
           }
           break;
@@ -51,7 +49,6 @@ export function Tooltip({
           left = rect.left + rect.width / 2 - tooltipRect.width / 2;
           // Проверяем, влезает ли снизу
           if (top + tooltipRect.height > viewportHeight - padding) {
-            actualPosition = "top";
             top = rect.top - tooltipRect.height - 8;
           }
           break;
@@ -60,7 +57,6 @@ export function Tooltip({
           left = rect.left - tooltipRect.width - 8;
           // Проверяем, влезает ли слева
           if (left < padding) {
-            actualPosition = "right";
             left = rect.right + 8;
           }
           break;
@@ -69,7 +65,6 @@ export function Tooltip({
           left = rect.right + 8;
           // Проверяем, влезает ли справа
           if (left + tooltipRect.width > viewportWidth - padding) {
-            actualPosition = "left";
             left = rect.left - tooltipRect.width - 8;
           }
           break;
