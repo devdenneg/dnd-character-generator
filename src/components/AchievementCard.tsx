@@ -12,7 +12,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({ achievement, o
       onClick={onClick}
     >
       <div className="flex items-start space-x-3">
-        <div className="text-3xl">{achievement.icon}</div>
+        <div className="flex items-center justify-center text-3xl">{achievement.icon}</div>
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-semibold text-gray-900 truncate">{achievement.name}</h3>
           <p className="text-sm text-gray-500 mt-1">{achievement.description}</p>

@@ -10,7 +10,7 @@ export const PlayerAchievementCard: React.FC<PlayerAchievementCardProps> = ({ pl
   return (
     <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-amber-500/50 transition-all">
       <div className="flex items-start gap-4">
-        <div className="text-4xl">{achievement.icon}</div>
+        <div className="flex items-center justify-center text-4xl">{achievement.icon}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex-1">
@@ -24,20 +24,27 @@ export const PlayerAchievementCard: React.FC<PlayerAchievementCardProps> = ({ pl
             )}
           </div>
 
-          <div className="mt-3 flex items-center justify-between pt-3 border-t border-border/30">
+          <div className="mt-3 space-y-2 pt-3 border-t border-border/30">
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">Персонаж:</span>
               <span className="text-xs font-medium text-foreground">
                 {playerAchievement.character ? playerAchievement.character.name : 'Не указан'}
               </span>
             </div>
-            <span className="text-xs text-muted-foreground">
-              {new Date(playerAchievement.grantedAt).toLocaleDateString("ru-RU", {
-                day: "numeric",
-                month: "short",
-                year: "numeric"
-              })}
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">
+                {new Date(playerAchievement.grantedAt).toLocaleDateString("ru-RU", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric"
+                })}
+              </span>
+              {playerAchievement.achievement.roomName && (
+                <span className="text-xs text-muted-foreground">
+                  Комната: {playerAchievement.achievement.roomName}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

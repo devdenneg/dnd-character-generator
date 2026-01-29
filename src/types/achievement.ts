@@ -5,6 +5,7 @@ export interface Achievement {
   icon: string;
   xpReward: number;
   roomId: string;
+  roomName?: string;
   createdById: string;
   createdAt: string;
   updatedAt: string;

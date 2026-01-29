@@ -45,7 +45,9 @@ export interface PlayerAchievementWithDetails {
   characterId: string | null;
   grantedById: string;
   grantedAt: Date;
-  achievement: AchievementWithStats;
+  achievement: AchievementWithStats & {
+    roomName: string;
+  };
   character: {
     id: string;
     name: string;
@@ -337,7 +339,8 @@ export class AchievementService {
       achievement: {
         ...achievement,
         icon: achievement.icon as AchievementIcon,
-        totalGiven: 0 // Устанавливаем 0, так как мы не запрашиваем его здесь, а это общее количество
+        totalGiven: 0, // Устанавливаем 0, так как мы не запрашиваем его здесь, а это общее количество
+        roomName: room.name
       },
       character: playerAchievement.character ? {
         id: playerAchievement.character.id,
@@ -361,6 +364,17 @@ export class AchievementService {
       }
     });
 
+    // Получаем уникальные ID комнат
+    const roomIds = [...new Set(playerAchievements.map(pa => pa.achievement.roomId))];
+
+    // Загружаем названия комнат
+    const rooms = await prisma.room.findMany({
+      where: { id: { in: roomIds } },
+      select: { id: true, name: true }
+    });
+
+    const roomMap = new Map(rooms.map(r => [r.id, r.name]));
+
     return playerAchievements.map(pa => ({
       id: pa.id,
       achievementId: pa.achievementId,
@@ -371,7 +385,8 @@ export class AchievementService {
       achievement: {
         ...pa.achievement,
         icon: pa.achievement.icon as AchievementIcon,
-        totalGiven: 0 // Устанавливаем 0, так как мы не запрашиваем его здесь, а это общее количество
+        totalGiven: 0,
+        roomName: roomMap.get(pa.achievement.roomId) || 'Неизвестная комната'
       },
       character: pa.character ? {
         id: pa.character.id,
@@ -417,7 +432,8 @@ export class AchievementService {
       achievement: {
         ...pa.achievement,
         icon: pa.achievement.icon as AchievementIcon,
-        totalGiven: 0 // Устанавливаем 0, так как мы не запрашиваем его здесь
+        totalGiven: 0,
+        roomName: room.name
       },
       character: pa.character ? {
         id: pa.character.id,

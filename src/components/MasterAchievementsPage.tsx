@@ -278,7 +278,7 @@ export const MasterAchievementsPage: React.FC = () => {
                           key={icon}
                           type="button"
                           onClick={() => setNewAchievement({...newAchievement, icon})}
-                          className={`p-3 rounded-lg border-2 transition-all ${
+                          className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all ${
                             newAchievement.icon === icon
                               ? 'border-amber-500 bg-amber-500/20'
                               : 'border-border/50 hover:border-amber-500/50'
@@ -346,7 +346,7 @@ export const MasterAchievementsPage: React.FC = () => {
                           key={achievement.id}
                           type="button"
                           onClick={() => setGrantAchievement({...grantAchievement, achievementId: achievement.id})}
-                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                          className={`p-3 rounded-lg border-2 transition-all text-center ${
                             grantAchievement.achievementId === achievement.id
                               ? 'border-amber-500 bg-amber-500/20'
                               : 'border-border/50 hover:border-amber-500/50'
