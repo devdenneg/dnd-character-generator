@@ -826,7 +826,7 @@ export function CharacterSheet() {
             <strong>владение</strong> навыком (★), добавляется ещё{" "}
             <strong>+{stats.proficiencyBonus}</strong> (бонус мастерства).
           </p>
-          {character.expertiseSkills.length > 0 && (
+          {character.expertiseSkills && character.expertiseSkills.length > 0 && (
             <p className="mt-2 text-amber-400 text-xs">
               ⚡ <strong>Мастерство (Expertise):</strong> для некоторых навыков
               бонус мастерства удваивается (+{stats.proficiencyBonus * 2})!
@@ -838,7 +838,7 @@ export function CharacterSheet() {
           <ul className="mt-1 text-xs space-y-1">
             <li>
               • От класса: {character.class?.nameRu} даёт{" "}
-              {character.skillProficiencies.filter(
+              {(character.skillProficiencies || []).filter(
                 (s) =>
                   !character.background?.skillProficiencies.includes(s),
               ).length}{" "}
@@ -850,7 +850,7 @@ export function CharacterSheet() {
                 {character.background.skillProficiencies.length} навыков
               </li>
             )}
-            {character.expertiseSkills.length > 0 && (
+            {character.expertiseSkills && character.expertiseSkills.length > 0 && (
               <li className="text-amber-400">
                 • Мастерство: {character.expertiseSkills.length} навыков с
                 удвоенным бонусом
@@ -865,8 +865,8 @@ export function CharacterSheet() {
             const isFromBackground =
               character.background?.skillProficiencies.includes(skillId) ||
               false;
-            const isProficient = character.skillProficiencies.includes(skillId);
-            const hasExpertise = character.expertiseSkills.includes(skillId);
+            const isProficient = character.skillProficiencies?.includes(skillId) || false;
+            const hasExpertise = character.expertiseSkills?.includes(skillId) || false;
             const source = isProficient && !hasExpertise
               ? isFromBackground
                 ? "background"
@@ -1352,7 +1352,7 @@ export function CharacterSheet() {
             </h4>
             
             {/* Навыки от класса */}
-            {character.skillProficiencies.filter(
+            {(character.skillProficiencies || []).filter(
               (s) => !character.background?.skillProficiencies.includes(s)
             ).length > 0 && (
               <div className="mb-3">
@@ -1360,7 +1360,7 @@ export function CharacterSheet() {
                   От класса {character.class?.nameRu}:
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {character.skillProficiencies
+                  {(character.skillProficiencies || [])
                     .filter((s) => !character.background?.skillProficiencies.includes(s))
                     .map((s) => (
                       <Badge key={s} variant="outline">

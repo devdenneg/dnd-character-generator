@@ -825,7 +825,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
 
   setBackground: (background) =>
     set((state) => {
-      const currentSkills = state.character.skillProficiencies;
+      const currentSkills = state.character.skillProficiencies || [];
       const oldBackgroundSkills = state.character.background?.skillProficiencies || [];
       
       // Удаляем навыки старой предыстории
@@ -1075,8 +1075,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     };
 
     for (const [skill, ability] of Object.entries(skillAbilityMap)) {
-      const isProficient = character.skillProficiencies.includes(skill);
-      const hasExpertise = character.expertiseSkills.includes(skill);
+      const isProficient = character.skillProficiencies?.includes(skill) || false;
+      const hasExpertise = character.expertiseSkills?.includes(skill) || false;
       const profBonus = isProficient
         ? hasExpertise
           ? proficiencyBonus * 2
