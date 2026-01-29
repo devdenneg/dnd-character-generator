@@ -11,6 +11,7 @@ import {
   DoorOpen,
   Plus,
   Zap,
+  Trophy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,6 +38,14 @@ const MENU_ITEMS = [
     description: "Сохранённые персонажи в облаке",
     icon: Users,
     gradient: "from-emerald-500 to-teal-500",
+    roles: ["player", "master"],
+  },
+  {
+    id: "my-achievements",
+    title: "Мои достижения",
+    description: "Полученные награды и ачивки",
+    icon: Trophy,
+    gradient: "from-yellow-500 to-amber-500",
     roles: ["player", "master"],
   },
   {
