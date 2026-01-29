@@ -51,14 +51,17 @@ export class AchievementService {
    * Создание новой ачивки
    */
   static async createAchievement(
-    data: AchievementInput
+    data: AchievementInput,
   ): Promise<AchievementWithStats> {
     if (!ACHIEVEMENT_ICONS.includes(data.icon)) {
       throw new Error(`Invalid achievement icon: ${data.icon}`);
     }
 
     // Генерируем уникальный ключ из названия
-    const key = data.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const key = data.name
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "");
 
     const achievement = await prisma.achievement.create({
       data: {
@@ -75,7 +78,7 @@ export class AchievementService {
     return {
       ...achievement,
       icon: achievement.icon as AchievementIcon,
-      totalGiven: 0
+      totalGiven: 0,
     };
   }
 
