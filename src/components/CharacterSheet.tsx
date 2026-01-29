@@ -1350,16 +1350,42 @@ export function CharacterSheet() {
               <BookOpen className="w-4 h-4 text-emerald-400" />
               Навыки ({character.skillProficiencies?.length || 0})
             </h4>
-            <div className="flex flex-wrap gap-1">
-              {character.skillProficiencies?.map((s) => (
-                <Badge key={s} variant="outline">
-                  {getSkillNameRu(s)}
-                </Badge>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              От класса и предыстории
-            </p>
+            
+            {/* Навыки от класса */}
+            {character.skillProficiencies.filter(
+              (s) => !character.background?.skillProficiencies.includes(s)
+            ).length > 0 && (
+              <div className="mb-3">
+                <p className="text-xs text-muted-foreground mb-1.5">
+                  От класса {character.class?.nameRu}:
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {character.skillProficiencies
+                    .filter((s) => !character.background?.skillProficiencies.includes(s))
+                    .map((s) => (
+                      <Badge key={s} variant="outline">
+                        {getSkillNameRu(s)}
+                      </Badge>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Навыки от предыстории */}
+            {character.background && character.background.skillProficiencies.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1.5">
+                  От предыстории {character.background.nameRu}:
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {character.background.skillProficiencies.map((s) => (
+                    <Badge key={s} variant="secondary">
+                      {getSkillNameRu(s)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </CollapsibleSection>
