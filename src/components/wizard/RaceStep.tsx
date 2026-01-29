@@ -34,13 +34,6 @@ export function RaceStep() {
   const { character, setRace } = useCharacterStore();
   const races = getAllRaces();
 
-  // Debug logging
-  console.log("RaceStep - character.race:", character.race);
-  console.log(
-    "RaceStep - all races:",
-    races.map((r) => ({ id: r.id, name: r.name })),
-  );
-
   const filteredRaces = races.filter(
     (race) =>
       race.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -72,13 +65,6 @@ export function RaceStep() {
         {filteredRaces.map((race, index) => {
           const isSelected = character.race?.id === race.id;
           const data = getData(race.id);
-
-          // Debug each race
-          if (character.race?.id) {
-            console.log(
-              `Comparing: character.race.id="${character.race.id}" vs race.id="${race.id}" => ${isSelected}`,
-            );
-          }
 
           return (
             <div

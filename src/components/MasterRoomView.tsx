@@ -147,16 +147,6 @@ export function MasterRoomView({
 
   const selectedPlayer = players.find((p) => p.id === selectedPlayerId);
 
-  // Debug logging
-  useEffect(() => {
-    if (selectedPlayer) {
-      console.log(
-        "📋 Selected player character data:",
-        selectedPlayer.character.data,
-      );
-      console.log("💰 Wallet data:", selectedPlayer.character.data.wallet);
-    }
-  }, [selectedPlayer]);
 
   return (
     <div className="space-y-4 md:space-y-6">

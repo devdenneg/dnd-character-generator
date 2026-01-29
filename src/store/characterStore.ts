@@ -1243,15 +1243,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
   },
 
   loadCharacter: (data: Character, characterId?: string) => {
-    console.log("loadCharacter called with:", data);
-    console.log("Race data:", data?.race);
-    console.log("Class data:", data?.class);
-    console.log("Background data:", data?.background);
-    console.log("Data keys:", Object.keys(data || {}));
-
     // Проверяем что data не null/undefined
     if (!data) {
-      console.error("loadCharacter: data is null or undefined");
       return;
     }
 
@@ -1271,10 +1264,5 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         "details",
       ],
     });
-
-    // Проверяем что сохранилось
-    const newState = get();
-    console.log("After set - character.race:", newState.character.race);
-    console.log("After set - character.class:", newState.character.class);
   },
 }));

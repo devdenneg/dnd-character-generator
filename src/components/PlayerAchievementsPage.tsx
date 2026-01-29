@@ -14,10 +14,8 @@ export const PlayerAchievementsPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("🏆 Loading player achievements...");
         setLoading(true);
         const achievements = await achievementApi.getPlayerAchievements();
-        console.log("✅ Player achievements loaded:", achievements);
         setPlayerAchievements(achievements);
       } catch (err) {
         console.error("❌ Failed to load achievements:", err);

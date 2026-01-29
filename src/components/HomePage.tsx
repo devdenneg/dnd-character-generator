@@ -12,12 +12,15 @@ import {
   Plus,
   Zap,
   Trophy,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { PREMADE_CHARACTERS } from "@/data/premadeCharacters";
 import { useCharacterStore } from "@/store/characterStore";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import type { Character } from "@/types/character";
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -31,6 +34,7 @@ const MENU_ITEMS = [
     icon: UserPlus,
     gradient: "from-primary to-accent",
     roles: ["player", "master"],
+    inDevelopment: false,
   },
   {
     id: "my-characters",
@@ -39,22 +43,25 @@ const MENU_ITEMS = [
     icon: Users,
     gradient: "from-emerald-500 to-teal-500",
     roles: ["player", "master"],
+    inDevelopment: false,
   },
   {
     id: "my-achievements",
     title: "Мои достижения",
-    description: "Полученные награды и ачивки",
+    description: "Находится в разработке",
     icon: Trophy,
     gradient: "from-yellow-500 to-amber-500",
     roles: ["player", "master"],
+    inDevelopment: true,
   },
   {
     id: "join-room",
     title: "Присоединиться к игре",
-    description: "Найдите активную комнату и присоединитесь",
+    description: "Находится в разработке",
     icon: DoorOpen,
     gradient: "from-blue-500 to-cyan-500",
     roles: ["player"],
+    inDevelopment: true,
   },
   {
     id: "my-rooms",
@@ -63,6 +70,7 @@ const MENU_ITEMS = [
     icon: DoorOpen,
     gradient: "from-amber-500 to-orange-500",
     roles: ["master"],
+    inDevelopment: false,
   },
   {
     id: "create-room",
@@ -71,6 +79,7 @@ const MENU_ITEMS = [
     icon: Plus,
     gradient: "from-purple-500 to-pink-500",
     roles: ["master"],
+    inDevelopment: false,
   },
 ];
 
@@ -79,20 +88,50 @@ export function HomePage({ onNavigate }: HomePageProps) {
   const navigate = useNavigate();
   const { loadCharacter } = useCharacterStore();
 
+  // Секретная разблокировка для разработчика (7 кликов)
+  const [devClickCounts, setDevClickCounts] = useState<Record<string, number>>(
+    {},
+  );
+
+  // Загружаем разблокированные фичи из localStorage при инициализации
+  const [unlockedFeatures, setUnlockedFeatures] = useState<string[]>(() => {
+    const unlocked = localStorage.getItem("dev_unlocked_features");
+    return unlocked ? JSON.parse(unlocked) : [];
+  });
+
   const handleLogout = async () => {
     await logout();
   };
 
+  const handleDevClick = (itemId: string) => {
+    const currentCount = (devClickCounts[itemId] || 0) + 1;
+    const newCounts = { ...devClickCounts, [itemId]: currentCount };
+    setDevClickCounts(newCounts);
+
+    if (currentCount === 7) {
+      // Разблокируем фичу
+      const newUnlocked = [...unlockedFeatures, itemId];
+      setUnlockedFeatures(newUnlocked);
+      localStorage.setItem(
+        "dev_unlocked_features",
+        JSON.stringify(newUnlocked),
+      );
+
+      // Показываем уведомление
+      const itemTitle = MENU_ITEMS.find((i) => i.id === itemId)?.title;
+      alert(`🔓 Режим разработчика активирован для "${itemTitle}"`);
+
+      // Сбрасываем счётчик
+      const resetCounts = { ...newCounts, [itemId]: 0 };
+      setDevClickCounts(resetCounts);
+    }
+  };
+
   const handleLoadPremadeCharacter = (
-    characterData: any,
+    characterData: Character,
     premadeId: string,
   ) => {
-    console.log("Loading premade character:", characterData);
-    console.log("Character race:", characterData.race);
-    console.log("Character class:", characterData.class);
-    // Передаем ID готового персонажа как characterId, чтобы он не сбрасывался
     loadCharacter(characterData, `premade-${premadeId}`);
-    console.log("Character loaded, navigating...");
     navigate("/character");
   };
 
@@ -116,13 +155,9 @@ export function HomePage({ onNavigate }: HomePageProps) {
               {/* Logo */}
               <button
                 onClick={() => onNavigate("home")}
-                className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity text-5xl md:text-7xl lg:text-8xl"
               >
-                <img
-                  src="/logo.png"
-                  alt="D&D Generator"
-                  className="h-12 md:h-20 lg:h-28 w-auto"
-                />
+                🤙
               </button>
 
               {/* Auth Section */}
@@ -222,36 +257,70 @@ export function HomePage({ onNavigate }: HomePageProps) {
           ) : (
             // Menu items
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {visibleMenuItems.map((item, index) => (
-                <button
-                  key={item.id}
-                  onClick={() => onNavigate(item.id)}
-                  className="animate-fade-in-up w-full text-left p-6 rounded-2xl border transition-all duration-300 bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:bg-card/80 cursor-pointer group"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Icon */}
-                    <div
-                      className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${item.gradient} group-hover:scale-110 transition-transform`}
-                    >
-                      <item.icon className="w-7 h-7 text-white" />
-                    </div>
+              {visibleMenuItems.map((item, index) => {
+                const isDisabled =
+                  item.inDevelopment && !unlockedFeatures.includes(item.id);
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-lg text-foreground">
-                          {item.title}
-                        </h3>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (isDisabled) {
+                        handleDevClick(item.id);
+                      } else {
+                        onNavigate(item.id);
+                      }
+                    }}
+                    className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 backdrop-blur-sm ${
+                      isDisabled
+                        ? "bg-card/10 border-border/10 cursor-not-allowed"
+                        : "animate-fade-in-up bg-card/60 border-border/50 hover:border-primary/50 hover:bg-card/80 cursor-pointer group"
+                    }`}
+                    style={{
+                      animationDelay: `${index * 100}ms`,
+                      opacity: isDisabled ? 0.15 : undefined,
+                    }}
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Icon */}
+                      <div
+                        className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${item.gradient} ${
+                          !isDisabled && "group-hover:scale-110"
+                        } transition-transform relative`}
+                      >
+                        {isDisabled ? (
+                          <Lock className="w-7 h-7 text-white" />
+                        ) : (
+                          <item.icon className="w-7 h-7 text-white" />
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {item.description}
-                      </p>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-semibold text-lg text-foreground">
+                            {item.title}
+                          </h3>
+                          {!isDisabled && (
+                            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {item.description}
+                        </p>
+                        {isDisabled && (
+                          <div className="mt-2 flex items-center gap-1">
+                            <Lock className="w-3 h-3 text-muted-foreground/70" />
+                            <span className="text-xs text-muted-foreground/70">
+                              В разработке
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
 

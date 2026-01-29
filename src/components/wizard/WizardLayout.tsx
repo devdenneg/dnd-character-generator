@@ -371,51 +371,48 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
                 )}
               </div>
 
-              {!canProceedToNext && !isLastStep ? (
-                <Tooltip
-                  content={
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-semibold text-foreground mb-1">
-                          Необходимо заполнить поля
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {getRequiredFieldsMessage()}
-                        </p>
-                      </div>
-                    </div>
-                  }
-                  position="top"
-                  maxWidth="max-w-xs"
-                >
-                  <Button
-                    onClick={nextStep}
-                    disabled={true}
-                    className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
-                  >
-                    <span className="hidden sm:inline">{t("app.next")}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </Tooltip>
-              ) : (
-                <Button
-                  onClick={nextStep}
-                  disabled={!canProceedToNext && !isLastStep}
-                  className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
-                >
-                  {isLastStep ? (
-                    <>
-                      <span className="hidden sm:inline">Экспорт PDF</span>
-                      <span>📄</span>
-                    </>
+              {!isLastStep && (
+                <>
+                  {!canProceedToNext ? (
+                    <Tooltip
+                      content={
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-semibold text-foreground mb-1">
+                              Необходимо заполнить поля
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {getRequiredFieldsMessage()}
+                            </p>
+                          </div>
+                        </div>
+                      }
+                      position="top"
+                      maxWidth="max-w-xs"
+                    >
+                      <Button
+                        onClick={nextStep}
+                        disabled={true}
+                        className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                      >
+                        <span className="hidden sm:inline">
+                          {t("app.next")}
+                        </span>
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </Tooltip>
                   ) : (
-                    <>
+                    <Button
+                      onClick={nextStep}
+                      disabled={!canProceedToNext}
+                      className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                    >
                       <span className="hidden sm:inline">{t("app.next")}</span>
                       <ChevronRight className="w-4 h-4" />
-                    </>
+                    </Button>
                   )}
-                </Button>
+                </>
               )}
             </div>
           </footer>

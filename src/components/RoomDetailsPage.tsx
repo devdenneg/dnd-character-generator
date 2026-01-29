@@ -78,8 +78,6 @@ export function RoomDetailsPage() {
   useEffect(() => {
     if (!socket || !isConnected || !id) return;
 
-    console.log("🔌 Подключаемся к комнате через WebSocket:", id);
-
     // Присоединяемся к комнате
     socket.emit("join-room", id);
 
@@ -88,7 +86,6 @@ export function RoomDetailsPage() {
       "room-players-updated",
       (data: { roomId: string; players: RoomPlayer[] }) => {
         if (data.roomId === id) {
-          console.log("👥 Обновлён список игроков:", data.players);
           setPlayers(data.players);
         }
       },
@@ -96,7 +93,6 @@ export function RoomDetailsPage() {
 
     // При размонтировании компонента
     return () => {
-      console.log("👋 Покидаем комнату:", id);
       socket.emit("leave-room", id);
       socket.off("room-players-updated");
     };
@@ -109,8 +105,6 @@ export function RoomDetailsPage() {
         roomsApi.get(id!),
         roomsApi.getPlayers(id!),
       ]);
-      console.log("🏠 Room response:", roomResponse);
-      console.log("👥 Players response:", playersResponse);
       setRoom(roomResponse.data);
       // The API returns { success: true, data: [...] }
       setPlayers(playersResponse.data || []);

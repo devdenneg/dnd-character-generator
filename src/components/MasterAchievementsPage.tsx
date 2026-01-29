@@ -72,7 +72,6 @@ export const MasterAchievementsPage: React.FC = () => {
 
     const fetchData = async () => {
       try {
-        console.log("🏆 Loading achievements for room:", roomId);
         setLoading(true);
 
         // Загружаем параллельно
@@ -82,7 +81,6 @@ export const MasterAchievementsPage: React.FC = () => {
           roomsApi.getPlayers(roomId)
         ]);
 
-        console.log("✅ Data loaded:", { roomAchievements, roomPlayerAchievements, playersData });
         setAchievements(roomAchievements);
         setPlayerAchievements(roomPlayerAchievements || []);
         setPlayers(playersData.data || []);

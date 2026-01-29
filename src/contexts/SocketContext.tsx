@@ -64,7 +64,6 @@ export function SocketProvider({ children }: SocketProviderProps) {
     );
 
     newSocket.on("connect", () => {
-      console.log("🔌 WebSocket connected");
       setIsConnected(true);
 
       // Запрашиваем разрешение на уведомления
@@ -74,7 +73,6 @@ export function SocketProvider({ children }: SocketProviderProps) {
     });
 
     newSocket.on("disconnect", () => {
-      console.log("❌ WebSocket disconnected");
       setIsConnected(false);
     });
 
@@ -84,14 +82,12 @@ export function SocketProvider({ children }: SocketProviderProps) {
 
     // Обработка получения ачивки
     newSocket.on("achievement-granted", (data: { achievement: any; character: any; grantedAt: string }) => {
-      console.log("🏆 Achievement granted:", data);
       showAchievementNotification(data.achievement, data.character);
 
       // Также показываем browser notification если разрешено
       if ("Notification" in window && Notification.permission === "granted") {
         new Notification(`🏆 Новое достижение!`, {
           body: `Персонаж ${data.character?.name || ''} получил achievement: ${data.achievement.name}`,
-          icon: "/logo.png",
         });
       }
     });
