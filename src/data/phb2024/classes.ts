@@ -412,7 +412,7 @@ export const phb2024Classes: CharacterClass[] = [
     armorProficiencies: ["Лёгкие доспехи", "Средние доспехи", "Щиты"],
     weaponProficiencies: ["Простое оружие"],
     skillChoices: ["history", "insight", "medicine", "persuasion", "religion"],
-    skillCount: 2,
+    skillCount: 4,
     features: [
       {
         name: "Spellcasting",
@@ -497,6 +497,10 @@ export const phb2024Classes: CharacterClass[] = [
         [4, 3, 3, 3, 3, 1, 1, 1, 1],
         [4, 3, 3, 3, 3, 2, 1, 1, 1],
         [4, 3, 3, 3, 3, 2, 2, 1, 1],
+      ],
+      spellsKnown: [
+        4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 16, 17, 17, 18, 18, 19, 20,
+        21, 22,
       ],
     },
     subclasses: [
@@ -1229,11 +1233,10 @@ export const phb2024Classes: CharacterClass[] = [
     ],
     spellcasting: {
       ability: "charisma" as AbilityName,
-      cantripsKnown: [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      ],
+      cantripsKnown: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       spellsKnown: [
-        2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 22, 22,
+        2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19,
+        20, 22, 22,
       ],
       spellSlots: [
         [2],
