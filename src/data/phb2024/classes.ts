@@ -594,7 +594,7 @@ export const phb2024Classes: CharacterClass[] = [
       "religion",
       "survival",
     ],
-    skillCount: 2,
+    skillCount: 4,
     features: [
       {
         name: "Spellcasting",
@@ -686,6 +686,10 @@ export const phb2024Classes: CharacterClass[] = [
         [4, 3, 3, 3, 3, 1, 1, 1, 1],
         [4, 3, 3, 3, 3, 2, 1, 1, 1],
         [4, 3, 3, 3, 3, 2, 2, 1, 1],
+      ],
+      spellsKnown: [
+        4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 17, 18, 18, 19, 20, 21,
+        22,
       ],
     },
     subclasses: [
