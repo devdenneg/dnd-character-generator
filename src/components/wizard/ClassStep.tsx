@@ -7,6 +7,7 @@ import {
   Shield,
   Info,
   Swords,
+  AlertTriangle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +40,8 @@ const DEFAULT_DATA = { accent: "text-slate-400", icon: "⚔️" };
 export function ClassStep() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalClass, setModalClass] = useState<CharacterClass | null>(null);
-  const { character, setClass, setSubclass } = useCharacterStore();
+  const [confirmClass, setConfirmClass] = useState<CharacterClass | null>(null);
+  const { character, setClass, setSubclass, resetCharacter, completedSteps } = useCharacterStore();
   const classes = getAllClasses();
 
   const filteredClasses = classes.filter(
@@ -49,8 +51,24 @@ export function ClassStep() {
   );
 
   const handleSelectClass = (cls: CharacterClass) => {
-    setClass(cls);
-    setModalClass(null);
+    // Если уже выбран класс и пользователь выбирает другой
+    // Показываем предупреждение только если есть заполненные шаги после класса
+    if (character.class && character.class.id !== cls.id && completedSteps.includes("class")) {
+      setConfirmClass(cls);
+      setModalClass(null);
+    } else {
+      setClass(cls);
+      setModalClass(null);
+    }
+  };
+
+  const handleConfirmClassChange = () => {
+    if (confirmClass) {
+      // Сбрасываем все данные и начинаем заново
+      resetCharacter();
+      setClass(confirmClass);
+      setConfirmClass(null);
+    }
   };
 
   const handleSelectSubclass = (subclass: Subclass) => {
@@ -372,6 +390,59 @@ export function ClassStep() {
           </Badge>
         </div>
       )}
+
+      {/* Confirmation modal for class change */}
+      <Modal
+        isOpen={!!confirmClass}
+        onClose={() => setConfirmClass(null)}
+        title="Смена класса"
+        icon="⚠️"
+        maxWidth="max-w-md"
+      >
+        <ModalContent>
+          <div className="flex items-start gap-3 mb-4">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground mb-2">
+                Вы уверены, что хотите сменить класс?
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                При смене класса все данные вашего персонажа будут сброшены. Вам придётся начать заполнять персонажа заново:
+              </p>
+              <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
+                <li>Расу придётся выбрать заново</li>
+                <li>Навыки сбросятся</li>
+                <li>Характеристики вернутся к начальным значениям</li>
+                <li>Предыстория будет сброшена</li>
+                <li>Снаряжение и заклинания будут очищены</li>
+                <li>Имя и детали персонажа удалятся</li>
+              </ul>
+            </div>
+          </div>
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+            <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+              Новый класс: {confirmClass?.nameRu}
+            </p>
+          </div>
+        </ModalContent>
+        <ModalFooter>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => setConfirmClass(null)}
+          >
+            Отмена
+          </Button>
+          <Button
+            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90"
+            onClick={handleConfirmClassChange}
+          >
+            Сбросить и выбрать
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 }

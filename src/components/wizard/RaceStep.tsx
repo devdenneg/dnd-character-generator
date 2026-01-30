@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Check, Zap, Ruler, Info } from "lucide-react";
+import { Search, Check, Zap, Ruler, Info, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,8 @@ const DEFAULT_DATA = { accent: "text-slate-400", icon: "🎭" };
 export function RaceStep() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalRace, setModalRace] = useState<Race | null>(null);
-  const { character, setRace } = useCharacterStore();
+  const [confirmRace, setConfirmRace] = useState<Race | null>(null);
+  const { character, setRace, resetCharacter, completedSteps } = useCharacterStore();
   const races = getAllRaces();
 
   const filteredRaces = races.filter(
@@ -41,8 +42,24 @@ export function RaceStep() {
   );
 
   const handleSelectRace = (race: Race) => {
-    setRace(race);
-    setModalRace(null);
+    // Если уже выбрана раса и пользователь выбирает другую
+    // Показываем предупреждение только если мы уже прошли шаг расы (есть заполненные данные)
+    if (character.race && character.race.id !== race.id && completedSteps.includes("race")) {
+      setConfirmRace(race);
+      setModalRace(null);
+    } else {
+      setRace(race);
+      setModalRace(null);
+    }
+  };
+
+  const handleConfirmRaceChange = () => {
+    if (confirmRace) {
+      // Сбрасываем все данные и начинаем заново
+      resetCharacter();
+      setRace(confirmRace);
+      setConfirmRace(null);
+    }
   };
 
   const getData = (id: string) => RACE_DATA[id] || DEFAULT_DATA;
@@ -241,6 +258,59 @@ export function RaceStep() {
           </Badge>
         </div>
       )}
+
+      {/* Confirmation modal for race change */}
+      <Modal
+        isOpen={!!confirmRace}
+        onClose={() => setConfirmRace(null)}
+        title="Смена расы"
+        icon="⚠️"
+        maxWidth="max-w-md"
+      >
+        <ModalContent>
+          <div className="flex items-start gap-3 mb-4">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground mb-2">
+                Вы уверены, что хотите сменить расу?
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                При смене расы все данные вашего персонажа будут сброшены. Вам придётся начать заполнять персонажа заново:
+              </p>
+              <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
+                <li>Класс придётся выбрать заново</li>
+                <li>Навыки сбросятся</li>
+                <li>Характеристики вернутся к начальным значениям</li>
+                <li>Предыстория будет сброшена</li>
+                <li>Снаряжение и заклинания будут очищены</li>
+                <li>Имя и детали персонажа удалятся</li>
+              </ul>
+            </div>
+          </div>
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+            <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+              Новая раса: {confirmRace?.nameRu}
+            </p>
+          </div>
+        </ModalContent>
+        <ModalFooter>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => setConfirmRace(null)}
+          >
+            Отмена
+          </Button>
+          <Button
+            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90"
+            onClick={handleConfirmRaceChange}
+          >
+            Сбросить и выбрать
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 }
