@@ -90,8 +90,17 @@ export function AbilityIncreaseStep() {
         increases[ability] = 1;
       });
     }
-    setAbilityScoreIncreases(increases);
-  }, [plus2Ability, plus1Abilities, strategy, setAbilityScoreIncreases]);
+
+    // Проверяем, что значения изменились перед обновлением store
+    const currentIncreases = character.abilityScoreIncreases || {};
+    const hasChanges = Object.entries(increases).some(
+      ([ability, value]) => currentIncreases[ability as AbilityName] !== value
+    );
+
+    if (hasChanges) {
+      setAbilityScoreIncreases(increases);
+    }
+  }, [plus2Ability, plus1Abilities, strategy, character.abilityScoreIncreases, setAbilityScoreIncreases]);
 
   // Сброс выбора при смене стратегии
   useEffect(() => {

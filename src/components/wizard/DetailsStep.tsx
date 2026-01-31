@@ -189,9 +189,51 @@ export function DetailsStep() {
               <div className="text-xs text-muted-foreground leading-tight px-0.5">
                 КД
               </div>
-              <div className="text-[10px] text-sky-600 mt-0.5 sm:mt-1">
-                10 + ЛОВ
-              </div>
+              {(() => {
+                const dexMod = stats.abilityModifiers.dexterity;
+                const equippedArmor = character.equipment?.find((e) => e.category === "armor" && e.armorType !== "shield");
+                const hasShield = character.equipment?.some((e) => e.armorType === "shield");
+
+                let formula = "";
+
+                if (equippedArmor && equippedArmor.armorClass) {
+                  const armorBase = equippedArmor.armorClass;
+                  let dexBonus = dexMod;
+
+                  // D&D 2024 правила расчёта КД с доспехом:
+                  // Лёгкий доспех: КД = Значение доспеха + Модификатор Ловкости (без ограничений)
+                  // Средний доспех: КД = Значение доспеха + Модификатор Ловкости (макс. +2)
+                  // Тяжёлый доспех: КД = Значение доспеха (модификатор Ловкости не добавляется)
+                  if (equippedArmor.armorType === "light") {
+                    // Лёгкий доспех - полный бонус Ловкости
+                    dexBonus = dexMod;
+                  } else if (equippedArmor.armorType === "medium") {
+                    // Средний доспех - максимум +2 к Ловкости
+                    const maxDexBonus = 2;
+                    if (dexBonus > maxDexBonus) {
+                      dexBonus = maxDexBonus;
+                    }
+                  } else if (equippedArmor.armorType === "heavy") {
+                    // Тяжёлый доспех - без бонуса Ловкости
+                    dexBonus = 0;
+                  }
+
+                  if (hasShield) {
+                    formula = `${armorBase}${dexBonus !== 0 ? ` + ${dexBonus}` : ""} + 2`;
+                    return `${formula}`;
+                  }
+                  formula = `${armorBase}${dexBonus !== 0 ? ` + ${dexBonus}` : ""}`;
+                  return formula;
+                }
+
+                // Без доспеха: КД = 10 + модификатор Ловкости
+                if (hasShield) {
+                  formula = `10 + ${dexMod} + 2`;
+                  return formula;
+                }
+                formula = `10 + ${dexMod}`;
+                return formula;
+              })()}
             </div>
 
             {/* Мастерство */}
