@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-
-const prisma = new PrismaClient();
+import prisma from "../db";
 
 export const getDeploymentStatus = async (req: Request, res: Response) => {
   try {
@@ -16,11 +14,12 @@ export const getDeploymentStatus = async (req: Request, res: Response) => {
       logs,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Deployment status error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to fetch deployment logs",
+      details: error?.message || "Unknown error",
     });
   }
 };
@@ -28,6 +27,8 @@ export const getDeploymentStatus = async (req: Request, res: Response) => {
 export const createDeploymentLog = async (req: Request, res: Response) => {
   try {
     const { message, version, commitSha } = req.body;
+
+    console.log("Creating deployment log with data:", { message, version, commitSha });
 
     const log = await prisma.deploymentLog.create({
       data: {
@@ -37,16 +38,19 @@ export const createDeploymentLog = async (req: Request, res: Response) => {
       },
     });
 
+    console.log("Deployment log created:", log);
+
     res.json({
       success: true,
       message: "Deployment log created successfully!",
       log,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Create deployment log error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to create deployment log",
+      details: error?.message || "Unknown error",
     });
   }
 };
