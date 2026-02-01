@@ -104,7 +104,23 @@ export function useClassSpells(index: string) {
   });
 }
 
+// Backgrounds
+export function useBackgrounds() {
+  return useQuery({
+    queryKey: queryKeys.backgrounds,
+    queryFn: backgroundsApi.list,
+    staleTime: Infinity,
+  });
+}
 
+export function useBackground(index: string) {
+  return useQuery({
+    queryKey: queryKeys.background(index),
+    queryFn: () => backgroundsApi.get(index),
+    enabled: !!index,
+    staleTime: Infinity,
+  });
+}
 
 // Equipment
 export function useEquipmentList() {
