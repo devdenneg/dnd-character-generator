@@ -1,17 +1,28 @@
 import { useBackendRaces } from "@/api/hooks";
+import { racesApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 import {
-  ChevronRight,
   Users,
+  ChevronRight,
   Zap,
   Skull,
   Flame,
   Mountain,
   Feather,
   Circle,
-  Ghost,
+  Plus,
+  Pencil,
+  Trash2,
+  Save,
+  X,
 } from "lucide-react";
 import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 const RACE_ICONS: Record<string, any> = {
   aasimar: Zap,
@@ -23,16 +34,166 @@ const RACE_ICONS: Record<string, any> = {
   halfling: Circle,
   human: Users,
   orc: Skull,
-  tiefling: Ghost,
+  tiefling: Skull,
 };
+
+const SIZES = [
+  { value: "Small", label: "Малый" },
+  { value: "Medium", label: "Средний" },
+  { value: "Large", label: "Большой" },
+];
+
+const SOURCES = [
+  { value: "srd", label: "SRD" },
+  { value: "phb2024", label: "PHB 2024" },
+];
 
 interface RacesPageProps {
   onBack?: () => void;
 }
 
 export function RacesPage({ onBack }: RacesPageProps) {
-  const { data, isLoading, error } = useBackendRaces("phb2024");
+  const { data, isLoading, error, refetch } = useBackendRaces();
+  const { user } = useAuth();
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
+  const [editingRace, setEditingRace] = useState<any>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [newTrait, setNewTrait] = useState({ name: "", nameRu: "", description: "" });
+
+  const selectedRaceData = useQuery({
+    queryKey: ["race", selectedRace],
+    queryFn: () => racesApi.get(selectedRace!),
+    enabled: !!selectedRace,
+    staleTime: Infinity,
+  });
+
+  // Create race mutation
+  const createRaceMutation = useMutation({
+    mutationFn: racesApi.create,
+    onSuccess: () => {
+      refetch();
+      setIsCreateModalOpen(false);
+      resetCreateForm();
+    },
+  });
+
+  // Update race mutation
+  const updateRaceMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => racesApi.update(id, data),
+    onSuccess: () => {
+      refetch();
+      setIsEditModalOpen(false);
+      setSelectedRace(null);
+      setEditingRace(null);
+    },
+  });
+
+  // Delete race mutation
+  const deleteRaceMutation = useMutation({
+    mutationFn: racesApi.delete,
+    onSuccess: () => {
+      refetch();
+      setIsEditModalOpen(false);
+      setSelectedRace(null);
+      setEditingRace(null);
+    },
+  });
+
+  const resetCreateForm = () => {
+    setEditingRace({
+      externalId: "",
+      name: "",
+      nameRu: "",
+      description: "",
+      speed: 30,
+      size: "Medium",
+      source: "phb2024",
+      traits: [],
+    });
+  };
+
+  const handleCreateRace = () => {
+    setEditingRace({
+      externalId: "",
+      name: "",
+      nameRu: "",
+      description: "",
+      speed: 30,
+      size: "Medium",
+      source: "phb2024",
+      traits: [],
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleEditRace = (race: any) => {
+    setEditingRace({ ...race });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveRace = () => {
+    if (!editingRace?.externalId || !editingRace?.name || !editingRace?.nameRu || !editingRace?.description) {
+      alert("Пожалуйста, заполните все обязательные поля");
+      return;
+    }
+
+    if (selectedRace) {
+      // Update existing race
+      updateRaceMutation.mutate({
+        id: selectedRace,
+        data: {
+          externalId: editingRace.externalId,
+          name: editingRace.name,
+          nameRu: editingRace.nameRu,
+          description: editingRace.description,
+          speed: editingRace.speed,
+          size: editingRace.size,
+          source: editingRace.source,
+          traits: editingRace.traits,
+        },
+      });
+    } else {
+      // Create new race
+      createRaceMutation.mutate({
+        externalId: editingRace.externalId,
+        name: editingRace.name,
+        nameRu: editingRace.nameRu,
+        description: editingRace.description,
+        speed: editingRace.speed,
+        size: editingRace.size,
+        source: editingRace.source,
+        traits: editingRace.traits,
+      });
+    }
+  };
+
+  const handleDeleteRace = () => {
+    if (editingRace && selectedRace && confirm(`Вы уверены, что хотите удалить расу "${editingRace.nameRu}"?`)) {
+      deleteRaceMutation.mutate(selectedRace);
+    }
+  };
+
+  const handleAddTrait = () => {
+    if (!newTrait.name || !newTrait.nameRu || !newTrait.description) {
+      alert("Пожалуйста, заполните все поля черты");
+      return;
+    }
+    setEditingRace({
+      ...editingRace,
+      traits: [...(editingRace.traits || []), { ...newTrait, id: Date.now().toString() }],
+    });
+    setNewTrait({ name: "", nameRu: "", description: "" });
+  };
+
+  const handleRemoveTrait = (traitId: string) => {
+    setEditingRace({
+      ...editingRace,
+      traits: editingRace.traits.filter((t: any) => t.id !== traitId),
+    });
+  };
+
+  const canEdit = user?.role === "master";
 
   if (isLoading) {
     return (
@@ -68,8 +229,8 @@ export function RacesPage({ onBack }: RacesPageProps) {
               Ошибка загрузки рас
             </h2>
             <p className="text-sm text-destructive/80">
-              Не удалось загрузить данные о расах с сервера. Пожалуйста,
-              попробуйте позже.
+              Не удалось загрузить данные о расах с сервера. Пожалуйста, попробуйте
+              позже.
             </p>
             {onBack && (
               <Button variant="outline" className="mt-4" onClick={onBack}>
@@ -96,27 +257,31 @@ export function RacesPage({ onBack }: RacesPageProps) {
         )}
 
         <div className="mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Расы PHB 2024</h1>
+                <p className="text-sm text-muted-foreground">
+                  официальные расы из Книги игрока 2024
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Расы PHB 2024
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Официальные расы из Книги игрока 2024
-              </p>
-            </div>
+
+            {canEdit && (
+              <Button onClick={handleCreateRace} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Создать расу
+              </Button>
+            )}
           </div>
         </div>
 
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">
-            Загружено рас:{" "}
-            <span className="font-semibold text-foreground">
-              {races.length}
-            </span>
+            Загружено рас: <span className="font-semibold text-foreground">{races.length}</span>
           </p>
         </div>
 
@@ -152,11 +317,26 @@ export function RacesPage({ onBack }: RacesPageProps) {
                         <h3 className="font-semibold text-lg text-foreground">
                           {race.nameRu}
                         </h3>
-                        <ChevronRight
-                          className={`w-5 h-5 text-muted-foreground transition-all ${
-                            isSelected ? "rotate-90 text-primary" : ""
-                          }`}
-                        />
+                        {canEdit && isSelected && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="p-1 h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditRace(race);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {!canEdit && (
+                          <ChevronRight
+                            className={`w-5 h-5 text-muted-foreground transition-all ${
+                              isSelected ? "rotate-90 text-primary" : ""
+                            }`}
+                          />
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
                         {race.name}
@@ -166,12 +346,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                           Скорость: {race.speed} футов
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                          Размер:{" "}
-                          {race.size === "Medium"
-                            ? "Средний"
-                            : race.size === "Small"
-                            ? "Малый"
-                            : "Большой"}
+                          Размер: {race.size === "Medium" ? "Средний" : race.size === "Small" ? "Малый" : "Большой"}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
                           {race.traits?.length || 0} черт
@@ -184,16 +359,28 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 {/* Expanded Details */}
                 {isSelected && (
                   <div className="bg-card/80 border border-primary/20 rounded-2xl p-6 mt-2 animate-fade-in">
-                    <h4 className="font-semibold text-foreground mb-2">
-                      Описание
-                    </h4>
+                    <div className="flex items-start justify-between mb-4">
+                      <h4 className="font-semibold text-foreground">Описание</h4>
+                      {canEdit && selectedRaceData.data?.data?.race && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive p-1"
+                          onClick={() => {
+                            if (confirm(`Вы уверены, что хотите удалить расу "${selectedRaceData.data.data.race.nameRu}"?`)) {
+                              deleteRaceMutation.mutate(selectedRace!);
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground mb-4">
                       {race.description}
                     </p>
 
-                    <h4 className="font-semibold text-foreground mb-2">
-                      Черты
-                    </h4>
+                    <h4 className="font-semibold text-foreground mb-2">Черты</h4>
                     <div className="space-y-3">
                       {race.traits?.map((trait: any) => (
                         <div
@@ -201,12 +388,24 @@ export function RacesPage({ onBack }: RacesPageProps) {
                           className="p-4 rounded-xl bg-muted/30 border border-border/30"
                         >
                           <div className="flex items-center justify-between gap-2 mb-1">
-                            <h5 className="font-medium text-foreground text-sm">
-                              {trait.nameRu}
-                            </h5>
-                            <span className="text-xs text-muted-foreground/70">
-                              {trait.name}
-                            </span>
+                            <div>
+                              <h5 className="font-medium text-foreground text-sm">
+                                {trait.nameRu}
+                              </h5>
+                              <span className="text-xs text-muted-foreground/70">
+                                {trait.name}
+                              </span>
+                            </div>
+                            {canEdit && isSelected && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive p-1 h-6 w-6"
+                                onClick={() => handleRemoveTrait(trait.id)}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            )}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {trait.description}
@@ -233,6 +432,197 @@ export function RacesPage({ onBack }: RacesPageProps) {
           </div>
         )}
       </div>
+
+      {/* Create/Edit Modal */}
+      {(isCreateModalOpen || isEditModalOpen) && editingRace && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
+              <h2 className="text-xl font-semibold text-foreground">
+                {isCreateModalOpen ? "Создать расу" : "Редактировать расу"}
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => {
+                setIsCreateModalOpen(false);
+                setIsEditModalOpen(false);
+                setEditingRace(null);
+              }}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* External ID */}
+              <div className="space-y-2">
+                <Label htmlFor="externalId">Внешний ID *</Label>
+                <Input
+                  id="externalId"
+                  value={editingRace.externalId || ""}
+                  onChange={(e) => setEditingRace({ ...editingRace, externalId: e.target.value })}
+                  placeholder="Например: dragonborn"
+                  disabled={!isCreateModalOpen}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Уникальный идентификатор, используется в коде. Можно изменить только при создании.
+                </p>
+              </div>
+
+              {/* Name (Russian) */}
+              <div className="space-y-2">
+                <Label htmlFor="nameRu">Название (русский) *</Label>
+                <Input
+                  id="nameRu"
+                  value={editingRace.nameRu || ""}
+                  onChange={(e) => setEditingRace({ ...editingRace, nameRu: e.target.value })}
+                  placeholder="Например: Драконорождённый"
+                />
+              </div>
+
+              {/* Name (English) */}
+              <div className="space-y-2">
+                <Label htmlFor="name">Название (английский) *</Label>
+                <Input
+                  id="name"
+                  value={editingRace.name || ""}
+                  onChange={(e) => setEditingRace({ ...editingRace, name: e.target.value })}
+                  placeholder="Например: Dragonborn"
+                />
+              </div>
+
+              {/* Speed */}
+              <div className="space-y-2">
+                <Label htmlFor="speed">Скорость (футы) *</Label>
+                <Input
+                  id="speed"
+                  type="number"
+                  value={editingRace.speed || 30}
+                  onChange={(e) => setEditingRace({ ...editingRace, speed: parseInt(e.target.value) || 30 })}
+                  min="20"
+                  max="40"
+                />
+              </div>
+
+              {/* Size */}
+              <div className="space-y-2">
+                <Label htmlFor="size">Размер *</Label>
+                <Select
+                  id="size"
+                  options={SIZES}
+                  value={editingRace.size || "Medium"}
+                  placeholder="Выберите размер"
+                  onChange={(e) => setEditingRace({ ...editingRace, size: e.target.value as any })}
+                />
+              </div>
+
+              {/* Source */}
+              <div className="space-y-2">
+                <Label htmlFor="source">Источник *</Label>
+                <Select
+                  id="source"
+                  options={SOURCES}
+                  value={editingRace.source || "phb2024"}
+                  placeholder="Выберите источник"
+                  onChange={(e) => setEditingRace({ ...editingRace, source: e.target.value as any })}
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Описание *</Label>
+                <Textarea
+                  id="description"
+                  value={editingRace.description || ""}
+                  onChange={(e) => setEditingRace({ ...editingRace, description: e.target.value })}
+                  placeholder="Описание расы..."
+                  rows={4}
+                />
+              </div>
+
+              {/* Traits */}
+              <div className="space-y-2">
+                <Label>Черты</Label>
+                <div className="space-y-3">
+                  {editingRace.traits?.map((trait: any, index: number) => (
+                    <div key={trait.id || index} className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 space-y-2">
+                          <Input
+                            value={trait.name}
+                            onChange={(e) => {
+                              const updatedTraits = [...editingRace.traits];
+                              updatedTraits[index] = { ...updatedTraits[index], name: e.target.value };
+                              setEditingRace({ ...editingRace, traits: updatedTraits });
+                            }}
+                            placeholder="Название (англ)"
+                          />
+                          <Input
+                            value={trait.nameRu}
+                            onChange={(e) => {
+                              const updatedTraits = [...editingRace.traits];
+                              updatedTraits[index] = { ...updatedTraits[index], nameRu: e.target.value };
+                              setEditingRace({ ...editingRace, traits: updatedTraits });
+                            }}
+                            placeholder="Название (рус)"
+                          />
+                          <Textarea
+                            value={trait.description}
+                            onChange={(e) => {
+                              const updatedTraits = [...editingRace.traits];
+                              updatedTraits[index] = { ...updatedTraits[index], description: e.target.value };
+                              setEditingRace({ ...editingRace, traits: updatedTraits });
+                            }}
+                            placeholder="Описание черты"
+                            rows={2}
+                          />
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive p-1"
+                          onClick={() => handleRemoveTrait(trait.id || index.toString())}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add Trait Button */}
+                <Button
+                  variant="outline"
+                  onClick={handleAddTrait}
+                  className="w-full gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Добавить черту
+                </Button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-border/50">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    setIsEditModalOpen(false);
+                    setEditingRace(null);
+                  }}
+                >
+                  Отмена
+                </Button>
+                <Button
+                  onClick={handleSaveRace}
+                  disabled={createRaceMutation.isPending || updateRaceMutation.isPending}
+                  className="gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {isCreateModalOpen ? "Создать" : "Сохранить"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

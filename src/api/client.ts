@@ -180,4 +180,48 @@ export const racesApi = {
     const response = await apiClient.get(`/races/external/${externalId}`);
     return response.data;
   },
+
+  create: async (data: {
+    externalId: string;
+    name: string;
+    nameRu: string;
+    description: string;
+    speed: number;
+    size: "Small" | "Medium" | "Large";
+    source: string;
+    traits: Array<{
+      name: string;
+      nameRu: string;
+      description: string;
+    }>;
+  }) => {
+    const response = await apiClient.post("/races", data);
+    return response.data;
+  },
+
+  update: async (
+    id: string,
+    data: {
+      externalId?: string;
+      name?: string;
+      nameRu?: string;
+      description?: string;
+      speed?: number;
+      size?: "Small" | "Medium" | "Large";
+      source?: string;
+      traits?: Array<{
+        name: string;
+        nameRu: string;
+        description: string;
+      }>;
+    },
+  ) => {
+    const response = await apiClient.put(`/races/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/races/${id}`);
+    return response.data;
+  },
 };
