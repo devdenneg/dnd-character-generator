@@ -162,3 +162,22 @@ export const roomsApi = {
     return response.data;
   },
 };
+
+// Races API
+export const racesApi = {
+  list: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/races", { params });
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get(`/races/${id}`);
+    return response.data;
+  },
+
+  getByExternalId: async (externalId: string) => {
+    const response = await apiClient.get(`/races/external/${externalId}`);
+    return response.data;
+  },
+};
