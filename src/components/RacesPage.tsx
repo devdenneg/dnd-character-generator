@@ -168,11 +168,11 @@ export function RacesPage({ onBack }: RacesPageProps) {
     }
   };
 
-  const handleDeleteRace = () => {
-    if (editingRace && selectedRace && confirm(`Вы уверены, что хотите удалить расу "${editingRace.nameRu}"?`)) {
-      deleteRaceMutation.mutate(selectedRace);
-    }
-  };
+  // const handleDeleteRace = () => {
+  //   if (editingRace && selectedRace && confirm(`Вы уверены, что хотите удалить расу "${editingRace.nameRu}"?`)) {
+  //     deleteRaceMutation.mutate(selectedRace);
+  //   }
+  // };
 
   const handleAddTrait = () => {
     if (!newTrait.name || !newTrait.nameRu || !newTrait.description) {
