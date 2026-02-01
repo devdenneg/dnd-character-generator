@@ -13,6 +13,7 @@ import {
   Zap,
   Trophy,
   Lock,
+  Skull,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +43,15 @@ const MENU_ITEMS = [
     description: "Сохранённые персонажи в облаке",
     icon: Users,
     gradient: "from-emerald-500 to-teal-500",
+    roles: ["player", "master"],
+    inDevelopment: false,
+  },
+  {
+    id: "races",
+    title: "Расы PHB 2024",
+    description: "Все расы из Книги игрока 2024 года",
+    icon: Skull,
+    gradient: "from-rose-500 to-pink-500",
     roles: ["player", "master"],
     inDevelopment: false,
   },
