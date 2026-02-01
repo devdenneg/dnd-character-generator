@@ -13,5 +13,5 @@ CREATE TABLE "DeploymentLog" (
     CONSTRAINT "DeploymentLog_pkey" PRIMARY KEY ("id")
 );
 
--- Grant permissions to database user
-GRANT ALL PRIVILEGES ON TABLE "DeploymentLog" TO dnduser;
+-- Change table owner to dnduser so backend can access it
+ALTER TABLE "DeploymentLog" OWNER TO dnduser;
