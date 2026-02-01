@@ -13,6 +13,7 @@ export type AbilityName = keyof AbilityScores;
 
 export interface Race {
   id: string;
+  externalId: string;
   name: string;
   nameRu: string;
   description: string;
