@@ -102,20 +102,3 @@ model PlayerAchievement {
   @@index([characterId])
   @@index([userId])
 }
-
-model Background {
-  id          String   @id @default(uuid())
-  key          String   @unique
-  name         String
-  nameRu       String
-  description  String
-  skillProficiencies  String[]
-  toolProficiencies  String[]
-  languages    Int
-  equipment    String[]
-  originFeat  String
-  abilityScoreIncrease  Json // {options: string[], amount: number[]}
-  source      String   @default("phb2024")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
