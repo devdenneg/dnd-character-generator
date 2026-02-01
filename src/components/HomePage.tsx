@@ -13,6 +13,7 @@ import {
   Zap,
   Trophy,
   Lock,
+  Rocket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -98,6 +99,43 @@ export function HomePage({ onNavigate }: HomePageProps) {
     const unlocked = localStorage.getItem("dev_unlocked_features");
     return unlocked ? JSON.parse(unlocked) : [];
   });
+
+  // Тест деплоя
+  const [deploymentStatus, setDeploymentStatus] = useState<string>("");
+  const [deploymentLogs, setDeploymentLogs] = useState<any[]>([]);
+
+  const testDeployment = async () => {
+    try {
+      setDeploymentStatus("loading");
+
+      // Создаем запись о деплое
+      const createResponse = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/test/deployment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: 'Manual deployment test',
+          version: '1.0.0',
+          commitSha: 'manual-test',
+        }),
+      });
+
+      if (!createResponse.ok) throw new Error('Failed to create deployment log');
+
+      // Получаем логи деплоя
+      const getResponse = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/test/deployment`);
+      if (!getResponse.ok) throw new Error('Failed to fetch deployment logs');
+
+      const data = await getResponse.json();
+      setDeploymentLogs(data.logs || []);
+      setDeploymentStatus("success");
+    } catch (error) {
+      console.error('Deployment test error:', error);
+      setDeploymentStatus("error");
+      alert('Ошибка при тестировании деплоя: ' + (error as Error).message);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -429,6 +467,68 @@ export function HomePage({ onNavigate }: HomePageProps) {
               2024 года. Включены все расы, классы, заклинания и предыстории из
               нового Player's Handbook.
             </p>
+          </div>
+
+          {/* Deployment Test Section */}
+          <div className="mt-8 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                <Rocket className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Тест деплоя</h3>
+                <p className="text-sm text-muted-foreground">
+                  Проверка работы API и базы данных
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Нажмите кнопку, чтобы проверить что API работает корректно и миграции
+              применены. Создастся запись в таблице DeploymentLog.
+            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={testDeployment}
+                disabled={deploymentStatus === "loading"}
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90"
+              >
+                {deploymentStatus === "loading" ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Тестирование...
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Проверить деплой
+                  </>
+                )}
+              </Button>
+              {deploymentStatus === "success" && (
+                <span className="text-sm text-emerald-500">✅ Успешно!</span>
+              )}
+              {deploymentStatus === "error" && (
+                <span className="text-sm text-red-500">❌ Ошибка</span>
+              )}
+            </div>
+            {deploymentLogs.length > 0 && (
+              <div className="mt-4 bg-card/40 rounded-lg p-4 max-h-60 overflow-y-auto">
+                <h4 className="text-sm font-semibold mb-2">Логи деплоя:</h4>
+                {deploymentLogs.map((log: any) => (
+                  <div key={log.id} className="text-xs mb-2 p-2 bg-background/50 rounded">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium">{log.message}</span>
+                      <span className="text-muted-foreground">
+                        {new Date(log.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-muted-foreground">
+                      v{log.version} • {log.commitSha}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </main>
 
