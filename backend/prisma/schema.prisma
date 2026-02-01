@@ -109,10 +109,10 @@ model Background {
   name         String
   nameRu       String
   description  String
-  skillProficiencies  Json // JSON массив строк: ["insight", "religion"]
-  toolProficiencies  Json // JSON массив строк: ["Набор каллиграфа"]
+  skillProficiencies  String[]
+  toolProficiencies  String[]
   languages    Int
-  equipment    Json // JSON массив строк: ["Священный символ", "Молитвенник"]
+  equipment    String[]
   originFeat  String
   abilityScoreIncrease  Json // {options: string[], amount: number[]}
   source      String   @default("phb2024")

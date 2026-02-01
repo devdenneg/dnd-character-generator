@@ -35,12 +35,12 @@ async function seedBackgrounds() {
           name: bg.name,
           nameRu: bg.nameRu,
           description: bg.description,
-          skillProficiencies: JSON.stringify(bg.skillProficiencies),
-          toolProficiencies: JSON.stringify(bg.toolProficiencies),
+          skillProficiencies: bg.skillProficiencies,
+          toolProficiencies: bg.toolProficiencies,
           languages: bg.languages,
-          equipment: JSON.stringify(bg.equipment),
+          equipment: bg.equipment,
           originFeat: bg.originFeat,
-          abilityScoreIncrease: bg.abilityScoreIncrease, // Объект, а не JSON.stringify
+          abilityScoreIncrease: JSON.stringify(bg.abilityScoreIncrease),
           source: bg.source,
         },
       });
