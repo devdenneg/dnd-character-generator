@@ -102,12 +102,3 @@ model PlayerAchievement {
   @@index([characterId])
   @@index([userId])
 }
-
-model DeploymentLog {
-  id        String   @id @default(uuid())
-  message   String
-  version   String
-  commitSha String?
-  status    String   @default("success")
-  createdAt DateTime @default(now())
-}

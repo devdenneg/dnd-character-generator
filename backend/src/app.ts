@@ -4,7 +4,6 @@ import authRoutes from "./routes/auth";
 import characterRoutes from "./routes/characters";
 import roomRoutes from "./routes/rooms";
 import achievementRoutes from "./routes/achievements";
-import testRoutes from "./routes/test";
 
 const app = express();
 
@@ -43,7 +42,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/characters", characterRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/achievements", achievementRoutes);
-app.use("/api/test", testRoutes);
 
 // 404 handler
 app.use((_req, res) => {
