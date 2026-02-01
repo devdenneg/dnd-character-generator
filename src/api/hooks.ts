@@ -108,7 +108,7 @@ export function useClassSpells(index: string) {
 export function useBackgrounds() {
   return useQuery({
     queryKey: queryKeys.backgrounds,
-    queryFn: backgroundsApi.list,
+    queryFn: dnd5eApi.getBackgrounds,
     staleTime: Infinity,
   });
 }
@@ -116,7 +116,7 @@ export function useBackgrounds() {
 export function useBackground(index: string) {
   return useQuery({
     queryKey: queryKeys.background(index),
-    queryFn: () => backgroundsApi.get(index),
+    queryFn: () => dnd5eApi.getBackground(index),
     enabled: !!index,
     staleTime: Infinity,
   });
