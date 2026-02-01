@@ -5,6 +5,7 @@ import type { Race } from "@/types/character";
 export const phb2024Races: Race[] = [
   {
     id: "aasimar",
+    externalId: "aasimar",
     name: "Aasimar",
     nameRu: "Аасимар",
     description:
@@ -47,6 +48,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "dragonborn",
+    externalId: "dragonborn",
     name: "Dragonborn",
     nameRu: "Драконорождённый",
     description:
@@ -83,6 +85,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "dwarf",
+    externalId: "dwarf",
     name: "Dwarf",
     nameRu: "Дварф",
     description:
@@ -119,6 +122,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "elf",
+    externalId: "elf",
     name: "Elf",
     nameRu: "Эльф",
     description:
@@ -160,6 +164,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "gnome",
+    externalId: "gnome",
     name: "Gnome",
     nameRu: "Гном",
     description:
@@ -190,6 +195,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "goliath",
+    externalId: "goliath",
     name: "Goliath",
     nameRu: "Голиаф",
     description:
@@ -220,6 +226,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "halfling",
+    externalId: "halfling",
     name: "Halfling",
     nameRu: "Полурослик",
     description:
@@ -256,6 +263,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "human",
+    externalId: "human",
     name: "Human",
     nameRu: "Человек",
     description:
@@ -285,6 +293,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "orc",
+    externalId: "orc",
     name: "Orc",
     nameRu: "Орк",
     description:
@@ -315,6 +324,7 @@ export const phb2024Races: Race[] = [
   },
   {
     id: "tiefling",
+    externalId: "tiefling",
     name: "Tiefling",
     nameRu: "Тифлинг",
     description:
