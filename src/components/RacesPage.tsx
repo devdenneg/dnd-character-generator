@@ -1,6 +1,16 @@
 import { useBackendRaces } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Users, Zap, Shield, Eye, Skull, Flame, Mountain, Feather, Circle, Crown, Ghost } from "lucide-react";
+import {
+  ChevronRight,
+  Users,
+  Zap,
+  Skull,
+  Flame,
+  Mountain,
+  Feather,
+  Circle,
+  Ghost,
+} from "lucide-react";
 import { useState } from "react";
 
 const RACE_ICONS: Record<string, any> = {
@@ -58,8 +68,8 @@ export function RacesPage({ onBack }: RacesPageProps) {
               Ошибка загрузки рас
             </h2>
             <p className="text-sm text-destructive/80">
-              Не удалось загрузить данные о расах с сервера. Пожалуйста, попробуйте
-              позже.
+              Не удалось загрузить данные о расах с сервера. Пожалуйста,
+              попробуйте позже.
             </p>
             {onBack && (
               <Button variant="outline" className="mt-4" onClick={onBack}>
@@ -91,7 +101,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Расы PHB 2024</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                Расы PHB 2024
+              </h1>
               <p className="text-sm text-muted-foreground">
                 Официальные расы из Книги игрока 2024
               </p>
@@ -101,7 +113,10 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">
-            Загружено рас: <span className="font-semibold text-foreground">{races.length}</span>
+            Загружено рас:{" "}
+            <span className="font-semibold text-foreground">
+              {races.length}
+            </span>
           </p>
         </div>
 
@@ -151,7 +166,12 @@ export function RacesPage({ onBack }: RacesPageProps) {
                           Скорость: {race.speed} футов
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                          Размер: {race.size === "Medium" ? "Средний" : race.size === "Small" ? "Малый" : "Большой"}
+                          Размер:{" "}
+                          {race.size === "Medium"
+                            ? "Средний"
+                            : race.size === "Small"
+                            ? "Малый"
+                            : "Большой"}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
                           {race.traits?.length || 0} черт
@@ -164,12 +184,16 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 {/* Expanded Details */}
                 {isSelected && (
                   <div className="bg-card/80 border border-primary/20 rounded-2xl p-6 mt-2 animate-fade-in">
-                    <h4 className="font-semibold text-foreground mb-2">Описание</h4>
+                    <h4 className="font-semibold text-foreground mb-2">
+                      Описание
+                    </h4>
                     <p className="text-sm text-muted-foreground mb-4">
                       {race.description}
                     </p>
 
-                    <h4 className="font-semibold text-foreground mb-2">Черты</h4>
+                    <h4 className="font-semibold text-foreground mb-2">
+                      Черты
+                    </h4>
                     <div className="space-y-3">
                       {race.traits?.map((trait: any, traitIndex: number) => (
                         <div
