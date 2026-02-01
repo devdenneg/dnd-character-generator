@@ -162,3 +162,17 @@ export const roomsApi = {
     return response.data;
   },
 };
+
+// Backgrounds API
+export const backgroundsApi = {
+  list: async () => {
+    const response = await apiClient.get("/backgrounds");
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get(`/backgrounds/${id}`);
+    return response.data;
+  },
+};
+
