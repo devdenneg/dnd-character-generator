@@ -195,7 +195,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                       Черты
                     </h4>
                     <div className="space-y-3">
-                      {race.traits?.map((trait: any, traitIndex: number) => (
+                      {race.traits?.map((trait: any) => (
                         <div
                           key={trait.id}
                           className="p-4 rounded-xl bg-muted/30 border border-border/30"
