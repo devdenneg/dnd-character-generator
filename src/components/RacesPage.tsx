@@ -587,6 +587,38 @@ export function RacesPage({ onBack }: RacesPageProps) {
               {/* Traits */}
               <div className="space-y-2">
                 <Label>Черты</Label>
+                
+                {/* Add New Trait Form */}
+                <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-3">
+                  <h5 className="font-medium text-foreground text-sm">Добавить новую черту</h5>
+                  <Input
+                    value={newTrait.name}
+                    onChange={(e) => setNewTrait({ ...newTrait, name: e.target.value })}
+                    placeholder="Название черты (англ)"
+                  />
+                  <Input
+                    value={newTrait.nameRu}
+                    onChange={(e) => setNewTrait({ ...newTrait, nameRu: e.target.value })}
+                    placeholder="Название черты (рус)"
+                  />
+                  <Textarea
+                    value={newTrait.description}
+                    onChange={(e) => setNewTrait({ ...newTrait, description: e.target.value })}
+                    placeholder="Описание черты"
+                    rows={2}
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={handleAddTrait}
+                    className="w-full gap-2"
+                    disabled={!newTrait.name || !newTrait.nameRu || !newTrait.description}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Добавить черту в список
+                  </Button>
+                </div>
+
+                {/* Existing Traits List */}
                 <div className="space-y-3">
                   {editingRace.traits.map((trait: RaceTrait, index: number) => (
                     <div key={trait.id || index} className="p-4 rounded-xl bg-muted/30 border border-border/30">
@@ -636,16 +668,6 @@ export function RacesPage({ onBack }: RacesPageProps) {
                     </div>
                   ))}
                 </div>
-
-                {/* Add Trait Button */}
-                <Button
-                  variant="outline"
-                  onClick={handleAddTrait}
-                  className="w-full gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Добавить черту
-                </Button>
               </div>
 
               {/* Action Buttons */}
