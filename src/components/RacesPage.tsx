@@ -21,10 +21,42 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import type { ElementType } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 
-const RACE_ICONS: Record<string, any> = {
+// Types
+interface RaceTrait {
+  id: string;
+  name: string;
+  nameRu: string;
+  description: string;
+}
+
+interface Race {
+  id: string;
+  externalId: string;
+  name: string;
+  nameRu: string;
+  description: string;
+  speed: number;
+  size: "Small" | "Medium" | "Large";
+  source: string;
+  traits: RaceTrait[];
+}
+
+interface RaceFormData {
+  externalId: string;
+  name: string;
+  nameRu: string;
+  description: string;
+  speed: number;
+  size: "Small" | "Medium" | "Large";
+  source: string;
+  traits: RaceTrait[];
+}
+
+const RACE_ICONS: Record<string, ElementType> = {
   aasimar: Zap,
   dragonborn: Flame,
   dwarf: Mountain,
@@ -56,11 +88,25 @@ export function RacesPage({ onBack }: RacesPageProps) {
   const { data, isLoading, error, refetch } = useBackendRaces();
   const { user } = useAuth();
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
-  const [editingRace, setEditingRace] = useState<any>(null);
+  const [editingRace, setEditingRace] = useState<RaceFormData>({
+    externalId: "",
+    name: "",
+    nameRu: "",
+    description: "",
+    speed: 30,
+    size: "Medium",
+    source: "phb2024",
+    traits: [],
+  });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [newTrait, setNewTrait] = useState({ name: "", nameRu: "", description: "" });
+  const [newTrait, setNewTrait] = useState<Pick<RaceTrait, "name" | "nameRu" | "description">>({
+    name: "",
+    nameRu: "",
+    description: "",
+  });
 
+  // Selected race data query
   const selectedRaceData = useQuery({
     queryKey: ["race", selectedRace],
     queryFn: () => racesApi.get(selectedRace!),
@@ -70,7 +116,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
   // Create race mutation
   const createRaceMutation = useMutation({
-    mutationFn: racesApi.create,
+    mutationFn: (data: RaceFormData) => racesApi.create(data),
     onSuccess: () => {
       refetch();
       setIsCreateModalOpen(false);
@@ -80,12 +126,13 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
   // Update race mutation
   const updateRaceMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => racesApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: RaceFormData }) =>
+      racesApi.update(id, data),
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
       setSelectedRace(null);
-      setEditingRace(null);
+      resetCreateForm();
     },
   });
 
@@ -96,7 +143,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
       refetch();
       setIsEditModalOpen(false);
       setSelectedRace(null);
-      setEditingRace(null);
+      resetCreateForm();
     },
   });
 
@@ -114,46 +161,31 @@ export function RacesPage({ onBack }: RacesPageProps) {
   };
 
   const handleCreateRace = () => {
-    setEditingRace({
-      externalId: "",
-      name: "",
-      nameRu: "",
-      description: "",
-      speed: 30,
-      size: "Medium",
-      source: "phb2024",
-      traits: [],
-    });
+    resetCreateForm();
     setIsCreateModalOpen(true);
   };
 
-  const handleEditRace = (race: any) => {
-    setEditingRace({ ...race });
+  const handleEditRace = (race: Race) => {
+    setEditingRace({
+      externalId: race.externalId,
+      name: race.name,
+      nameRu: race.nameRu,
+      description: race.description,
+      speed: race.speed,
+      size: race.size,
+      source: race.source,
+      traits: race.traits,
+    });
     setIsEditModalOpen(true);
   };
 
   const handleSaveRace = () => {
-    if (!editingRace?.externalId || !editingRace?.name || !editingRace?.nameRu || !editingRace?.description) {
+    if (!editingRace.externalId || !editingRace.name || !editingRace.nameRu || !editingRace.description) {
       alert("Пожалуйста, заполните все обязательные поля");
       return;
     }
 
-    if (selectedRace) {
-      // Update existing race
-      updateRaceMutation.mutate({
-        id: selectedRace,
-        data: {
-          externalId: editingRace.externalId,
-          name: editingRace.name,
-          nameRu: editingRace.nameRu,
-          description: editingRace.description,
-          speed: editingRace.speed,
-          size: editingRace.size,
-          source: editingRace.source,
-          traits: editingRace.traits,
-        },
-      });
-    } else {
+    if (isCreateModalOpen) {
       // Create new race
       createRaceMutation.mutate({
         externalId: editingRace.externalId,
@@ -165,31 +197,46 @@ export function RacesPage({ onBack }: RacesPageProps) {
         source: editingRace.source,
         traits: editingRace.traits,
       });
+    } else {
+      // Update existing race
+      updateRaceMutation.mutate({
+        id: selectedRace!,
+        data: {
+          externalId: editingRace.externalId,
+          name: editingRace.name,
+          nameRu: editingRace.nameRu,
+          description: editingRace.description,
+          speed: editingRace.speed,
+          size: editingRace.size,
+          source: editingRace.source,
+          traits: editingRace.traits,
+        },
+      });
     }
   };
-
-  // const handleDeleteRace = () => {
-  //   if (editingRace && selectedRace && confirm(`Вы уверены, что хотите удалить расу "${editingRace.nameRu}"?`)) {
-  //     deleteRaceMutation.mutate(selectedRace);
-  //   }
-  // };
 
   const handleAddTrait = () => {
     if (!newTrait.name || !newTrait.nameRu || !newTrait.description) {
       alert("Пожалуйста, заполните все поля черты");
       return;
     }
+
+    const traitsArray = editingRace.traits || [];
+    const newTraitWithId = { ...newTrait, id: Date.now().toString() };
+
     setEditingRace({
       ...editingRace,
-      traits: [...(editingRace.traits || []), { ...newTrait, id: Date.now().toString() }],
+      traits: [...traitsArray, newTraitWithId],
     });
+
     setNewTrait({ name: "", nameRu: "", description: "" });
   };
 
   const handleRemoveTrait = (traitId: string) => {
+    const traitsArray = editingRace.traits || [];
     setEditingRace({
       ...editingRace,
-      traits: editingRace.traits.filter((t: any) => t.id !== traitId),
+      traits: traitsArray.filter((t: RaceTrait) => t.id !== traitId),
     });
   };
 
@@ -286,7 +333,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {races.map((race: any, index: number) => {
+          {races.map((race: Race, index: number) => {
             const Icon = RACE_ICONS[race.externalId] || Users;
             const isSelected = selectedRace === race.id;
 
@@ -349,7 +396,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                           Размер: {race.size === "Medium" ? "Средний" : race.size === "Small" ? "Малый" : "Большой"}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                          {race.traits?.length || 0} черт
+                          {(race.traits as RaceTrait[])?.length || 0} черт
                         </span>
                       </div>
                     </div>
@@ -368,7 +415,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                           className="text-destructive hover:text-destructive p-1"
                           onClick={() => {
                             if (confirm(`Вы уверены, что хотите удалить расу "${selectedRaceData.data.data.race.nameRu}"?`)) {
-                              deleteRaceMutation.mutate(selectedRace!);
+                              deleteRaceMutation.mutate(selectedRace);
                             }
                           }}
                         >
@@ -382,7 +429,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
                     <h4 className="font-semibold text-foreground mb-2">Черты</h4>
                     <div className="space-y-3">
-                      {race.traits?.map((trait: any) => (
+                      {(race.traits as RaceTrait[])?.map((trait: RaceTrait) => (
                         <div
                           key={trait.id}
                           className="p-4 rounded-xl bg-muted/30 border border-border/30"
@@ -434,7 +481,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
       </div>
 
       {/* Create/Edit Modal */}
-      {(isCreateModalOpen || isEditModalOpen) && editingRace && (
+      {(isCreateModalOpen || isEditModalOpen) && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
@@ -444,7 +491,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
               <Button variant="ghost" size="sm" onClick={() => {
                 setIsCreateModalOpen(false);
                 setIsEditModalOpen(false);
-                setEditingRace(null);
+                resetCreateForm();
               }}>
                 <X className="w-4 h-4" />
               </Button>
@@ -456,7 +503,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 <Label htmlFor="externalId">Внешний ID *</Label>
                 <Input
                   id="externalId"
-                  value={editingRace.externalId || ""}
+                  value={editingRace.externalId}
                   onChange={(e) => setEditingRace({ ...editingRace, externalId: e.target.value })}
                   placeholder="Например: dragonborn"
                   disabled={!isCreateModalOpen}
@@ -471,7 +518,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 <Label htmlFor="nameRu">Название (русский) *</Label>
                 <Input
                   id="nameRu"
-                  value={editingRace.nameRu || ""}
+                  value={editingRace.nameRu}
                   onChange={(e) => setEditingRace({ ...editingRace, nameRu: e.target.value })}
                   placeholder="Например: Драконорождённый"
                 />
@@ -482,7 +529,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 <Label htmlFor="name">Название (английский) *</Label>
                 <Input
                   id="name"
-                  value={editingRace.name || ""}
+                  value={editingRace.name}
                   onChange={(e) => setEditingRace({ ...editingRace, name: e.target.value })}
                   placeholder="Например: Dragonborn"
                 />
@@ -494,7 +541,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 <Input
                   id="speed"
                   type="number"
-                  value={editingRace.speed || 30}
+                  value={editingRace.speed}
                   onChange={(e) => setEditingRace({ ...editingRace, speed: parseInt(e.target.value) || 30 })}
                   min="20"
                   max="40"
@@ -507,9 +554,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 <Select
                   id="size"
                   options={SIZES}
-                  value={editingRace.size || "Medium"}
+                  value={editingRace.size}
                   placeholder="Выберите размер"
-                  onChange={(e) => setEditingRace({ ...editingRace, size: e.target.value as any })}
+                  onChange={(e) => setEditingRace({ ...editingRace, size: e.target.value as "Small" | "Medium" | "Large" })}
                 />
               </div>
 
@@ -519,9 +566,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 <Select
                   id="source"
                   options={SOURCES}
-                  value={editingRace.source || "phb2024"}
+                  value={editingRace.source}
                   placeholder="Выберите источник"
-                  onChange={(e) => setEditingRace({ ...editingRace, source: e.target.value as any })}
+                  onChange={(e) => setEditingRace({ ...editingRace, source: e.target.value as string })}
                 />
               </div>
 
@@ -530,7 +577,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                 <Label htmlFor="description">Описание *</Label>
                 <Textarea
                   id="description"
-                  value={editingRace.description || ""}
+                  value={editingRace.description}
                   onChange={(e) => setEditingRace({ ...editingRace, description: e.target.value })}
                   placeholder="Описание расы..."
                   rows={4}
@@ -541,14 +588,15 @@ export function RacesPage({ onBack }: RacesPageProps) {
               <div className="space-y-2">
                 <Label>Черты</Label>
                 <div className="space-y-3">
-                  {editingRace.traits?.map((trait: any, index: number) => (
+                  {editingRace.traits.map((trait: RaceTrait, index: number) => (
                     <div key={trait.id || index} className="p-4 rounded-xl bg-muted/30 border border-border/30">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1 space-y-2">
                           <Input
                             value={trait.name}
                             onChange={(e) => {
-                              const updatedTraits = [...editingRace.traits];
+                              const traitsArray = editingRace.traits || [];
+                              const updatedTraits = [...traitsArray];
                               updatedTraits[index] = { ...updatedTraits[index], name: e.target.value };
                               setEditingRace({ ...editingRace, traits: updatedTraits });
                             }}
@@ -557,7 +605,8 @@ export function RacesPage({ onBack }: RacesPageProps) {
                           <Input
                             value={trait.nameRu}
                             onChange={(e) => {
-                              const updatedTraits = [...editingRace.traits];
+                              const traitsArray = editingRace.traits || [];
+                              const updatedTraits = [...traitsArray];
                               updatedTraits[index] = { ...updatedTraits[index], nameRu: e.target.value };
                               setEditingRace({ ...editingRace, traits: updatedTraits });
                             }}
@@ -566,7 +615,8 @@ export function RacesPage({ onBack }: RacesPageProps) {
                           <Textarea
                             value={trait.description}
                             onChange={(e) => {
-                              const updatedTraits = [...editingRace.traits];
+                              const traitsArray = editingRace.traits || [];
+                              const updatedTraits = [...traitsArray];
                               updatedTraits[index] = { ...updatedTraits[index], description: e.target.value };
                               setEditingRace({ ...editingRace, traits: updatedTraits });
                             }}
@@ -605,7 +655,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                   onClick={() => {
                     setIsCreateModalOpen(false);
                     setIsEditModalOpen(false);
-                    setEditingRace(null);
+                    resetCreateForm();
                   }}
                 >
                   Отмена
