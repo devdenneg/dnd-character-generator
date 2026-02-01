@@ -40,6 +40,22 @@ jobs:
               done
             fi
             
+            echo "🔧 Fixing table owners for dnduser..."
+            sudo -u postgres psql -d dnd_generator -c "
+              DO \$\$
+              DECLARE
+                table_rec RECORD;
+              BEGIN
+                FOR table_rec IN 
+                  SELECT tablename 
+                  FROM pg_tables 
+                  WHERE schemaname = 'public'
+                LOOP
+                  EXECUTE format('ALTER TABLE %I OWNER TO dnduser', table_rec.tablename);
+                END LOOP;
+              END \$\$;
+            " 2>/dev/null || echo "Table owner fix skipped or already done"
+            
             echo "🔨 Building backend..."
             npm run build
             
