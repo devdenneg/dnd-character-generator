@@ -235,7 +235,8 @@ export function useBackendRaces(source?: string) {
   return useQuery({
     queryKey: source ? backendQueryKeys.racesBySource(source) : backendQueryKeys.races,
     queryFn: () => racesApi.list(source),
-    staleTime: Infinity, // Data doesn't change
+    staleTime: 0, // Always refetch to get latest data
+    refetchOnMount: 'always', // Always fetch on component mount
   });
 }
 
