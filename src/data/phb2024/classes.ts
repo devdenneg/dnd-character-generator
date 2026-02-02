@@ -5,6 +5,7 @@ import type { CharacterClass, AbilityName } from "@/types/character";
 export const phb2024Classes: CharacterClass[] = [
   {
     id: "barbarian",
+    externalId: "barbarian",
     name: "Barbarian",
     nameRu: "Варвар",
     description:
@@ -235,6 +236,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "bard",
+    externalId: "bard",
     name: "Bard",
     nameRu: "Бард",
     description:
@@ -483,6 +485,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "cleric",
+    externalId: "cleric",
     name: "Cleric",
     nameRu: "Жрец",
     description:
@@ -708,6 +711,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "druid",
+    externalId: "druid",
     name: "Druid",
     nameRu: "Друид",
     description:
@@ -964,6 +968,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "fighter",
+    externalId: "fighter",
     name: "Fighter",
     nameRu: "Воин",
     description:
@@ -1194,6 +1199,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "monk",
+    externalId: "monk",
     name: "Monk",
     nameRu: "Монах",
     description:
@@ -1421,6 +1427,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "paladin",
+    externalId: "paladin",
     name: "Paladin",
     nameRu: "Паладин",
     description:
@@ -1704,6 +1711,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "ranger",
+    externalId: "ranger",
     name: "Ranger",
     nameRu: "Следопыт",
     description:
@@ -1965,6 +1973,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "rogue",
+    externalId: "rogue",
     name: "Rogue",
     nameRu: "Плут",
     description:
@@ -2232,6 +2241,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "sorcerer",
+    externalId: "sorcerer",
     name: "Sorcerer",
     nameRu: "Чародей",
     description:
@@ -2446,6 +2456,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "warlock",
+    externalId: "warlock",
     name: "Warlock",
     nameRu: "Колдун",
     description:
@@ -2642,6 +2653,7 @@ export const phb2024Classes: CharacterClass[] = [
   },
   {
     id: "wizard",
+    externalId: "wizard",
     name: "Wizard",
     nameRu: "Волшебник",
     description:
