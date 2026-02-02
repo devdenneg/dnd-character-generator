@@ -51,6 +51,40 @@ interface Subclass {
   features: SubclassFeature[];
 }
 
+interface EquipmentItemBase {
+  externalId: string;
+  name: string;
+  nameRu: string;
+  category: "weapon" | "armor" | "gear" | "tool" | "pack";
+  cost: { quantity: number; unit: string };
+  weight?: number;
+  source: string;
+}
+
+interface WeaponItem extends EquipmentItemBase {
+  category: "weapon";
+  damage: { dice: string; type: string };
+  properties?: string[];
+}
+
+interface ArmorItem extends EquipmentItemBase {
+  category: "armor";
+  armorClass: number;
+  armorType: "light" | "medium" | "heavy" | "shield";
+  maxDexBonus?: number;
+}
+
+interface GearItem extends EquipmentItemBase {
+  category: "gear" | "tool" | "pack";
+}
+
+type EquipmentItem = WeaponItem | ArmorItem | GearItem;
+
+interface StartingEquipment {
+  equipment: EquipmentItem[];
+  gold: number;
+}
+
 interface CharacterClass {
   id: string;
   externalId: string;
@@ -68,6 +102,7 @@ interface CharacterClass {
   source: string;
   features: ClassFeature[];
   subclasses: Subclass[];
+  startingEquipment?: StartingEquipment;
 }
 
 interface ClassFormData {
@@ -86,6 +121,7 @@ interface ClassFormData {
   source: string;
   features: ClassFeature[];
   subclasses: Subclass[];
+  startingEquipment?: StartingEquipment;
 }
 
 const CLASS_ICONS: Record<string, ElementType> = {
@@ -109,6 +145,268 @@ const HIT_DIE_OPTIONS = [
   { value: "10", label: "d10" },
   { value: "12", label: "d12" },
 ];
+
+// Equipment Display Component for showing item details
+interface EquipmentDisplayProps {
+  item: EquipmentItem;
+}
+
+function EquipmentDisplay({ item }: EquipmentDisplayProps) {
+  return (
+    <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <h5 className="font-medium text-foreground text-sm">
+            {item.nameRu || item.name}
+          </h5>
+          {item.nameRu && item.name && (
+            <span className="text-xs text-muted-foreground/70">
+              {item.name}
+            </span>
+          )}
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            {item.category === "weapon" && (
+              <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+                Оружие
+              </span>
+            )}
+            {item.category === "armor" && (
+              <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+                Доспех
+              </span>
+            )}
+            {(item.category === "gear" || item.category === "tool" || item.category === "pack") && (
+              <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+                {item.category === "gear" ? "Снаряжение" : item.category === "tool" ? "Инструмент" : "Набор"}
+              </span>
+            )}
+            <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+              {item.cost.quantity} {item.cost.unit}
+            </span>
+            {item.weight !== undefined && (
+              <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
+                {item.weight} кг
+              </span>
+            )}
+          </div>
+          
+          {/* Weapon details */}
+          {item.category === "weapon" && item.damage && (
+            <div className="text-xs text-muted-foreground mt-1">
+              Урон: {item.damage.dice} ({item.damage.type})
+              {item.properties && item.properties.length > 0 && (
+                <span> • Свойства: {item.properties.join(", ")}</span>
+              )}
+            </div>
+          )}
+          
+          {/* Armor details */}
+          {item.category === "armor" && (
+            <div className="text-xs text-muted-foreground mt-1">
+              AC: {item.armorClass} • Тип: {item.armorType}
+              {item.maxDexBonus !== undefined && ` • Макс. бонус Ловкости: ${item.maxDexBonus}`}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Equipment Editor Component for different item types
+interface EquipmentEditorProps {
+  item: EquipmentItem;
+  index: number;
+  onUpdate: (index: number, updates: Partial<EquipmentItem>) => void;
+  onRemove: (index: number) => void;
+}
+
+function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorProps) {
+  return (
+    <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-3">
+      <div className="flex items-start justify-between">
+        <h6 className="font-medium text-foreground text-sm">
+          {item.category === "weapon" && "Оружие"}
+          {item.category === "armor" && "Доспех"}
+          {item.category === "gear" && "Снаряжение"}
+          {item.category === "tool" && "Инструмент"}
+          {item.category === "pack" && "Набор"}
+          {" #" + (index + 1)}
+        </h6>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:text-destructive p-1"
+          onClick={() => onRemove(index)}
+        >
+          <X className="w-3 h-3" />
+        </Button>
+      </div>
+      
+      {/* Common Fields */}
+      <div className="grid grid-cols-2 gap-2">
+        <Input
+          value={item.name}
+          onChange={(e) => onUpdate(index, { name: e.target.value })}
+          placeholder="Название (англ)"
+        />
+        <Input
+          value={item.nameRu}
+          onChange={(e) => onUpdate(index, { nameRu: e.target.value })}
+          placeholder="Название (рус)"
+        />
+      </div>
+      
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Вес</Label>
+          <Input
+            type="number"
+            value={item.weight || ""}
+            onChange={(e) => onUpdate(index, { weight: parseFloat(e.target.value) || undefined })}
+            placeholder="Вес"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">Категория</Label>
+          <div className="px-3 py-2 rounded-md bg-muted text-sm text-muted-foreground">
+            {item.category === "weapon" && "Оружие"}
+            {item.category === "armor" && "Доспех"}
+            {item.category === "gear" && "Снаряжение"}
+            {item.category === "tool" && "Инструмент"}
+            {item.category === "pack" && "Набор"}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Количество</Label>
+          <Input
+            type="number"
+            value={item.cost.quantity}
+            onChange={(e) => onUpdate(index, { 
+              cost: { ...item.cost, quantity: parseInt(e.target.value) || 0 } 
+            })}
+            placeholder="Количество"
+          />
+        </div>
+        <div>
+          <Label className="text-xs">Валюта</Label>
+          <Select
+            value={item.cost.unit}
+            placeholder="Валюта"
+            onChange={(e) => onUpdate(index, { 
+              cost: { ...item.cost, unit: e.target.value } 
+            })}
+            options={[
+              { value: "cp", label: "cp (медь)" },
+              { value: "sp", label: "sp (серебро)" },
+              { value: "ep", label: "ep (электрум)" },
+              { value: "gp", label: "gp (золото)" },
+              { value: "pp", label: "pp (платина)" },
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* Weapon-specific fields */}
+      {item.category === "weapon" && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Урон (кубик)</Label>
+              <Input
+                value={item.damage.dice}
+                onChange={(e) => onUpdate(index, { 
+                  damage: { ...item.damage, dice: e.target.value } 
+                })}
+                placeholder="1d8"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Тип урона</Label>
+              <Input
+                value={item.damage.type}
+                onChange={(e) => onUpdate(index, { 
+                  damage: { ...item.damage, type: e.target.value } 
+                })}
+                placeholder="рубящий"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-xs">Свойства (через запятую)</Label>
+            <Input
+              value={item.properties?.join(", ") || ""}
+              onChange={(e) => onUpdate(index, { 
+                properties: e.target.value.split(",").map(p => p.trim()).filter(Boolean) 
+              })}
+              placeholder="Лёгкое, Метательное (20/60)"
+            />
+          </div>
+        </>
+      )}
+
+      {/* Armor-specific fields */}
+      {item.category === "armor" && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Класс защиты (AC)</Label>
+              <Input
+                type="number"
+                value={item.armorClass}
+                onChange={(e) => onUpdate(index, { 
+                  armorClass: parseInt(e.target.value) || 10 
+                })}
+                placeholder="10"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Тип доспеха</Label>
+              <Select
+                value={item.armorType}
+                placeholder="Тип доспеха"
+                onChange={(e) => onUpdate(index, { 
+                  armorType: e.target.value as "light" | "medium" | "heavy" | "shield"
+                })}
+                options={[
+                  { value: "light", label: "Лёгкий" },
+                  { value: "medium", label: "Средний" },
+                  { value: "heavy", label: "Тяжёлый" },
+                  { value: "shield", label: "Щит" },
+                ]}
+              />
+            </div>
+          </div>
+
+          {item.armorType !== "shield" && (
+            <div>
+              <Label className="text-xs">Макс. бонус Ловкости</Label>
+              <Input
+                type="number"
+                value={item.maxDexBonus || ""}
+                onChange={(e) => onUpdate(index, { 
+                  maxDexBonus: e.target.value ? parseInt(e.target.value) : undefined
+                })}
+                placeholder="Оставьте пустым для без ограничений"
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Gear-specific fields */}
+      {(item.category === "gear" || item.category === "tool" || item.category === "pack") && (
+        <div className="text-xs text-muted-foreground">
+          Для этого типа снаряжения достаточно указать название, вес и стоимость.
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface ClassesPageProps {
   onBack?: () => void;
@@ -134,6 +432,10 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     source: "phb2024",
     features: [],
     subclasses: [],
+    startingEquipment: {
+      equipment: [],
+      gold: 0,
+    },
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -143,6 +445,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     description: "",
     level: 1,
   });
+  const [newEquipmentCategory, setNewEquipmentCategory] = useState<"weapon" | "armor" | "gear">("weapon");
 
   // Selected class data query
   const selectedClassData = useQuery({
@@ -202,6 +505,10 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
       source: "phb2024",
       features: [],
       subclasses: [],
+      startingEquipment: {
+        equipment: [],
+        gold: 0,
+      },
     });
   };
 
@@ -227,6 +534,10 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
       source: cls.source,
       features: cls.features,
       subclasses: cls.subclasses,
+      startingEquipment: cls.startingEquipment || {
+        equipment: [],
+        gold: 0,
+      },
     });
     setIsEditModalOpen(true);
   };
@@ -271,6 +582,96 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     setEditingClass({
       ...editingClass,
       features: featuresArray.filter((f: ClassFeature) => f.id !== featureId),
+    });
+  };
+
+  const handleAddEquipmentItem = () => {
+    if (!editingClass.startingEquipment) {
+      setEditingClass({
+        ...editingClass,
+        startingEquipment: {
+          equipment: [],
+          gold: 0,
+        },
+      });
+      return;
+    }
+
+    let newItem: EquipmentItem;
+
+    switch (newEquipmentCategory) {
+      case "weapon":
+        newItem = {
+          externalId: `weapon-${Date.now()}`,
+          name: "",
+          nameRu: "",
+          category: "weapon",
+          cost: { quantity: 0, unit: "gp" },
+          damage: { dice: "1d8", type: "рубящий" },
+          properties: [],
+          source: "class",
+        };
+        break;
+      case "armor":
+        newItem = {
+          externalId: `armor-${Date.now()}`,
+          name: "",
+          nameRu: "",
+          category: "armor",
+          cost: { quantity: 0, unit: "gp" },
+          armorClass: 10,
+          armorType: "light",
+          source: "class",
+        };
+        break;
+      case "gear":
+        newItem = {
+          externalId: `gear-${Date.now()}`,
+          name: "",
+          nameRu: "",
+          category: "gear",
+          cost: { quantity: 0, unit: "gp" },
+          source: "class",
+        };
+        break;
+    }
+
+    setEditingClass({
+      ...editingClass,
+      startingEquipment: {
+        ...editingClass.startingEquipment,
+        equipment: [...editingClass.startingEquipment.equipment, newItem],
+      },
+    });
+  };
+
+  const handleRemoveEquipmentItem = (index: number) => {
+    if (!editingClass.startingEquipment) return;
+
+    setEditingClass({
+      ...editingClass,
+      startingEquipment: {
+        ...editingClass.startingEquipment,
+        equipment: editingClass.startingEquipment.equipment.filter((_, i) => i !== index),
+      },
+    });
+  };
+
+  const handleUpdateEquipmentItem = (index: number, updates: Partial<EquipmentItem>) => {
+    if (!editingClass.startingEquipment) return;
+
+    const updatedEquipment = [...editingClass.startingEquipment.equipment];
+    const currentItem = updatedEquipment[index];
+    
+    // Merge updates with current item while preserving type
+    updatedEquipment[index] = { ...currentItem, ...updates } as EquipmentItem;
+
+    setEditingClass({
+      ...editingClass,
+      startingEquipment: {
+        ...editingClass.startingEquipment,
+        equipment: updatedEquipment,
+      },
     });
   };
 
@@ -499,7 +900,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     </div>
 
                     <h4 className="font-semibold text-foreground mb-2">Подклассы</h4>
-                    <div className="space-y-3">
+                    <div className="space-y-3 mb-6">
                       {cls.subclasses.map((subclass: Subclass) => (
                         <div
                           key={subclass.id}
@@ -517,6 +918,28 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                         </div>
                       ))}
                     </div>
+
+                    <h4 className="font-semibold text-foreground mb-2">Начальное снаряжение</h4>
+                    {cls.startingEquipment ? (
+                      <div className="space-y-3">
+                        {cls.startingEquipment.gold > 0 && (
+                          <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                            <span className="font-medium text-foreground text-sm">
+                              Золото: {cls.startingEquipment.gold} gp
+                            </span>
+                          </div>
+                        )}
+                        <div className="space-y-2">
+                          {cls.startingEquipment.equipment.map((item: EquipmentItem, index: number) => (
+                            <EquipmentDisplay key={index} item={item} />
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Начальное снаряжение не указано
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -723,6 +1146,88 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                         </Button>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Starting Equipment */}
+              <div className="space-y-2">
+                <Label>Начальное снаряжение</Label>
+                
+                {/* Gold */}
+                <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-3">
+                  <div>
+                    <Label htmlFor="gold">Начальное золото (gp)</Label>
+                    <Input
+                      id="gold"
+                      type="number"
+                      value={editingClass.startingEquipment?.gold || 0}
+                      onChange={(e) => setEditingClass({
+                        ...editingClass,
+                        startingEquipment: {
+                          ...editingClass.startingEquipment,
+                          equipment: editingClass.startingEquipment?.equipment || [],
+                          gold: parseInt(e.target.value) || 0,
+                        }
+                      })}
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                {/* Add New Equipment Item */}
+                <div className="space-y-3">
+                  <div>
+                    <Label>Выберите тип снаряжения для добавления</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <Button
+                        variant={newEquipmentCategory === "weapon" ? "default" : "outline"}
+                        onClick={() => setNewEquipmentCategory("weapon")}
+                        className="gap-2"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Оружие
+                      </Button>
+                      <Button
+                        variant={newEquipmentCategory === "armor" ? "default" : "outline"}
+                        onClick={() => setNewEquipmentCategory("armor")}
+                        className="gap-2"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Доспех
+                      </Button>
+                      <Button
+                        variant={newEquipmentCategory === "gear" ? "default" : "outline"}
+                        onClick={() => setNewEquipmentCategory("gear")}
+                        className="gap-2"
+                      >
+                        <Scroll className="w-4 h-4" />
+                        Снаряжение
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={handleAddEquipmentItem}
+                    className="w-full gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Добавить {newEquipmentCategory === "weapon" ? "оружие" : newEquipmentCategory === "armor" ? "доспех" : "снаряжение"}
+                  </Button>
+                </div>
+
+                {/* Equipment Items List */}
+                <div className="space-y-3">
+                  {editingClass.startingEquipment?.equipment.map((item: EquipmentItem, index: number) => (
+                    <EquipmentEditor
+                      key={index}
+                      item={item}
+                      index={index}
+                      onUpdate={handleUpdateEquipmentItem}
+                      onRemove={handleRemoveEquipmentItem}
+                    />
                   ))}
                 </div>
               </div>
