@@ -149,6 +149,7 @@ model CharacterClass {
   skillCount      Int
   subclassLevel   Int
   source          String   // "srd" or "phb2024"
+  spellcasting    Json?    // Spellcasting data: { ability, cantripsKnown, spellsKnown, spellSlots }
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

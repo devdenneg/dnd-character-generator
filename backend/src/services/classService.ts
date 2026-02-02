@@ -23,6 +23,13 @@ export interface SubclassInput {
   features: SubclassFeatureInput[];
 }
 
+export interface SpellcastingInput {
+  ability: string;
+  cantripsKnown: number[];
+  spellsKnown?: number[];
+  spellSlots: number[][];
+}
+
 export interface CharacterClassInput {
   externalId: string;
   name: string;
@@ -40,6 +47,7 @@ export interface CharacterClassInput {
   features: ClassFeatureInput[];
   subclasses: SubclassInput[];
   startingEquipment?: any;
+  spellcasting?: any;
 }
 
 export async function getAllClasses(source?: string) {
@@ -123,6 +131,7 @@ export async function createClass(input: CharacterClassInput) {
       subclassLevel: input.subclassLevel,
       source: input.source,
       startingEquipment: input.startingEquipment,
+      spellcasting: input.spellcasting,
       features: {
         create: input.features,
       },
@@ -176,6 +185,7 @@ export async function createManyClasses(inputs: CharacterClassInput[]) {
           subclassLevel: input.subclassLevel,
           source: input.source,
           startingEquipment: input.startingEquipment,
+          spellcasting: input.spellcasting,
           features: {
             create: input.features,
           },
@@ -205,14 +215,17 @@ export async function createManyClasses(inputs: CharacterClassInput[]) {
             },
           },
         },
-      }),
-    ),
+      })
+    )
   );
 
   return results;
 }
 
-export async function updateClass(id: string, input: Partial<CharacterClassInput>) {
+export async function updateClass(
+  id: string,
+  input: Partial<CharacterClassInput>
+) {
   // First, fetch existing class with its features and subclasses
   const existingClass = await prisma.characterClass.findUnique({
     where: { id },
@@ -233,12 +246,12 @@ export async function updateClass(id: string, input: Partial<CharacterClassInput
   if (input.subclasses) {
     // Get all subclass IDs for this class
     const subclassIds = existingClass.subclasses.map((s) => s.id);
-    
+
     // Delete subclass features
     await prisma.subclassFeature.deleteMany({
       where: { subclassId: { in: subclassIds } },
     });
-    
+
     // Delete subclasses
     await prisma.subclass.deleteMany({
       where: { id: { in: subclassIds } },
@@ -246,21 +259,31 @@ export async function updateClass(id: string, input: Partial<CharacterClassInput
   }
 
   const updateData: any = {};
-  
+
   if (input.externalId !== undefined) updateData.externalId = input.externalId;
   if (input.name !== undefined) updateData.name = input.name;
   if (input.nameRu !== undefined) updateData.nameRu = input.nameRu;
-  if (input.description !== undefined) updateData.description = input.description;
+  if (input.description !== undefined)
+    updateData.description = input.description;
   if (input.hitDie !== undefined) updateData.hitDie = input.hitDie;
-  if (input.primaryAbility !== undefined) updateData.primaryAbility = JSON.stringify(input.primaryAbility);
-  if (input.savingThrows !== undefined) updateData.savingThrows = JSON.stringify(input.savingThrows);
-  if (input.armorProficiencies !== undefined) updateData.armorProficiencies = JSON.stringify(input.armorProficiencies);
-  if (input.weaponProficiencies !== undefined) updateData.weaponProficiencies = JSON.stringify(input.weaponProficiencies);
-  if (input.skillChoices !== undefined) updateData.skillChoices = JSON.stringify(input.skillChoices);
+  if (input.primaryAbility !== undefined)
+    updateData.primaryAbility = JSON.stringify(input.primaryAbility);
+  if (input.savingThrows !== undefined)
+    updateData.savingThrows = JSON.stringify(input.savingThrows);
+  if (input.armorProficiencies !== undefined)
+    updateData.armorProficiencies = JSON.stringify(input.armorProficiencies);
+  if (input.weaponProficiencies !== undefined)
+    updateData.weaponProficiencies = JSON.stringify(input.weaponProficiencies);
+  if (input.skillChoices !== undefined)
+    updateData.skillChoices = JSON.stringify(input.skillChoices);
   if (input.skillCount !== undefined) updateData.skillCount = input.skillCount;
-  if (input.subclassLevel !== undefined) updateData.subclassLevel = input.subclassLevel;
+  if (input.subclassLevel !== undefined)
+    updateData.subclassLevel = input.subclassLevel;
   if (input.source !== undefined) updateData.source = input.source;
-  if (input.startingEquipment !== undefined) updateData.startingEquipment = input.startingEquipment;
+  if (input.startingEquipment !== undefined)
+    updateData.startingEquipment = input.startingEquipment;
+  if (input.spellcasting !== undefined)
+    updateData.spellcasting = input.spellcasting;
   if (input.features) {
     updateData.features = {
       create: input.features,
