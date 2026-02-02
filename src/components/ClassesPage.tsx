@@ -85,6 +85,13 @@ interface StartingEquipment {
   gold: number;
 }
 
+interface Spellcasting {
+  ability: string;
+  cantripsKnown: number[];
+  spellsKnown?: number[];
+  spellSlots: number[][];
+}
+
 interface CharacterClass {
   id: string;
   externalId: string;
@@ -103,6 +110,7 @@ interface CharacterClass {
   features: ClassFeature[];
   subclasses: Subclass[];
   startingEquipment?: StartingEquipment;
+  spellcasting?: Spellcasting;
 }
 
 interface ClassFormData {
@@ -122,6 +130,7 @@ interface ClassFormData {
   features: ClassFeature[];
   subclasses: Subclass[];
   startingEquipment?: StartingEquipment;
+  spellcasting?: Spellcasting;
 }
 
 const CLASS_ICONS: Record<string, ElementType> = {
@@ -545,6 +554,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
       equipment: [],
       gold: 0,
     },
+    spellcasting: undefined,
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -618,6 +628,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
         equipment: [],
         gold: 0,
       },
+      spellcasting: undefined,
     });
   };
 
@@ -647,6 +658,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
         equipment: [],
         gold: 0,
       },
+      spellcasting: cls.spellcasting || undefined,
     });
     setIsEditModalOpen(true);
   };
@@ -1110,6 +1122,42 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                         Начальное снаряжение не указано
                       </p>
                     )}
+
+                    {/* Spellcasting */}
+                    {cls.spellcasting && (
+                      <>
+                        <h4 className="font-semibold text-foreground mb-2 mt-6">Владение заклинаниями (Spellcasting)</h4>
+                        <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Базовая характеристика:</span>
+                              <span className="font-medium ml-2">
+                                {cls.spellcasting.ability === "strength" && "Сила"}
+                                {cls.spellcasting.ability === "dexterity" && "Ловкость"}
+                                {cls.spellcasting.ability === "constitution" && "Телосложение"}
+                                {cls.spellcasting.ability === "intelligence" && "Интеллект"}
+                                {cls.spellcasting.ability === "wisdom" && "Мудрость"}
+                                {cls.spellcasting.ability === "charisma" && "Харизма"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Заговоры (1-20 уровень):</span>
+                              <span className="font-medium ml-2">
+                                {cls.spellcasting.cantripsKnown.join(", ")}
+                              </span>
+                            </div>
+                            {cls.spellcasting.spellsKnown && (
+                              <div>
+                                <span className="text-muted-foreground">Известные заклинания (1-20 уровень):</span>
+                                <span className="font-medium ml-2">
+                                  {cls.spellcasting.spellsKnown.join(", ")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -1286,6 +1334,212 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                   placeholder="Выберите источник"
                   onChange={(e) => setEditingClass({ ...editingClass, source: e.target.value })}
                 />
+              </div>
+
+              {/* Spellcasting */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Владение заклинаниями (Spellcasting)</Label>
+                  <span className="text-sm text-muted-foreground">
+                    {editingClass.spellcasting ? "Включено" : "Отключено"}
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-4">
+                  {/* Toggle Spellcasting */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="hasSpellcasting"
+                      checked={!!editingClass.spellcasting}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setEditingClass({
+                            ...editingClass,
+                            spellcasting: {
+                              ability: "charisma",
+                              cantripsKnown: Array(20).fill(0),
+                              spellsKnown: Array(20).fill(0),
+                              spellSlots: Array(9).fill(null).map(() => Array(20).fill(0)),
+                            },
+                          });
+                        } else {
+                          setEditingClass({
+                            ...editingClass,
+                            spellcasting: undefined,
+                          });
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="hasSpellcasting" className="text-sm">
+                      Этот класс может колдовать заклинания
+                    </Label>
+                  </div>
+
+                  {/* Spellcasting Fields */}
+                  {editingClass.spellcasting && (
+                    <>
+                      {/* Ability */}
+                      <div className="space-y-2">
+                        <Label htmlFor="spellcastingAbility">Базовая характеристика *</Label>
+                        <Select
+                          id="spellcastingAbility"
+                          options={ABILITY_OPTIONS}
+                          value={editingClass.spellcasting.ability}
+                          placeholder="Выберите характеристику"
+                          onChange={(e) =>
+                            setEditingClass({
+                              ...editingClass,
+                              spellcasting: {
+                                ...editingClass.spellcasting!,
+                                ability: e.target.value,
+                              },
+                            })
+                          }
+                        />
+                      </div>
+
+                      {/* Cantrips Known - 20 levels */}
+                      <div className="space-y-2">
+                        <Label>Заговоры на каждый уровень (Cantrips Known)</Label>
+                        <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
+                          {editingClass.spellcasting.cantripsKnown.map((count: number, levelIndex: number) => (
+                            <div key={`cantrip-level-${levelIndex}`} className="space-y-1">
+                              <Label htmlFor={`cantrip-${levelIndex}`} className="text-xs">
+                                Ур. {levelIndex + 1}
+                              </Label>
+                              <Input
+                                id={`cantrip-${levelIndex}`}
+                                type="number"
+                                value={count}
+                                onChange={(e) => {
+                                  const newCantrips = [...editingClass.spellcasting!.cantripsKnown];
+                                  newCantrips[levelIndex] = parseInt(e.target.value) || 0;
+                                  setEditingClass({
+                                    ...editingClass,
+                                    spellcasting: {
+                                      ...editingClass.spellcasting!,
+                                      cantripsKnown: newCantrips,
+                                    },
+                                  });
+                                }}
+                                placeholder="0"
+                                min="0"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Spells Known - 20 levels (optional) */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="hasSpellsKnown"
+                            checked={editingClass.spellcasting.spellsKnown !== undefined}
+                            onChange={(e) => {
+                              setEditingClass({
+                                ...editingClass,
+                                spellcasting: {
+                                  ...editingClass.spellcasting!,
+                                  spellsKnown: e.target.checked ? Array(20).fill(0) : undefined,
+                                },
+                              });
+                            }}
+                            className="w-4 h-4"
+                          />
+                          <Label htmlFor="hasSpellsKnown" className="text-sm">
+                            Известные заклинания на каждый уровень (Spells Known)
+                          </Label>
+                        </div>
+
+                        {editingClass.spellcasting.spellsKnown !== undefined && (
+                          <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
+                            {editingClass.spellcasting.spellsKnown.map((count: number, levelIndex: number) => (
+                              <div key={`spell-level-${levelIndex}`} className="space-y-1">
+                                <Label htmlFor={`spell-${levelIndex}`} className="text-xs">
+                                  Ур. {levelIndex + 1}
+                                </Label>
+                                <Input
+                                  id={`spell-${levelIndex}`}
+                                  type="number"
+                                  value={count}
+                                  onChange={(e) => {
+                                    const newSpells = [...editingClass.spellcasting!.spellsKnown!];
+                                    newSpells[levelIndex] = parseInt(e.target.value) || 0;
+                                    setEditingClass({
+                                      ...editingClass,
+                                      spellcasting: {
+                                        ...editingClass.spellcasting!,
+                                        spellsKnown: newSpells,
+                                      },
+                                    });
+                                  }}
+                                  placeholder="0"
+                                  min="0"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Spell Slots - 9 spell levels x 20 character levels */}
+                      <div className="space-y-2">
+                        <Label>Ячейки заклинаний (Spell Slots)</Label>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-muted/50">
+                                <th className="p-2 text-left font-medium">Уровень персонажа \u2192 Уровень заклинания</th>
+                                {Array.from({ length: 9 }, (_, i) => (
+                                  <th key={i} className="p-2 text-center font-medium min-w-[40px]">
+                                    {i + 1}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Array.from({ length: 20 }, (_, charLevel) => (
+                                <tr key={charLevel} className="border-b border-border/30">
+                                  <td className="p-2 font-medium bg-muted/20">
+                                    {charLevel + 1}
+                                  </td>
+                                  {Array.from({ length: 9 }, (_, spellLevel) => (
+                                    <td key={`${charLevel}-${spellLevel}`} className="p-1">
+                                      <Input
+                                        type="number"
+                                        value={editingClass.spellcasting!.spellSlots[spellLevel]?.[charLevel] || 0}
+                                        onChange={(e) => {
+                                          const newSpellSlots = editingClass.spellcasting!.spellSlots.map(
+                                            (level: number[]) => [...level]
+                                          );
+                                          newSpellSlots[spellLevel][charLevel] = parseInt(e.target.value) || 0;
+                                          setEditingClass({
+                                            ...editingClass,
+                                            spellcasting: {
+                                              ...editingClass.spellcasting!,
+                                              spellSlots: newSpellSlots,
+                                            },
+                                          });
+                                        }}
+                                        placeholder="0"
+                                        min="0"
+                                        className="w-full text-center"
+                                      />
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Features */}

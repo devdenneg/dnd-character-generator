@@ -278,6 +278,12 @@ export const classesApi = {
       }>;
     }>;
     startingEquipment?: any;
+    spellcasting?: {
+      ability: string;
+      cantripsKnown: number[];
+      spellsKnown?: number[];
+      spellSlots: number[][];
+    };
   }) => {
     const response = await apiClient.post("/classes", data);
     return response.data;
@@ -319,6 +325,12 @@ export const classesApi = {
         }>;
       }>;
       startingEquipment?: any;
+      spellcasting?: {
+        ability: string;
+        cantripsKnown: number[];
+        spellsKnown?: number[];
+        spellSlots: number[][];
+      };
     },
   ) => {
     const response = await apiClient.put(`/classes/${id}`, data);
