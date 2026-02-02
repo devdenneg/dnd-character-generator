@@ -335,30 +335,40 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
       
       {/* Common Fields */}
       <div className="grid grid-cols-2 gap-2">
-        <Input
-          value={item.name}
-          onChange={(e) => onUpdate(index, { name: e.target.value })}
-          placeholder="Название (англ)"
-        />
-        <Input
-          value={item.nameRu}
-          onChange={(e) => onUpdate(index, { nameRu: e.target.value })}
-          placeholder="Название (рус)"
-        />
-      </div>
-      
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label className="text-xs">Вес</Label>
+        <div className="space-y-2">
+          <Label htmlFor={`equip-name-${index}`}>Название (английский) *</Label>
           <Input
-            type="number"
-            value={item.weight || ""}
-            onChange={(e) => onUpdate(index, { weight: parseFloat(e.target.value) || undefined })}
-            placeholder="Вес"
+            id={`equip-name-${index}`}
+            value={item.name}
+            onChange={(e) => onUpdate(index, { name: e.target.value })}
+            placeholder="Например: Longsword"
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">Категория</Label>
+          <Label htmlFor={`equip-nameRu-${index}`}>Название (русский)</Label>
+          <Input
+            id={`equip-nameRu-${index}`}
+            value={item.nameRu}
+            onChange={(e) => onUpdate(index, { nameRu: e.target.value })}
+            placeholder="Например: Длинный меч"
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-2">
+          <Label htmlFor={`equip-weight-${index}`}>Вес (кг)</Label>
+          <Input
+            id={`equip-weight-${index}`}
+            type="number"
+            step="0.1"
+            value={item.weight || ""}
+            onChange={(e) => onUpdate(index, { weight: parseFloat(e.target.value) || undefined })}
+            placeholder="0"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`equip-category-${index}`}>Категория</Label>
           <div className="px-3 py-2 rounded-md bg-muted text-sm text-muted-foreground">
             {item.category === "weapon" && "Оружие"}
             {item.category === "armor" && "Доспех"}
@@ -370,20 +380,23 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label className="text-xs">Количество</Label>
+        <div className="space-y-2">
+          <Label htmlFor={`equip-qty-${index}`}>Количество</Label>
           <Input
+            id={`equip-qty-${index}`}
             type="number"
             value={item.cost.quantity}
             onChange={(e) => onUpdate(index, { 
               cost: { ...item.cost, quantity: parseInt(e.target.value) || 0 } 
             })}
-            placeholder="Количество"
+            placeholder="1"
+            min="0"
           />
         </div>
-        <div>
-          <Label className="text-xs">Валюта</Label>
+        <div className="space-y-2">
+          <Label htmlFor={`equip-currency-${index}`}>Валюта</Label>
           <Select
+            id={`equip-currency-${index}`}
             value={item.cost.unit}
             placeholder="Валюта"
             onChange={(e) => onUpdate(index, { 
@@ -404,9 +417,10 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
       {item.category === "weapon" && (
         <>
           <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label className="text-xs">Урон (кубик)</Label>
+            <div className="space-y-2">
+              <Label htmlFor={`weapon-dice-${index}`}>Урон (кубик)</Label>
               <Input
+                id={`weapon-dice-${index}`}
                 value={item.damage.dice}
                 onChange={(e) => onUpdate(index, { 
                   damage: { ...item.damage, dice: e.target.value } 
@@ -414,9 +428,10 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
                 placeholder="1d8"
               />
             </div>
-            <div>
-              <Label className="text-xs">Тип урона</Label>
+            <div className="space-y-2">
+              <Label htmlFor={`weapon-type-${index}`}>Тип урона</Label>
               <Input
+                id={`weapon-type-${index}`}
                 value={item.damage.type}
                 onChange={(e) => onUpdate(index, { 
                   damage: { ...item.damage, type: e.target.value } 
@@ -426,9 +441,10 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
             </div>
           </div>
 
-          <div>
-            <Label className="text-xs">Свойства (через запятую)</Label>
+          <div className="space-y-2">
+            <Label htmlFor={`weapon-props-${index}`}>Свойства (через запятую)</Label>
             <Input
+              id={`weapon-props-${index}`}
               value={item.properties?.join(", ") || ""}
               onChange={(e) => onUpdate(index, { 
                 properties: e.target.value.split(",").map(p => p.trim()).filter(Boolean) 
@@ -443,9 +459,10 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
       {item.category === "armor" && (
         <>
           <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label className="text-xs">Класс защиты (AC)</Label>
+            <div className="space-y-2">
+              <Label htmlFor={`armor-ac-${index}`}>Класс защиты (AC)</Label>
               <Input
+                id={`armor-ac-${index}`}
                 type="number"
                 value={item.armorClass}
                 onChange={(e) => onUpdate(index, { 
@@ -454,9 +471,10 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
                 placeholder="10"
               />
             </div>
-            <div>
-              <Label className="text-xs">Тип доспеха</Label>
+            <div className="space-y-2">
+              <Label htmlFor={`armor-type-${index}`}>Тип доспеха</Label>
               <Select
+                id={`armor-type-${index}`}
                 value={item.armorType}
                 placeholder="Тип доспеха"
                 onChange={(e) => onUpdate(index, { 
@@ -473,9 +491,10 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
           </div>
 
           {item.armorType !== "shield" && (
-            <div>
-              <Label className="text-xs">Макс. бонус Ловкости</Label>
+            <div className="space-y-2">
+              <Label htmlFor={`armor-dex-${index}`}>Макс. бонус Ловкости</Label>
               <Input
+                id={`armor-dex-${index}`}
                 type="number"
                 value={item.maxDexBonus || ""}
                 onChange={(e) => onUpdate(index, { 
@@ -490,7 +509,7 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
 
       {/* Gear-specific fields */}
       {(item.category === "gear" || item.category === "tool" || item.category === "pack") && (
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-muted-foreground p-3 rounded-md bg-muted/50">
           Для этого типа снаряжения достаточно указать название, вес и стоимость.
         </div>
       )}
@@ -1270,57 +1289,96 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
               </div>
 
               {/* Features */}
-              <div className="space-y-2">
-                <Label>Черты класса</Label>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Черты класса</Label>
+                  <span className="text-sm text-muted-foreground">
+                    {editingClass.features.length} {editingClass.features.length === 1 ? "черта" : editingClass.features.length > 1 && editingClass.features.length < 5 ? "черты" : "черт"}
+                  </span>
+                </div>
                 
                 {/* Add New Feature Form */}
-                <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-3">
-                  <h5 className="font-medium text-foreground text-sm">Добавить новую черту</h5>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      value={newFeature.name}
-                      onChange={(e) => setNewFeature({ ...newFeature, name: e.target.value })}
-                      placeholder="Название черты (англ)"
-                    />
-                    <Input
-                      value={newFeature.nameRu}
-                      onChange={(e) => setNewFeature({ ...newFeature, nameRu: e.target.value })}
-                      placeholder="Название черты (рус)"
+                <div className="p-5 rounded-xl bg-muted/30 border border-border/30 space-y-4">
+                  <h5 className="font-semibold text-foreground text-base flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Добавить новую черту
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newFeatureName" className="text-sm">Название черты (английский) *</Label>
+                      <Input
+                        id="newFeatureName"
+                        value={newFeature.name}
+                        onChange={(e) => setNewFeature({ ...newFeature, name: e.target.value })}
+                        placeholder="Например: Rage"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newFeatureNameRu" className="text-sm">Название черты (русский) *</Label>
+                      <Input
+                        id="newFeatureNameRu"
+                        value={newFeature.nameRu}
+                        onChange={(e) => setNewFeature({ ...newFeature, nameRu: e.target.value })}
+                        placeholder="Например: Ярость"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newFeatureLevel" className="text-sm">Уровень получения черты *</Label>
+                      <Input
+                        id="newFeatureLevel"
+                        type="number"
+                        value={newFeature.level}
+                        onChange={(e) => setNewFeature({ ...newFeature, level: parseInt(e.target.value) || 1 })}
+                        placeholder="Уровень"
+                        min="1"
+                        max="20"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newFeatureDesc" className="text-sm">Описание черты *</Label>
+                    <Textarea
+                      id="newFeatureDesc"
+                      value={newFeature.description}
+                      onChange={(e) => setNewFeature({ ...newFeature, description: e.target.value })}
+                      placeholder="Опишите эффект этой черты..."
+                      rows={3}
                     />
                   </div>
-                  <Input
-                    type="number"
-                    value={newFeature.level}
-                    onChange={(e) => setNewFeature({ ...newFeature, level: parseInt(e.target.value) || 1 })}
-                    placeholder="Уровень"
-                    min="1"
-                    max="20"
-                  />
-                  <Textarea
-                    value={newFeature.description}
-                    onChange={(e) => setNewFeature({ ...newFeature, description: e.target.value })}
-                    placeholder="Описание черты"
-                    rows={2}
-                  />
                   <Button
-                    variant="outline"
                     onClick={handleAddFeature}
                     className="w-full gap-2"
                     disabled={!newFeature.name || !newFeature.nameRu || !newFeature.description}
                   >
                     <Plus className="w-4 h-4" />
-                    Добавить черту в список
+                    Добавить черту
                   </Button>
                 </div>
 
                 {/* Existing Features List */}
-                <div className="space-y-3">
-                  {editingClass.features.map((feature: ClassFeature, index: number) => (
-                    <div key={feature.id || index} className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1 space-y-2">
-                          <div className="grid grid-cols-2 gap-2">
+                {editingClass.features.length > 0 && (
+                  <div className="space-y-3">
+                    <h6 className="text-sm font-medium text-muted-foreground">Список черт:</h6>
+                    {editingClass.features.map((feature: ClassFeature, index: number) => (
+                      <div key={feature.id || index} className="p-4 rounded-xl bg-card border border-border/50 space-y-3">
+                        <div className="flex items-start justify-between pb-3 border-b border-border/30">
+                          <h5 className="font-medium text-foreground text-base">Черта #{index + 1}</h5>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2"
+                            onClick={() => handleRemoveFeature(feature.id || index.toString())}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`feature-name-${index}`} className="text-xs">Название (английский)</Label>
                             <Input
+                              id={`feature-name-${index}`}
                               value={feature.name}
                               onChange={(e) => {
                                 const featuresArray = editingClass.features || [];
@@ -1330,7 +1388,11 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                               }}
                               placeholder="Название (англ)"
                             />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`feature-nameRu-${index}`} className="text-xs">Название (русский)</Label>
                             <Input
+                              id={`feature-nameRu-${index}`}
                               value={feature.nameRu}
                               onChange={(e) => {
                                 const featuresArray = editingClass.features || [];
@@ -1341,20 +1403,30 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                               placeholder="Название (рус)"
                             />
                           </div>
-                          <Input
-                            type="number"
-                            value={feature.level}
-                            onChange={(e) => {
-                              const featuresArray = editingClass.features || [];
-                              const updatedFeatures = [...featuresArray];
-                              updatedFeatures[index] = { ...updatedFeatures[index], level: parseInt(e.target.value) || 1 };
-                              setEditingClass({ ...editingClass, features: updatedFeatures });
-                            }}
-                            placeholder="Уровень"
-                            min="1"
-                            max="20"
-                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`feature-level-${index}`} className="text-xs">Уровень получения</Label>
+                            <Input
+                              id={`feature-level-${index}`}
+                              type="number"
+                              value={feature.level}
+                              onChange={(e) => {
+                                const featuresArray = editingClass.features || [];
+                                const updatedFeatures = [...featuresArray];
+                                updatedFeatures[index] = { ...updatedFeatures[index], level: parseInt(e.target.value) || 1 };
+                                setEditingClass({ ...editingClass, features: updatedFeatures });
+                              }}
+                              placeholder="Уровень"
+                              min="1"
+                              max="20"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`feature-desc-${index}`} className="text-xs">Описание</Label>
                           <Textarea
+                            id={`feature-desc-${index}`}
                             value={feature.description}
                             onChange={(e) => {
                               const featuresArray = editingClass.features || [];
@@ -1366,51 +1438,53 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                             rows={2}
                           />
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive p-1"
-                          onClick={() => handleRemoveFeature(feature.id || index.toString())}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Starting Equipment */}
-              <div className="space-y-2">
-                <Label>Начальное снаряжение</Label>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Начальное снаряжение</Label>
+                  <span className="text-sm text-muted-foreground">
+                    {editingClass.startingEquipment?.equipment.length || 0} {(editingClass.startingEquipment?.equipment.length || 0) === 1 ? "предмет" : (editingClass.startingEquipment?.equipment.length || 0) > 1 && (editingClass.startingEquipment?.equipment.length || 0) < 5 ? "предмета" : "предметов"}
+                  </span>
+                </div>
                 
                 {/* Gold */}
-                <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-3">
-                  <div>
-                    <Label htmlFor="gold">Начальное золото (gp)</Label>
-                    <Input
-                      id="gold"
-                      type="number"
-                      value={editingClass.startingEquipment?.gold || 0}
-                      onChange={(e) => setEditingClass({
-                        ...editingClass,
-                        startingEquipment: {
-                          ...editingClass.startingEquipment,
-                          equipment: editingClass.startingEquipment?.equipment || [],
-                          gold: parseInt(e.target.value) || 0,
-                        }
-                      })}
-                      placeholder="0"
-                      min="0"
-                    />
+                <div className="p-5 rounded-xl bg-muted/30 border border-border/30">
+                  <div className="space-y-2">
+                    <Label htmlFor="gold" className="text-sm">Начальное золото (gp)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="gold"
+                        type="number"
+                        value={editingClass.startingEquipment?.gold || 0}
+                        onChange={(e) => setEditingClass({
+                          ...editingClass,
+                          startingEquipment: {
+                            ...editingClass.startingEquipment,
+                            equipment: editingClass.startingEquipment?.equipment || [],
+                            gold: parseInt(e.target.value) || 0,
+                          }
+                        })}
+                        placeholder="0"
+                        min="0"
+                      />
+                      <div className="px-4 py-2 rounded-md bg-primary/10 text-primary text-sm font-medium flex items-center">
+                        gp
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Add New Equipment Item */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div>
-                    <Label>Выберите тип снаряжения для добавления</Label>
-                    <div className="grid grid-cols-3 gap-2 mt-2">
+                    <Label className="text-sm mb-2 block">Выберите тип снаряжения для добавления</Label>
+                    <div className="grid grid-cols-3 gap-2">
                       <Button
                         variant={newEquipmentCategory === "weapon" ? "default" : "outline"}
                         onClick={() => setNewEquipmentCategory("weapon")}
@@ -1439,7 +1513,6 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                   </div>
 
                   <Button
-                    variant="outline"
                     onClick={handleAddEquipmentItem}
                     className="w-full gap-2"
                   >
@@ -1449,17 +1522,22 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                 </div>
 
                 {/* Equipment Items List */}
-                <div className="space-y-3">
-                  {editingClass.startingEquipment?.equipment.map((item: EquipmentItem, index: number) => (
-                    <EquipmentEditor
-                      key={index}
-                      item={item}
-                      index={index}
-                      onUpdate={handleUpdateEquipmentItem}
-                      onRemove={handleRemoveEquipmentItem}
-                    />
-                  ))}
-                </div>
+                {editingClass.startingEquipment?.equipment && editingClass.startingEquipment.equipment.length > 0 && (
+                  <div className="space-y-3">
+                    <h6 className="text-sm font-medium text-muted-foreground">Список снаряжения:</h6>
+                    <div className="space-y-3">
+                      {editingClass.startingEquipment.equipment.map((item: EquipmentItem, index: number) => (
+                        <EquipmentEditor
+                          key={index}
+                          item={item}
+                          index={index}
+                          onUpdate={handleUpdateEquipmentItem}
+                          onRemove={handleRemoveEquipmentItem}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}

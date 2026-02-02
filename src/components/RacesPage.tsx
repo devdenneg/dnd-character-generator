@@ -585,66 +585,111 @@ export function RacesPage({ onBack }: RacesPageProps) {
               </div>
 
               {/* Traits */}
-              <div className="space-y-2">
-                <Label>Черты</Label>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Черты расы</Label>
+                  <span className="text-sm text-muted-foreground">
+                    {editingRace.traits.length} {editingRace.traits.length === 1 ? "черта" : editingRace.traits.length > 1 && editingRace.traits.length < 5 ? "черты" : "черт"}
+                  </span>
+                </div>
                 
                 {/* Add New Trait Form */}
-                <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-3">
-                  <h5 className="font-medium text-foreground text-sm">Добавить новую черту</h5>
-                  <Input
-                    value={newTrait.name}
-                    onChange={(e) => setNewTrait({ ...newTrait, name: e.target.value })}
-                    placeholder="Название черты (англ)"
-                  />
-                  <Input
-                    value={newTrait.nameRu}
-                    onChange={(e) => setNewTrait({ ...newTrait, nameRu: e.target.value })}
-                    placeholder="Название черты (рус)"
-                  />
-                  <Textarea
-                    value={newTrait.description}
-                    onChange={(e) => setNewTrait({ ...newTrait, description: e.target.value })}
-                    placeholder="Описание черты"
-                    rows={2}
-                  />
+                <div className="p-5 rounded-xl bg-muted/30 border border-border/30 space-y-4">
+                  <h5 className="font-semibold text-foreground text-base flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Добавить новую черту
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newTraitName" className="text-sm">Название черты (английский) *</Label>
+                      <Input
+                        id="newTraitName"
+                        value={newTrait.name}
+                        onChange={(e) => setNewTrait({ ...newTrait, name: e.target.value })}
+                        placeholder="Например: Draconic Ancestry"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newTraitNameRu" className="text-sm">Название черты (русский) *</Label>
+                      <Input
+                        id="newTraitNameRu"
+                        value={newTrait.nameRu}
+                        onChange={(e) => setNewTrait({ ...newTrait, nameRu: e.target.value })}
+                        placeholder="Например: Драконья кровь"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newTraitDescription" className="text-sm">Описание черты *</Label>
+                    <Textarea
+                      id="newTraitDescription"
+                      value={newTrait.description}
+                      onChange={(e) => setNewTrait({ ...newTrait, description: e.target.value })}
+                      placeholder="Опишите эффект этой черты..."
+                      rows={3}
+                    />
+                  </div>
                   <Button
-                    variant="outline"
                     onClick={handleAddTrait}
                     className="w-full gap-2"
                     disabled={!newTrait.name || !newTrait.nameRu || !newTrait.description}
                   >
                     <Plus className="w-4 h-4" />
-                    Добавить черту в список
+                    Добавить черту
                   </Button>
                 </div>
 
                 {/* Existing Traits List */}
-                <div className="space-y-3">
-                  {editingRace.traits.map((trait: RaceTrait, index: number) => (
-                    <div key={trait.id || index} className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1 space-y-2">
-                          <Input
-                            value={trait.name}
-                            onChange={(e) => {
-                              const traitsArray = editingRace.traits || [];
-                              const updatedTraits = [...traitsArray];
-                              updatedTraits[index] = { ...updatedTraits[index], name: e.target.value };
-                              setEditingRace({ ...editingRace, traits: updatedTraits });
-                            }}
-                            placeholder="Название (англ)"
-                          />
-                          <Input
-                            value={trait.nameRu}
-                            onChange={(e) => {
-                              const traitsArray = editingRace.traits || [];
-                              const updatedTraits = [...traitsArray];
-                              updatedTraits[index] = { ...updatedTraits[index], nameRu: e.target.value };
-                              setEditingRace({ ...editingRace, traits: updatedTraits });
-                            }}
-                            placeholder="Название (рус)"
-                          />
+                {editingRace.traits.length > 0 && (
+                  <div className="space-y-3">
+                    <h6 className="text-sm font-medium text-muted-foreground">Список черт:</h6>
+                    {editingRace.traits.map((trait: RaceTrait, index: number) => (
+                      <div key={trait.id || index} className="p-4 rounded-xl bg-card border border-border/50 space-y-3">
+                        <div className="flex items-start justify-between pb-3 border-b border-border/30">
+                          <h5 className="font-medium text-foreground text-base">Черта #{index + 1}</h5>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2"
+                            onClick={() => handleRemoveTrait(trait.id || index.toString())}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`trait-name-${index}`} className="text-xs">Название (английский)</Label>
+                            <Input
+                              id={`trait-name-${index}`}
+                              value={trait.name}
+                              onChange={(e) => {
+                                const traitsArray = editingRace.traits || [];
+                                const updatedTraits = [...traitsArray];
+                                updatedTraits[index] = { ...updatedTraits[index], name: e.target.value };
+                                setEditingRace({ ...editingRace, traits: updatedTraits });
+                              }}
+                              placeholder="Название (англ)"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`trait-nameRu-${index}`} className="text-xs">Название (русский)</Label>
+                            <Input
+                              id={`trait-nameRu-${index}`}
+                              value={trait.nameRu}
+                              onChange={(e) => {
+                                const traitsArray = editingRace.traits || [];
+                                const updatedTraits = [...traitsArray];
+                                updatedTraits[index] = { ...updatedTraits[index], nameRu: e.target.value };
+                                setEditingRace({ ...editingRace, traits: updatedTraits });
+                              }}
+                              placeholder="Название (рус)"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`trait-desc-${index}`} className="text-xs">Описание</Label>
                           <Textarea
+                            id={`trait-desc-${index}`}
                             value={trait.description}
                             onChange={(e) => {
                               const traitsArray = editingRace.traits || [];
@@ -656,18 +701,10 @@ export function RacesPage({ onBack }: RacesPageProps) {
                             rows={2}
                           />
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive p-1"
-                          onClick={() => handleRemoveTrait(trait.id || index.toString())}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
