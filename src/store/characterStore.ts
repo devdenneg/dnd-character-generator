@@ -510,26 +510,6 @@ const SPELLS_KNOWN: Record<string, number[]> = {
   ],
 };
 
-// Начальное золото по предыстории (PHB 2024)
-const BACKGROUND_STARTING_GOLD: Record<string, number> = {
-  acolyte: 15,
-  artisan: 25,
-  charlatan: 15,
-  criminal: 15,
-  entertainer: 11,
-  farmer: 15,
-  guard: 12,
-  guide: 2,
-  hermit: 16,
-  merchant: 22,
-  noble: 29,
-  sage: 8,
-  sailor: 10,
-  scribe: 23,
-  soldier: 14,
-  wayfarer: 16,
-};
-
 const initialWallet: Wallet = {
   copper: 0,
   silver: 0,

@@ -110,20 +110,6 @@ const HIT_DIE_OPTIONS = [
   { value: "12", label: "d12" },
 ];
 
-const SOURCES = [
-  { value: "srd", label: "SRD" },
-  { value: "phb2024", label: "PHB 2024" },
-];
-
-const ABILITIES = [
-  { value: "strength", label: "Сила" },
-  { value: "dexterity", label: "Ловкость" },
-  { value: "constitution", label: "Телосложение" },
-  { value: "intelligence", label: "Интеллект" },
-  { value: "wisdom", label: "Мудрость" },
-  { value: "charisma", label: "Харизма" },
-];
-
 interface ClassesPageProps {
   onBack?: () => void;
 }
@@ -157,7 +143,6 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     description: "",
     level: 1,
   });
-  const [selectedSubclass, setSelectedSubclass] = useState<number | null>(null);
 
   // Selected class data query
   const selectedClassData = useQuery({
