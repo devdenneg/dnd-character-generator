@@ -12,7 +12,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "migration:generate": "node scripts/generate-migration.js",
-    "migration:apply": "node migrate-production.js"
+    "migration:apply": "node migrate-production.js",
+    "seed:races": "ts-node seed-races.ts"
   },
   "keywords": [
     "dnd",

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FitText } from "@/components/ui/fit-text";
 import { Modal, ModalContent, ModalFooter } from "@/components/ui/modal";
 import { useCharacterStore } from "@/store/characterStore";
-import { getAllRaces } from "@/data/phb2024";
+import { useBackendRaces } from "@/api/hooks";
 import type { Race } from "@/types/character";
 import { t } from "@/data/translations/ru";
 
@@ -33,10 +33,11 @@ export function RaceStep() {
   const [modalRace, setModalRace] = useState<Race | null>(null);
   const [confirmRace, setConfirmRace] = useState<Race | null>(null);
   const { character, setRace, resetCharacter, completedSteps } = useCharacterStore();
-  const races = getAllRaces();
+  const { data: racesData, isLoading, error } = useBackendRaces("phb2024");
+  const races = racesData?.data?.races || [];
 
   const filteredRaces = races.filter(
-    (race) =>
+    (race: Race) =>
       race.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       race.nameRu.toLowerCase().includes(searchTerm.toLowerCase()),
   );
@@ -64,6 +65,33 @@ export function RaceStep() {
 
   const getData = (id: string) => RACE_DATA[id] || DEFAULT_DATA;
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Загрузка рас...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center max-w-md">
+          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+          <h3 className="font-semibold text-foreground mb-2">
+            Ошибка загрузки рас
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Не удалось загрузить данные о расах. Пожалуйста, попробуйте позже.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Search */}
@@ -79,9 +107,9 @@ export function RaceStep() {
 
       {/* Race grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        {filteredRaces.map((race, index) => {
+        {filteredRaces.map((race: Race, index: number) => {
           const isSelected = character.race?.id === race.id;
-          const data = getData(race.id);
+          const data = getData(race.externalId);
 
           return (
             <div
@@ -239,7 +267,7 @@ export function RaceStep() {
         <div className="bg-card/80 backdrop-blur border border-primary/30 rounded-2xl p-3 sm:p-4 flex items-center justify-between shadow-lg animate-fade-in-up">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl sm:text-2xl flex-shrink-0">
-              {getData(character.race.id).icon}
+              {getData(character.race.externalId).icon}
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-foreground text-sm sm:text-base truncate">

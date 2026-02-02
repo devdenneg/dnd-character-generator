@@ -20,8 +20,52 @@ jobs:
             echo "📥 Pulling latest changes..."
             git pull origin main
             
-            echo "📦 Installing dependencies..."
-            npm install --production=false
+            echo "📦 Installing backend dependencies..."
+            cd backend
+            npm ci --production=false
+            
+            echo "🔧 Generating Prisma Client..."
+            npx prisma generate
+            
+            echo "🗄️ Applying Prisma schema to database..."
+            npx prisma db push --accept-data-loss || true
+            
+            echo "📋 Applying SQL migrations..."
+            if [ -d "prisma/migrations" ]; then
+              for migration in prisma/migrations/*.sql prisma/migrations/*/migration.sql; do
+                if [ -f "$migration" ]; then
+                  echo "Applying migration: $(basename $migration)"
+                  sudo -u postgres psql -d dnd_generator -f "$migration" 2>/dev/null || echo "Migration already applied or error (skipped)"
+                fi
+              done
+            fi
+            
+            echo "🔧 Fixing table owners for dnduser..."
+            sudo -u postgres psql -d dnd_generator -c "
+              DO \$\$
+              DECLARE
+                table_rec RECORD;
+              BEGIN
+                FOR table_rec IN 
+                  SELECT tablename 
+                  FROM pg_tables 
+                  WHERE schemaname = 'public'
+                LOOP
+                  EXECUTE format('ALTER TABLE %I OWNER TO dnduser', table_rec.tablename);
+                END LOOP;
+              END \$\$;
+            " 2>/dev/null || echo "Table owner fix skipped or already done"
+            
+            echo "🔨 Building backend..."
+            npm run build
+            
+            echo "🔄 Restarting backend with PM2..."
+            pm2 restart dnd-backend || pm2 start npm --name "dnd-backend" -- start
+            pm2 save
+            
+            echo "📦 Installing frontend dependencies..."
+            cd /var/www/dnd-character-generator
+            npm ci
             
             echo "🔨 Building frontend..."
             npm run build -- --base=/

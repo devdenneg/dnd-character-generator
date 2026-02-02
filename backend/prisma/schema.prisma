@@ -102,3 +102,34 @@ model PlayerAchievement {
   @@index([characterId])
   @@index([userId])
 }
+
+model Race {
+  id          String   @id @default(uuid())
+  externalId  String   @unique // ID from the frontend (e.g., "aasimar", "dragonborn")
+  name        String
+  nameRu      String
+  description String
+  speed       Int
+  size        String   // "Small", "Medium", "Large"
+  source      String   // "srd" or "phb2024"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  traits      RaceTrait[]
+
+  @@index([externalId])
+  @@index([source])
+}
+
+model RaceTrait {
+  id          String   @id @default(uuid())
+  raceId      String
+  name        String
+  nameRu      String
+  description String
+  createdAt   DateTime @default(now())
+
+  race        Race     @relation(fields: [raceId], references: [id], onDelete: Cascade)
+
+  @@index([raceId])
+}

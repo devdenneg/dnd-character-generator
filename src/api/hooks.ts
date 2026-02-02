@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { dnd5eApi } from "./dnd5e";
+import { racesApi } from "./client";
 
 // Query keys
 export const queryKeys = {
@@ -217,6 +218,42 @@ export function useFeature(index: string) {
     queryKey: queryKeys.feature(index),
     queryFn: () => dnd5eApi.getFeature(index),
     enabled: !!index,
+    staleTime: Infinity,
+  });
+}
+
+// Backend API hooks for custom data (PHB 2024)
+export const backendQueryKeys = {
+  races: ["backend", "races"] as const,
+  racesBySource: (source: string) => ["backend", "races", "source", source] as const,
+  race: (id: string) => ["backend", "race", id] as const,
+  raceByExternalId: (externalId: string) => ["backend", "race", "external", externalId] as const,
+};
+
+// Races (from backend - PHB 2024 data)
+export function useBackendRaces(source?: string) {
+  return useQuery({
+    queryKey: source ? backendQueryKeys.racesBySource(source) : backendQueryKeys.races,
+    queryFn: () => racesApi.list(source),
+    staleTime: 0, // Always refetch to get latest data
+    refetchOnMount: 'always', // Always fetch on component mount
+  });
+}
+
+export function useBackendRace(id: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.race(id),
+    queryFn: () => racesApi.get(id),
+    enabled: !!id,
+    staleTime: Infinity,
+  });
+}
+
+export function useBackendRaceByExternalId(externalId: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.raceByExternalId(externalId),
+    queryFn: () => racesApi.getByExternalId(externalId),
+    enabled: !!externalId,
     staleTime: Infinity,
   });
 }
