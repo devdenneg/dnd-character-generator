@@ -225,3 +225,108 @@ export const racesApi = {
     return response.data;
   },
 };
+
+// Classes API
+export const classesApi = {
+  list: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/classes", { params });
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get(`/classes/${id}`);
+    return response.data;
+  },
+
+  getByExternalId: async (externalId: string) => {
+    const response = await apiClient.get(`/classes/external/${externalId}`);
+    return response.data;
+  },
+
+  create: async (data: {
+    externalId: string;
+    name: string;
+    nameRu: string;
+    description: string;
+    hitDie: number;
+    primaryAbility: string[];
+    savingThrows: string[];
+    armorProficiencies: string[];
+    weaponProficiencies: string[];
+    skillChoices: string[];
+    skillCount: number;
+    subclassLevel: number;
+    source: string;
+    features: Array<{
+      name: string;
+      nameRu: string;
+      description: string;
+      level: number;
+    }>;
+    subclasses: Array<{
+      externalId: string;
+      name: string;
+      nameRu: string;
+      description: string;
+      source?: string;
+      features: Array<{
+        name: string;
+        nameRu: string;
+        description: string;
+        level: number;
+      }>;
+    }>;
+    startingEquipment?: any;
+  }) => {
+    const response = await apiClient.post("/classes", data);
+    return response.data;
+  },
+
+  update: async (
+    id: string,
+    data: {
+      externalId?: string;
+      name?: string;
+      nameRu?: string;
+      description?: string;
+      hitDie?: number;
+      primaryAbility?: string[];
+      savingThrows?: string[];
+      armorProficiencies?: string[];
+      weaponProficiencies?: string[];
+      skillChoices?: string[];
+      skillCount?: number;
+      subclassLevel?: number;
+      source?: string;
+      features?: Array<{
+        name: string;
+        nameRu: string;
+        description: string;
+        level: number;
+      }>;
+      subclasses?: Array<{
+        externalId: string;
+        name: string;
+        nameRu: string;
+        description: string;
+        source?: string;
+        features: Array<{
+          name: string;
+          nameRu: string;
+          description: string;
+          level: number;
+        }>;
+      }>;
+      startingEquipment?: any;
+    },
+  ) => {
+    const response = await apiClient.put(`/classes/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/classes/${id}`);
+    return response.data;
+  },
+};

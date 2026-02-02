@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { dnd5eApi } from "./dnd5e";
-import { racesApi } from "./client";
+import { racesApi, classesApi } from "./client";
 
 // Query keys
 export const queryKeys = {
@@ -228,6 +228,10 @@ export const backendQueryKeys = {
   racesBySource: (source: string) => ["backend", "races", "source", source] as const,
   race: (id: string) => ["backend", "race", id] as const,
   raceByExternalId: (externalId: string) => ["backend", "race", "external", externalId] as const,
+  classes: ["backend", "classes"] as const,
+  classesBySource: (source: string) => ["backend", "classes", "source", source] as const,
+  class: (id: string) => ["backend", "class", id] as const,
+  classByExternalId: (externalId: string) => ["backend", "class", "external", externalId] as const,
 };
 
 // Races (from backend - PHB 2024 data)
@@ -253,6 +257,34 @@ export function useBackendRaceByExternalId(externalId: string) {
   return useQuery({
     queryKey: backendQueryKeys.raceByExternalId(externalId),
     queryFn: () => racesApi.getByExternalId(externalId),
+    enabled: !!externalId,
+    staleTime: Infinity,
+  });
+}
+
+// Classes (from backend - PHB 2024 data)
+export function useBackendClasses(source?: string) {
+  return useQuery({
+    queryKey: source ? backendQueryKeys.classesBySource(source) : backendQueryKeys.classes,
+    queryFn: () => classesApi.list(source),
+    staleTime: 0, // Always refetch to get latest data
+    refetchOnMount: 'always', // Always fetch on component mount
+  });
+}
+
+export function useBackendClass(id: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.class(id),
+    queryFn: () => classesApi.get(id),
+    enabled: !!id,
+    staleTime: Infinity,
+  });
+}
+
+export function useBackendClassByExternalId(externalId: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.classByExternalId(externalId),
+    queryFn: () => classesApi.getByExternalId(externalId),
     enabled: !!externalId,
     staleTime: Infinity,
   });

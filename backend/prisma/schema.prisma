@@ -133,3 +133,74 @@ model RaceTrait {
 
   @@index([raceId])
 }
+
+model CharacterClass {
+  id              String   @id @default(uuid())
+  externalId      String   @unique // ID from the frontend (e.g., "barbarian", "wizard")
+  name            String
+  nameRu          String
+  description     String   @db.Text
+  hitDie          Int
+  primaryAbility  String   // JSON array of abilities
+  savingThrows    String   // JSON array of abilities
+  armorProficiencies String // JSON array
+  weaponProficiencies String // JSON array
+  skillChoices    String   // JSON array
+  skillCount      Int
+  subclassLevel   Int
+  source          String   // "srd" or "phb2024"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  features        ClassFeature[]
+  subclasses      Subclass[]
+  startingEquipment Json? // Starting equipment with gold
+
+  @@index([externalId])
+  @@index([source])
+}
+
+model ClassFeature {
+  id          String   @id @default(uuid())
+  classId     String
+  name        String
+  nameRu      String
+  description String   @db.Text
+  level       Int
+  createdAt   DateTime @default(now())
+
+  class       CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([classId])
+}
+
+model Subclass {
+  id          String   @id @default(uuid())
+  classId     String
+  externalId  String   // ID from frontend
+  name        String
+  nameRu      String
+  description String   @db.Text
+  source      String   @default("phb2024")
+  createdAt   DateTime @default(now())
+
+  class       CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  features    SubclassFeature[]
+
+  @@index([classId])
+  @@index([externalId])
+}
+
+model SubclassFeature {
+  id          String   @id @default(uuid())
+  subclassId  String
+  name        String
+  nameRu      String
+  description String   @db.Text
+  level       Int
+  createdAt   DateTime @default(now())
+
+  subclass    Subclass @relation(fields: [subclassId], references: [id], onDelete: Cascade)
+
+  @@index([subclassId])
+}
