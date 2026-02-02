@@ -46,6 +46,7 @@ export interface Subclass {
 
 export interface CharacterClass {
   id: string;
+  externalId: string;
   name: string;
   nameRu: string;
   description: string;

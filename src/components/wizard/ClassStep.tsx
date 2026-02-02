@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { FitText } from "@/components/ui/fit-text";
 import { Modal, ModalContent, ModalFooter } from "@/components/ui/modal";
 import { useCharacterStore } from "@/store/characterStore";
-import { getAllClasses } from "@/data/phb2024";
+import { useBackendClasses } from "@/api/hooks";
 import type { CharacterClass, Subclass } from "@/types/character";
 import { t, getAbilityNameRu } from "@/data/translations/ru";
 
@@ -41,19 +41,25 @@ export function ClassStep() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalClass, setModalClass] = useState<CharacterClass | null>(null);
   const [confirmClass, setConfirmClass] = useState<CharacterClass | null>(null);
-  const { character, setClass, setSubclass, resetCharacter, completedSteps } = useCharacterStore();
-  const classes = getAllClasses();
+  const { character, setClass, setSubclass, resetCharacter, completedSteps } =
+    useCharacterStore();
+  const { data: classesData } = useBackendClasses();
+  const classes = classesData?.data?.classes || [];
 
   const filteredClasses = classes.filter(
-    (cls) =>
+    (cls: CharacterClass) =>
       cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.nameRu.toLowerCase().includes(searchTerm.toLowerCase()),
+      cls.nameRu.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSelectClass = (cls: CharacterClass) => {
     // Если уже выбран класс и пользователь выбирает другой
     // Показываем предупреждение только если есть заполненные шаги после класса
-    if (character.class && character.class.id !== cls.id && completedSteps.includes("class")) {
+    if (
+      character.class &&
+      character.class.id !== cls.id &&
+      completedSteps.includes("class")
+    ) {
       setConfirmClass(cls);
       setModalClass(null);
     } else {
@@ -75,8 +81,6 @@ export function ClassStep() {
     setSubclass(subclass);
   };
 
-  const getData = (id: string) => CLASS_DATA[id] || DEFAULT_DATA;
-
   return (
     <div className="space-y-6">
       {/* Search */}
@@ -92,9 +96,9 @@ export function ClassStep() {
 
       {/* Class grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        {filteredClasses.map((cls, index) => {
+        {filteredClasses.map((cls: CharacterClass, index: number) => {
           const isSelected = character.class?.id === cls.id;
-          const data = getData(cls.id);
+          const data = CLASS_DATA[cls.externalId] || DEFAULT_DATA;
 
           return (
             <div
@@ -179,7 +183,7 @@ export function ClassStep() {
         onClose={() => setModalClass(null)}
         title={modalClass?.nameRu}
         subtitle={modalClass?.name}
-        icon={modalClass ? getData(modalClass.id).icon : undefined}
+        icon={modalClass ? CLASS_DATA[modalClass.externalId]?.icon : undefined}
         maxWidth="max-w-2xl"
       >
         {modalClass && (
@@ -299,6 +303,46 @@ export function ClassStep() {
                 </div>
               </div>
 
+              {/* Spellcasting info */}
+              {modalClass.spellcasting && (
+                <div className="mb-5">
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    Владение заклинаниями
+                  </h4>
+                  <div className="bg-muted/20 p-4 rounded-xl border border-border/30 space-y-3">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground mb-1">
+                          Базовая характеристика
+                        </p>
+                        <p className="font-medium">
+                          {getAbilityNameRu(modalClass.spellcasting.ability)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">
+                          Заговоры (1-20 уровень)
+                        </p>
+                        <p className="font-medium text-xs">
+                          {modalClass.spellcasting.cantripsKnown.join(", ")}
+                        </p>
+                      </div>
+                      {modalClass.spellcasting.spellsKnown && (
+                        <div>
+                          <p className="text-muted-foreground mb-1">
+                            Известные заклинания (1-20 уровень)
+                          </p>
+                          <p className="font-medium text-xs">
+                            {modalClass.spellcasting.spellsKnown.join(", ")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Subclasses */}
               {modalClass.subclassLevel === 1 && (
                 <div>
@@ -369,7 +413,7 @@ export function ClassStep() {
         <div className="bg-card/80 backdrop-blur border border-primary/30 rounded-2xl p-3 sm:p-4 flex items-center justify-between shadow-lg animate-fade-in-up">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl sm:text-2xl flex-shrink-0">
-              {getData(character.class.id).icon}
+              {CLASS_DATA[character.class.externalId]?.icon}
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-foreground text-sm sm:text-base truncate">
@@ -409,7 +453,8 @@ export function ClassStep() {
                 Вы уверены, что хотите сменить класс?
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                При смене класса все данные вашего персонажа будут сброшены. Вам придётся начать заполнять персонажа заново:
+                При смене класса все данные вашего персонажа будут сброшены. Вам
+                придётся начать заполнять персонажа заново:
               </p>
               <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
                 <li>Расу придётся выбрать заново</li>
