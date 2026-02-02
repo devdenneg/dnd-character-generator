@@ -17,8 +17,8 @@ export const phb2024Backgrounds: Background[] = [
       "Молитвенник",
       "Набор каллиграфа",
       "Одежда путешественника",
-      "15 зм",
     ],
+    startingGold: 15,
     originFeat: "Посвящённый в магию (Жрец)",
     abilityScoreIncrease: {
       options: ["intelligence", "wisdom", "charisma"],
@@ -35,7 +35,8 @@ export const phb2024Backgrounds: Background[] = [
     skillProficiencies: ["investigation", "persuasion"],
     toolProficiencies: ["Инструменты ремесленника (на выбор)"],
     languages: 1,
-    equipment: ["Инструменты ремесленника", "Одежда путешественника", "25 зм"],
+    equipment: ["Инструменты ремесленника", "Одежда путешественника"],
+    startingGold: 25,
     originFeat: "Самоделкин",
     abilityScoreIncrease: {
       options: ["strength", "dexterity", "intelligence"],
@@ -52,7 +53,8 @@ export const phb2024Backgrounds: Background[] = [
     skillProficiencies: ["deception", "sleight_of_hand"],
     toolProficiencies: ["Набор для подделок"],
     languages: 1,
-    equipment: ["Набор для подделок", "Костюм", "Красивая одежда", "15 зм"],
+    equipment: ["Набор для подделок", "Костюм", "Красивая одежда"],
+    startingGold: 15,
     originFeat: "Одарённый",
     abilityScoreIncrease: {
       options: ["dexterity", "constitution", "charisma"],
@@ -69,12 +71,8 @@ export const phb2024Backgrounds: Background[] = [
     skillProficiencies: ["sleight_of_hand", "stealth"],
     toolProficiencies: ["Воровские инструменты"],
     languages: 1,
-    equipment: [
-      "Воровские инструменты",
-      "Ломик",
-      "Тёмная одежда с капюшоном",
-      "15 зм",
-    ],
+    equipment: ["Воровские инструменты", "Ломик", "Тёмная одежда с капюшоном"],
+    startingGold: 15,
     originFeat: "Бдительный",
     abilityScoreIncrease: {
       options: ["dexterity", "constitution", "intelligence"],
@@ -91,7 +89,8 @@ export const phb2024Backgrounds: Background[] = [
     skillProficiencies: ["acrobatics", "performance"],
     toolProficiencies: ["Музыкальный инструмент (на выбор)"],
     languages: 1,
-    equipment: ["Музыкальный инструмент", "Костюм", "Зеркало", "Духи", "11 зм"],
+    equipment: ["Музыкальный инструмент", "Костюм", "Зеркало", "Духи"],
+    startingGold: 11,
     originFeat: "Музыкант",
     abilityScoreIncrease: {
       options: ["strength", "dexterity", "charisma"],
@@ -115,8 +114,8 @@ export const phb2024Backgrounds: Background[] = [
       "Железный горшок",
       "Лопата",
       "Дорожная одежда",
-      "30 зм",
     ],
+    startingGold: 30,
     originFeat: "Крепкий",
     abilityScoreIncrease: {
       options: ["strength", "constitution", "wisdom"],
@@ -142,8 +141,8 @@ export const phb2024Backgrounds: Background[] = [
       "Кандалы",
       "Колчан",
       "Одежда путешественника",
-      "12 зм",
     ],
+    startingGold: 12,
     originFeat: "Бдительный",
     abilityScoreIncrease: {
       options: ["strength", "intelligence", "wisdom"],
@@ -168,8 +167,8 @@ export const phb2024Backgrounds: Background[] = [
       "Колчан",
       "Палатка",
       "Дорожная одежда",
-      "3 зм",
     ],
+    startingGold: 3,
     originFeat: "Посвящённый в магию (Друид)",
     abilityScoreIncrease: {
       options: ["dexterity", "constitution", "wisdom"],
@@ -192,8 +191,8 @@ export const phb2024Backgrounds: Background[] = [
       "Лампа",
       "Масло (3 фляги)",
       "Одежда путешественника",
-      "16 зм",
     ],
+    startingGold: 16,
     originFeat: "Лекарь",
     abilityScoreIncrease: {
       options: ["constitution", "wisdom", "charisma"],
@@ -215,8 +214,8 @@ export const phb2024Backgrounds: Background[] = [
       "Мул",
       "Повозка",
       "Одежда путешественника",
-      "22 зм",
     ],
+    startingGold: 22,
     originFeat: "Везунчик",
     abilityScoreIncrease: {
       options: ["constitution", "intelligence", "charisma"],
@@ -238,8 +237,8 @@ export const phb2024Backgrounds: Background[] = [
       "Красивая одежда",
       "Духи",
       "Перстень с печатью",
-      "29 зм",
     ],
+    startingGold: 29,
     originFeat: "Одарённый",
     abilityScoreIncrease: {
       options: ["strength", "intelligence", "charisma"],
@@ -262,8 +261,8 @@ export const phb2024Backgrounds: Background[] = [
       "Книга (история)",
       "Пергамент (8 листов)",
       "Мантия",
-      "8 зм",
     ],
+    startingGold: 8,
     originFeat: "Посвящённый в магию (Волшебник)",
     abilityScoreIncrease: {
       options: ["constitution", "intelligence", "wisdom"],
@@ -285,8 +284,8 @@ export const phb2024Backgrounds: Background[] = [
       "Инструменты навигатора",
       "Верёвка (50 футов)",
       "Дорожная одежда",
-      "20 зм",
     ],
+    startingGold: 20,
     originFeat: "Дебошир",
     abilityScoreIncrease: {
       options: ["strength", "dexterity", "wisdom"],
@@ -309,8 +308,8 @@ export const phb2024Backgrounds: Background[] = [
       "Лампа",
       "Масло (3 фляги)",
       "Пергамент (12 листов)",
-      "23 зм",
     ],
+    startingGold: 23,
     originFeat: "Умелец",
     abilityScoreIncrease: {
       options: ["dexterity", "intelligence", "wisdom"],
@@ -335,8 +334,8 @@ export const phb2024Backgrounds: Background[] = [
       "Набор целителя",
       "Колчан",
       "Дорожная одежда",
-      "14 зм",
     ],
+    startingGold: 14,
     originFeat: "Дикий атакующий",
     abilityScoreIncrease: {
       options: ["strength", "dexterity", "constitution"],
@@ -360,8 +359,8 @@ export const phb2024Backgrounds: Background[] = [
       "Спальник",
       "2 Кошеля",
       "Дорожная одежда",
-      "16 зм",
     ],
+    startingGold: 16,
     originFeat: "Везунчик",
     abilityScoreIncrease: {
       options: ["dexterity", "wisdom", "charisma"],

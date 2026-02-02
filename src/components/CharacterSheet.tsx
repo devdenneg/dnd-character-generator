@@ -361,6 +361,7 @@ function WeaponCard({
   damageBonus,
   abilityUsed,
   profBonus,
+  source,
 }: {
   name: string;
   damage: string;
@@ -370,6 +371,7 @@ function WeaponCard({
   damageBonus: number;
   abilityUsed: string;
   profBonus: number;
+  source?: string;
 }) {
   const tooltipContent = (
     <>
@@ -393,6 +395,13 @@ function WeaponCard({
           </p>
         </div>
       </div>
+
+      {source && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-lg">
+          <p className="font-medium mb-1 text-xs text-blue-600 dark:text-blue-400">Источник:</p>
+          <p className="font-mono text-xs text-blue-700 dark:text-blue-300">{source}</p>
+        </div>
+      )}
 
       <TooltipDescription>
         Используется <strong>{abilityUsed}</strong> для атаки и урона
@@ -740,6 +749,85 @@ export function CharacterSheet() {
               formula={`10 + ${stats.abilityModifiers.dexterity} (мод. Ловкости)`}
               result={10 + stats.abilityModifiers.dexterity}
             />
+            <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+              <p className="font-medium mb-2 text-sm">С учётом снаряжения:</p>
+              {(() => {
+                const dexMod = stats.abilityModifiers.dexterity;
+                const equippedArmor = character.equipment?.find((e) => e.category === "armor" && e.armorType !== "shield");
+                const hasShield = character.equipment?.some((e) => e.armorType === "shield");
+
+                if (equippedArmor && equippedArmor.armorClass) {
+                  const armorBase = equippedArmor.armorClass;
+                  let dexBonus = 0;
+
+                  // D&D 2024 правила расчёта КД с доспехом:
+                  // Лёгкий доспех: КД = Значение доспеха + Модификатор Ловкости (без ограничений)
+                  // Средний доспех: КД = Значение доспеха + Модификатор Ловкости (макс. +2)
+                  // Тяжёлый доспех: КД = Значение доспеха (модификатор Ловкости не добавляется)
+                  if (equippedArmor.armorType === "light") {
+                    // Лёгкий доспех - полный бонус Ловкости
+                    dexBonus = dexMod;
+                  } else if (equippedArmor.armorType === "medium") {
+                    // Средний доспех - максимум +2 к Ловкости
+                    const maxDexBonus = 2;
+                    dexBonus = Math.min(dexMod, maxDexBonus);
+                  } else if (equippedArmor.armorType === "heavy") {
+                    // Тяжёлый доспех - без бонуса Ловкости
+                    dexBonus = 0;
+                  }
+
+                  let ac = armorBase + dexBonus;
+                  let formula = "";
+                  
+                  if (equippedArmor.armorType === "light") {
+                    formula = `${armorBase} (база доспеха) + ${dexBonus} (ЛОВ)`;
+                  } else if (equippedArmor.armorType === "medium") {
+                    formula = `${armorBase} (база доспеха) + ${dexBonus} (ЛОВ, макс +2)`;
+                  } else if (equippedArmor.armorType === "heavy") {
+                    formula = `${armorBase} (база доспеха, без ЛОВ)`;
+                  }
+
+                  if (hasShield) {
+                    ac += 2;
+                    return (
+                      <>
+                        <CalculationBlock
+                          label="С доспехом"
+                          formula={`${formula} + 2 (щит)`}
+                          result={ac}
+                        />
+                      </>
+                    );
+                  }
+                  return (
+                    <CalculationBlock
+                      label="С доспехом"
+                      formula={formula}
+                      result={ac}
+                    />
+                  );
+                }
+
+                const baseAC = 10 + dexMod;
+                if (hasShield) {
+                  return (
+                    <CalculationBlock
+                      label="Без доспеха, со щитом"
+                      formula={`10 + ${dexMod} (ЛОВ) + 2 (щит)`}
+                      result={baseAC + 2}
+                    />
+                  );
+                }
+
+                return (
+                  <CalculationBlock
+                    label="Без доспеха"
+                    formula={`10 + ${dexMod} (ЛОВ)`}
+                    result={baseAC}
+                  />
+                );
+              })()}
+            </div>
             <p className="mt-2">
               КД определяет, насколько сложно вас поразить. Враг должен
               выбросить на атаке число, равное или превышающее ваш КД.
@@ -922,6 +1010,7 @@ export function CharacterSheet() {
                   weapon.properties?.some((p) =>
                     p.toLowerCase().includes("дистанция"),
                   ) || false;
+                const sourceLabel = weapon.source === "class" ? "Класс" : "Предыстория";
 
                 return (
                   <WeaponCard
@@ -934,6 +1023,7 @@ export function CharacterSheet() {
                     properties={weapon.properties}
                     abilityUsed={getWeaponAbilityUsed(!isRanged, isFinesse)}
                     profBonus={stats.proficiencyBonus}
+                    source={sourceLabel}
                   />
                 );
               })}
@@ -1173,15 +1263,33 @@ export function CharacterSheet() {
               <div className="flex flex-wrap gap-2">
                 {character.equipment
                   .filter((e) => e.category === "armor")
-                  .map((armor) => (
-                    <Badge
-                      key={armor.id}
-                      variant="secondary"
-                      className="py-1 px-2"
-                    >
-                      {armor.nameRu} (КД {armor.armorClass})
-                    </Badge>
-                  ))}
+                  .map((armor) => {
+                    const sourceLabel = armor.source === "class" ? "Класс" : "Предыстория";
+                    const armorTypeLabel = armor.armorType === "shield"
+                      ? "щит"
+                      : armor.armorType === "light"
+                      ? "лёгкий"
+                      : armor.armorType === "medium"
+                      ? "средний"
+                      : armor.armorType === "heavy"
+                      ? "тяжёлый"
+                      : "";
+                    return (
+                      <Badge
+                        key={armor.id}
+                        variant="secondary"
+                        className="py-1 px-2"
+                      >
+                        {armor.nameRu} (КД {armor.armorClass})
+                        {armorTypeLabel && (
+                          <span className="ml-1 text-xs opacity-70">
+                            {armorTypeLabel}
+                          </span>
+                        )}
+                        <span className="text-xs opacity-70 ml-1">[{sourceLabel}]</span>
+                      </Badge>
+                    );
+                  })}
               </div>
             </div>
           )}

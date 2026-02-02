@@ -640,6 +640,7 @@ interface CharacterState {
   addEquipment: (item: Equipment) => void;
   removeEquipment: (itemId: string) => void;
   setEquipment: (items: Equipment[]) => void;
+  setWallet: (wallet: Wallet) => void;
   addSpell: (spell: Spell, type: "cantrip" | "known" | "prepared") => void;
   removeSpell: (
     spellId: string,
@@ -971,6 +972,11 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       },
     })),
 
+  setWallet: (wallet) =>
+    set((state) => ({
+      character: { ...state.character, wallet },
+    })),
+
   // Computed
   getAbilityModifier: (ability) => {
     const totalScore = get().getTotalAbilityScore(ability);
@@ -993,8 +999,40 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     const conMod = getModifier("constitution");
     const wisMod = getModifier("wisdom");
 
-    // Calculate armor class (base 10 + DEX modifier)
-    const armorClass = 10 + dexMod;
+    // Calculate armor class - check for equipped armor and shields (D&D 2024 rules)
+    let armorClass = 10 + dexMod;
+
+    // Find equipped armor (excluding shields)
+    const equippedArmor = character.equipment.find((e) => e.category === "armor" && e.armorType !== "shield");
+    const hasShield = character.equipment.some((e) => e.armorType === "shield");
+
+    if (equippedArmor && equippedArmor.armorClass) {
+      const armorBase = equippedArmor.armorClass;
+      let dexBonus = 0;
+
+      // D&D 2024 правила расчёта КД с доспехом:
+      // Лёгкий доспех: КД = Значение доспеха + Модификатор Ловкости (без ограничений)
+      // Средний доспех: КД = Значение доспеха + Модификатор Ловкости (макс. +2)
+      // Тяжёлый доспех: КД = Значение доспеха (модификатор Ловкости не добавляется)
+      if (equippedArmor.armorType === "light") {
+        // Лёгкий доспех - полный бонус Ловкости
+        dexBonus = dexMod;
+      } else if (equippedArmor.armorType === "medium") {
+        // Средний доспех - максимум +2 к Ловкости
+        const maxDexBonus = 2;
+        dexBonus = Math.min(dexMod, maxDexBonus);
+      } else if (equippedArmor.armorType === "heavy") {
+        // Тяжёлый доспех - без бонуса Ловкости
+        dexBonus = 0;
+      }
+
+      armorClass = armorBase + dexBonus;
+    }
+
+    // Add shield bonus (+2)
+    if (hasShield) {
+      armorClass += 2;
+    }
 
     // Calculate hit points (hit die + CON modifier at level 1)
     const hitDie = character.class?.hitDie || 8;
@@ -1152,16 +1190,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       };
     }
 
-    // Кошелёк с учётом предыстории
+    // Кошелёк
     const wallet: Wallet = { ...character.wallet };
-    if (
-      character.background &&
-      wallet.gold === 0 &&
-      wallet.silver === 0 &&
-      wallet.copper === 0
-    ) {
-      wallet.gold = BACKGROUND_STARTING_GOLD[character.background.id] || 15;
-    }
 
     return {
       proficiencyBonus,
