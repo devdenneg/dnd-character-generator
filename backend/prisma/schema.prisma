@@ -141,11 +141,11 @@ model CharacterClass {
   nameRu          String
   description     String   @db.Text
   hitDie          Int
-  primaryAbility  String   // JSON array of abilities
-  savingThrows    String   // JSON array of abilities
-  armorProficiencies String // JSON array
-  weaponProficiencies String // JSON array
-  skillChoices    String   // JSON array
+  primaryAbility  String[]
+  savingThrows    String[]
+  armorProficiencies String[]
+  weaponProficiencies String[]
+  skillChoices    String[]
   skillCount      Int
   subclassLevel   Int
   source          String   // "srd" or "phb2024"
