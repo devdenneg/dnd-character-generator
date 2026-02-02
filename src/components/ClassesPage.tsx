@@ -146,6 +146,96 @@ const HIT_DIE_OPTIONS = [
   { value: "12", label: "d12" },
 ];
 
+const ABILITY_OPTIONS = [
+  { value: "strength", label: "Strength (Сила)" },
+  { value: "dexterity", label: "Dexterity (Ловкость)" },
+  { value: "constitution", label: "Constitution (Телосложение)" },
+  { value: "intelligence", label: "Intelligence (Интеллект)" },
+  { value: "wisdom", label: "Wisdom (Мудрость)" },
+  { value: "charisma", label: "Charisma (Харизма)" },
+];
+
+const ARMOR_PROFICIENCY_OPTIONS = [
+  { value: "Лёгкие доспехи", label: "Лёгкие доспехи" },
+  { value: "Средние доспехи", label: "Средние доспехи" },
+  { value: "Тяжёлые доспехи", label: "Тяжёлые доспехи" },
+  { value: "Щиты", label: "Щиты" },
+];
+
+const WEAPON_PROFICIENCY_OPTIONS = [
+  { value: "Простое оружие", label: "Простое оружие" },
+  { value: "Воинское оружие", label: "Воинское оружие" },
+];
+
+const SKILL_OPTIONS = [
+  { value: "acrobatics", label: "Акробатика (Acrobatics)" },
+  { value: "animal_handling", label: "Уход за животными (Animal Handling)" },
+  { value: "arcana", label: "Магия (Arcana)" },
+  { value: "athletics", label: "Атлетика (Athletics)" },
+  { value: "deception", label: "Обман (Deception)" },
+  { value: "history", label: "История (History)" },
+  { value: "insight", label: "Проницательность (Insight)" },
+  { value: "intimidation", label: "Запугивание (Intimidation)" },
+  { value: "investigation", label: "Расследование (Investigation)" },
+  { value: "medicine", label: "Медицина (Medicine)" },
+  { value: "nature", label: "Природа (Nature)" },
+  { value: "perception", label: "Восприятие (Perception)" },
+  { value: "performance", label: "Исполнение (Performance)" },
+  { value: "persuasion", label: "Убеждение (Persuasion)" },
+  { value: "religion", label: "Религия (Religion)" },
+  { value: "sleight_of_hand", label: "Ловкость рук (Sleight of Hand)" },
+  { value: "stealth", label: "Скрытность (Stealth)" },
+  { value: "survival", label: "Выживание (Survival)" },
+];
+
+const SOURCE_OPTIONS = [
+  { value: "srd", label: "SRD (System Reference Document)" },
+  { value: "phb2024", label: "PHB 2024 (Player's Handbook)" },
+];
+
+// Multi-select checkbox component
+interface MultiSelectProps {
+  label: string;
+  options: { value: string; label: string }[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
+}
+
+function MultiSelect({ label, options, selected, onChange }: MultiSelectProps) {
+  const toggleOption = (value: string) => {
+    if (selected.includes(value)) {
+      onChange(selected.filter((item) => item !== value));
+    } else {
+      onChange([...selected, value]);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 rounded-xl bg-muted/30 border border-border/30">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="flex items-start gap-2 cursor-pointer p-2 rounded hover:bg-muted/50 transition-colors"
+          >
+            <input
+              type="checkbox"
+              checked={selected.includes(option.value)}
+              onChange={() => toggleOption(option.value)}
+              className="mt-0.5"
+            />
+            <span className="text-sm">{option.label}</span>
+          </label>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Выбрано: {selected.length} {selected.length === 1 ? "пункт" : selected.length > 1 && selected.length < 5 ? "пункта" : "пунктов"}
+      </p>
+    </div>
+  );
+}
+
 // Equipment Display Component for showing item details
 interface EquipmentDisplayProps {
   item: EquipmentItem;
@@ -861,9 +951,70 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                         </Button>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-muted-foreground mb-6">
                       {cls.description}
                     </p>
+
+                    {/* Class Statistics */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                        <h5 className="font-medium text-foreground text-sm mb-2">Характеристики</h5>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Кость хитов:</span>
+                            <span className="font-medium">d{cls.hitDie}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Основная:</span>
+                            <span className="font-medium">
+                              {JSON.parse(cls.primaryAbility).join(", ")}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Спасброски:</span>
+                            <span className="font-medium">
+                              {JSON.parse(cls.savingThrows).join(", ")}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Подкласс с уровня:</span>
+                            <span className="font-medium">{cls.subclassLevel}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Навыки:</span>
+                            <span className="font-medium">
+                              {cls.skillCount} из {JSON.parse(cls.skillChoices).length}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                        <h5 className="font-medium text-foreground text-sm mb-2">Владения</h5>
+                        <div className="space-y-2 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Доспехи:</span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {JSON.parse(cls.armorProficiencies).map((prof: string, idx: number) => (
+                                <span key={idx} className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                                  {prof}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Оружие:</span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {JSON.parse(cls.weaponProficiencies).map((prof: string, idx: number) => (
+                                <span key={idx} className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                                  {prof}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
                     <h4 className="font-semibold text-foreground mb-2">Черты класса</h4>
                     <div className="space-y-3 mb-6">
@@ -1036,6 +1187,85 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                   onChange={(e) => setEditingClass({ ...editingClass, description: e.target.value })}
                   placeholder="Описание класса..."
                   rows={4}
+                />
+              </div>
+
+              {/* Primary Ability */}
+              <MultiSelect
+                label="Основная характеристика (Primary Ability)"
+                options={ABILITY_OPTIONS}
+                selected={editingClass.primaryAbility}
+                onChange={(selected) => setEditingClass({ ...editingClass, primaryAbility: selected })}
+              />
+
+              {/* Saving Throws */}
+              <MultiSelect
+                label="Спасброски (Saving Throws)"
+                options={ABILITY_OPTIONS}
+                selected={editingClass.savingThrows}
+                onChange={(selected) => setEditingClass({ ...editingClass, savingThrows: selected })}
+              />
+
+              {/* Armor Proficiencies */}
+              <MultiSelect
+                label="Владение доспехами (Armor Proficiencies)"
+                options={ARMOR_PROFICIENCY_OPTIONS}
+                selected={editingClass.armorProficiencies}
+                onChange={(selected) => setEditingClass({ ...editingClass, armorProficiencies: selected })}
+              />
+
+              {/* Weapon Proficiencies */}
+              <MultiSelect
+                label="Владение оружием (Weapon Proficiencies)"
+                options={WEAPON_PROFICIENCY_OPTIONS}
+                selected={editingClass.weaponProficiencies}
+                onChange={(selected) => setEditingClass({ ...editingClass, weaponProficiencies: selected })}
+              />
+
+              {/* Skill Choices */}
+              <MultiSelect
+                label="Навыки на выбор (Skill Choices)"
+                options={SKILL_OPTIONS}
+                selected={editingClass.skillChoices}
+                onChange={(selected) => setEditingClass({ ...editingClass, skillChoices: selected })}
+              />
+
+              {/* Skill Count */}
+              <div className="space-y-2">
+                <Label htmlFor="skillCount">Количество навыков на выбор (Skill Count)</Label>
+                <Input
+                  id="skillCount"
+                  type="number"
+                  value={editingClass.skillCount}
+                  onChange={(e) => setEditingClass({ ...editingClass, skillCount: parseInt(e.target.value) || 0 })}
+                  placeholder="Количество навыков"
+                  min="0"
+                />
+              </div>
+
+              {/* Subclass Level */}
+              <div className="space-y-2">
+                <Label htmlFor="subclassLevel">Уровень получения подкласса (Subclass Level)</Label>
+                <Input
+                  id="subclassLevel"
+                  type="number"
+                  value={editingClass.subclassLevel}
+                  onChange={(e) => setEditingClass({ ...editingClass, subclassLevel: parseInt(e.target.value) || 1 })}
+                  placeholder="Уровень получения подкласса"
+                  min="1"
+                  max="20"
+                />
+              </div>
+
+              {/* Source */}
+              <div className="space-y-2">
+                <Label htmlFor="source">Источник (Source) *</Label>
+                <Select
+                  id="source"
+                  options={SOURCE_OPTIONS}
+                  value={editingClass.source}
+                  placeholder="Выберите источник"
+                  onChange={(e) => setEditingClass({ ...editingClass, source: e.target.value })}
                 />
               </div>
 
