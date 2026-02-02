@@ -122,11 +122,11 @@ export async function createClass(input: CharacterClassInput) {
       nameRu: input.nameRu,
       description: input.description,
       hitDie: input.hitDie,
-      primaryAbility: JSON.stringify(input.primaryAbility),
-      savingThrows: JSON.stringify(input.savingThrows),
-      armorProficiencies: JSON.stringify(input.armorProficiencies),
-      weaponProficiencies: JSON.stringify(input.weaponProficiencies),
-      skillChoices: JSON.stringify(input.skillChoices),
+      primaryAbility: input.primaryAbility,
+      savingThrows: input.savingThrows,
+      armorProficiencies: input.armorProficiencies,
+      weaponProficiencies: input.weaponProficiencies,
+      skillChoices: input.skillChoices,
       skillCount: input.skillCount,
       subclassLevel: input.subclassLevel,
       source: input.source,
@@ -176,11 +176,11 @@ export async function createManyClasses(inputs: CharacterClassInput[]) {
           nameRu: input.nameRu,
           description: input.description,
           hitDie: input.hitDie,
-          primaryAbility: JSON.stringify(input.primaryAbility),
-          savingThrows: JSON.stringify(input.savingThrows),
-          armorProficiencies: JSON.stringify(input.armorProficiencies),
-          weaponProficiencies: JSON.stringify(input.weaponProficiencies),
-          skillChoices: JSON.stringify(input.skillChoices),
+          primaryAbility: input.primaryAbility,
+          savingThrows: input.savingThrows,
+          armorProficiencies: input.armorProficiencies,
+          weaponProficiencies: input.weaponProficiencies,
+          skillChoices: input.skillChoices,
           skillCount: input.skillCount,
           subclassLevel: input.subclassLevel,
           source: input.source,
@@ -267,15 +267,15 @@ export async function updateClass(
     updateData.description = input.description;
   if (input.hitDie !== undefined) updateData.hitDie = input.hitDie;
   if (input.primaryAbility !== undefined)
-    updateData.primaryAbility = JSON.stringify(input.primaryAbility);
+    updateData.primaryAbility = input.primaryAbility;
   if (input.savingThrows !== undefined)
-    updateData.savingThrows = JSON.stringify(input.savingThrows);
+    updateData.savingThrows = input.savingThrows;
   if (input.armorProficiencies !== undefined)
-    updateData.armorProficiencies = JSON.stringify(input.armorProficiencies);
+    updateData.armorProficiencies = input.armorProficiencies;
   if (input.weaponProficiencies !== undefined)
-    updateData.weaponProficiencies = JSON.stringify(input.weaponProficiencies);
+    updateData.weaponProficiencies = input.weaponProficiencies;
   if (input.skillChoices !== undefined)
-    updateData.skillChoices = JSON.stringify(input.skillChoices);
+    updateData.skillChoices = input.skillChoices;
   if (input.skillCount !== undefined) updateData.skillCount = input.skillCount;
   if (input.subclassLevel !== undefined)
     updateData.subclassLevel = input.subclassLevel;

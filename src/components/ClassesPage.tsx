@@ -99,11 +99,11 @@ interface CharacterClass {
   nameRu: string;
   description: string;
   hitDie: number;
-  primaryAbility: string;
-  savingThrows: string;
-  armorProficiencies: string;
-  weaponProficiencies: string;
-  skillChoices: string;
+  primaryAbility: string[];
+  savingThrows: string[];
+  armorProficiencies: string[];
+  weaponProficiencies: string[];
+  skillChoices: string[];
   skillCount: number;
   subclassLevel: number;
   source: string;
@@ -644,11 +644,11 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
       nameRu: cls.nameRu,
       description: cls.description,
       hitDie: cls.hitDie,
-      primaryAbility: JSON.parse(cls.primaryAbility),
-      savingThrows: JSON.parse(cls.savingThrows),
-      armorProficiencies: JSON.parse(cls.armorProficiencies),
-      weaponProficiencies: JSON.parse(cls.weaponProficiencies),
-      skillChoices: JSON.parse(cls.skillChoices),
+      primaryAbility: cls.primaryAbility,
+      savingThrows: cls.savingThrows,
+      armorProficiencies: cls.armorProficiencies,
+      weaponProficiencies: cls.weaponProficiencies,
+      skillChoices: cls.skillChoices,
       skillCount: cls.skillCount,
       subclassLevel: cls.subclassLevel,
       source: cls.source,
@@ -949,7 +949,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           d{cls.hitDie}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                          {JSON.parse(cls.primaryAbility).join(", ")}
+                          {cls.primaryAbility.join(", ")}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
                           {cls.features.length} черт
@@ -998,13 +998,13 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Основная:</span>
                             <span className="font-medium">
-                              {JSON.parse(cls.primaryAbility).join(", ")}
+                              {cls.primaryAbility.join(", ")}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Спасброски:</span>
                             <span className="font-medium">
-                              {JSON.parse(cls.savingThrows).join(", ")}
+                              {cls.savingThrows.join(", ")}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -1014,7 +1014,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Навыки:</span>
                             <span className="font-medium">
-                              {cls.skillCount} из {JSON.parse(cls.skillChoices).length}
+                              {cls.skillCount} из {cls.skillChoices.length}
                             </span>
                           </div>
                         </div>
@@ -1026,7 +1026,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           <div>
                             <span className="text-muted-foreground">Доспехи:</span>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {JSON.parse(cls.armorProficiencies).map((prof: string, idx: number) => (
+                              {cls.armorProficiencies.map((prof: string, idx: number) => (
                                 <span key={idx} className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
                                   {prof}
                                 </span>
@@ -1036,7 +1036,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           <div>
                             <span className="text-muted-foreground">Оружие:</span>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {JSON.parse(cls.weaponProficiencies).map((prof: string, idx: number) => (
+                              {cls.weaponProficiencies.map((prof: string, idx: number) => (
                                 <span key={idx} className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
                                   {prof}
                                 </span>
