@@ -34,6 +34,13 @@ const createSubclassSchema = z.object({
   features: z.array(createSubclassFeatureSchema).min(1, "Subclass must have at least one feature"),
 });
 
+const spellcastingSchema = z.object({
+  ability: z.string().min(1, "Spellcasting ability is required"),
+  cantripsKnown: z.array(z.number()).length(20, "Cantrips known must have 20 values"),
+  spellsKnown: z.array(z.number()).length(20, "Spells known must have 20 values").optional(),
+  spellSlots: z.array(z.array(z.number())).length(20, "Spell slots must have 20 character levels").optional(),
+}).optional();
+
 const createClassSchema = z.object({
   externalId: z.string().min(1, "External ID is required"),
   name: z.string().min(1, "Name is required"),
@@ -53,6 +60,7 @@ const createClassSchema = z.object({
   features: z.array(createClassFeatureSchema).min(1, "Class must have at least one feature"),
   subclasses: z.array(createSubclassSchema),
   startingEquipment: z.any().optional(),
+  spellcasting: spellcastingSchema,
 });
 
 const updateClassSchema = z.object({
@@ -72,6 +80,7 @@ const updateClassSchema = z.object({
   features: z.array(createClassFeatureSchema).optional(),
   subclasses: z.array(createSubclassSchema).optional(),
   startingEquipment: z.any().optional(),
+  spellcasting: spellcastingSchema,
 });
 
 // Public endpoints - no authentication required

@@ -1128,7 +1128,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       <>
                         <h4 className="font-semibold text-foreground mb-2 mt-6">Владение заклинаниями (Spellcasting)</h4>
                         <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
                             <div>
                               <span className="text-muted-foreground">Базовая характеристика:</span>
                               <span className="font-medium ml-2">
@@ -1155,6 +1155,50 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                               </div>
                             )}
                           </div>
+
+                          {/* Spell Slots Table - Read-only */}
+                          {(() => {
+                            const maxSpellLevel = cls.spellcasting.spellSlots.reduce(
+                              (max, level) => Math.max(max, level.length),
+                              0
+                            );
+
+                            return maxSpellLevel > 0 ? (
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead>
+                                    <tr className="bg-muted/50">
+                                      <th className="p-2 text-left font-medium min-w-[100px]">Уровень персонажа \u2192 Уровень заклинания</th>
+                                      {Array.from({ length: maxSpellLevel }, (_, i) => (
+                                        <th key={i} className="p-2 text-center font-medium min-w-[40px]">
+                                          {i + 1}
+                                        </th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {Array.from({ length: 20 }, (_, charLevel) => {
+                                      const rowHasData = cls?.spellcasting?.spellSlots[charLevel] &&
+                                        cls?.spellcasting?.spellSlots[charLevel].some(slot => slot > 0);
+
+                                      return rowHasData ? (
+                                        <tr key={charLevel} className="border-b border-border/30">
+                                          <td className="p-2 font-medium bg-muted/20">
+                                            {charLevel + 1}
+                                          </td>
+                                          {Array.from({ length: maxSpellLevel }, (_, spellLevel) => (
+                                            <td key={`${charLevel}-${spellLevel}`} className="p-1 text-center">
+                                              {cls?.spellcasting?.spellSlots[charLevel]?.[spellLevel] || 0}
+                                            </td>
+                                          ))}
+                                        </tr>
+                                      ) : null;
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
                       </>
                     )}
@@ -1360,7 +1404,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                               ability: "charisma",
                               cantripsKnown: Array(20).fill(0),
                               spellsKnown: Array(20).fill(0),
-                              spellSlots: Array(9).fill(null).map(() => Array(20).fill(0)),
+                              spellSlots: Array(20).fill(null).map(() => []), // 20 character levels, each with array of spell slots
                             },
                           });
                         } else {
@@ -1486,56 +1530,68 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                         )}
                       </div>
 
-                      {/* Spell Slots - 9 spell levels x 20 character levels */}
+                      {/* Spell Slots - dynamic spell levels x 20 character levels */}
                       <div className="space-y-2">
                         <Label>Ячейки заклинаний (Spell Slots)</Label>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="bg-muted/50">
-                                <th className="p-2 text-left font-medium">Уровень персонажа \u2192 Уровень заклинания</th>
-                                {Array.from({ length: 9 }, (_, i) => (
-                                  <th key={i} className="p-2 text-center font-medium min-w-[40px]">
-                                    {i + 1}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Array.from({ length: 20 }, (_, charLevel) => (
-                                <tr key={charLevel} className="border-b border-border/30">
-                                  <td className="p-2 font-medium bg-muted/20">
-                                    {charLevel + 1}
-                                  </td>
-                                  {Array.from({ length: 9 }, (_, spellLevel) => (
-                                    <td key={`${charLevel}-${spellLevel}`} className="p-1">
-                                      <Input
-                                        type="number"
-                                        value={editingClass.spellcasting!.spellSlots[spellLevel]?.[charLevel] || 0}
-                                        onChange={(e) => {
-                                          const newSpellSlots = editingClass.spellcasting!.spellSlots.map(
-                                            (level: number[]) => [...level]
-                                          );
-                                          newSpellSlots[spellLevel][charLevel] = parseInt(e.target.value) || 0;
-                                          setEditingClass({
-                                            ...editingClass,
-                                            spellcasting: {
-                                              ...editingClass.spellcasting!,
-                                              spellSlots: newSpellSlots,
-                                            },
-                                          });
-                                        }}
-                                        placeholder="0"
-                                        min="0"
-                                        className="w-full text-center"
-                                      />
-                                    </td>
+                        {(() => {
+                          // Calculate maximum spell level from data
+                          const maxSpellLevel = editingClass.spellcasting!.spellSlots.reduce(
+                            (max, level) => Math.max(max, level.length),
+                            0
+                          );
+
+                          return (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="bg-muted/50">
+                                    <th className="p-2 text-left font-medium min-w-[100px]">Уровень персонажа \u2192 Уровень заклинания</th>
+                                    {Array.from({ length: maxSpellLevel }, (_, i) => (
+                                      <th key={i} className="p-2 text-center font-medium min-w-[40px]">
+                                        {i + 1}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {Array.from({ length: 20 }, (_, charLevel) => (
+                                    <tr key={charLevel} className="border-b border-border/30">
+                                      <td className="p-2 font-medium bg-muted/20">
+                                        {charLevel + 1}
+                                      </td>
+                                      {Array.from({ length: maxSpellLevel }, (_, spellLevel) => (
+                                        <td key={`${charLevel}-${spellLevel}`} className="p-1">
+                                          <Input
+                                            type="number"
+                                            value={editingClass.spellcasting!.spellSlots[charLevel]?.[spellLevel] || 0}
+                                            onChange={(e) => {
+                                              const newSpellSlots = [...editingClass.spellcasting!.spellSlots];
+                                              // Ensure array exists for this character level
+                                              if (!newSpellSlots[charLevel]) {
+                                                newSpellSlots[charLevel] = [];
+                                              }
+                                              newSpellSlots[charLevel][spellLevel] = parseInt(e.target.value) || 0;
+                                              setEditingClass({
+                                                ...editingClass,
+                                                spellcasting: {
+                                                  ...editingClass.spellcasting!,
+                                                  spellSlots: newSpellSlots,
+                                                },
+                                              });
+                                            }}
+                                            placeholder="0"
+                                            min="0"
+                                            className="w-full text-center"
+                                          />
+                                        </td>
+                                      ))}
+                                    </tr>
                                   ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                                </tbody>
+                              </table>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </>
                   )}
