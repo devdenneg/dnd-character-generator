@@ -51,25 +51,25 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
       case "class":
         return "Выберите класс персонажа";
       case "skills":
-        if (!character.class) return "Сначала выберите класс";
+        { if (!character.class) return "Сначала выберите класс";
         const backgroundSkills = character.background?.skillProficiencies || [];
         const classSkillCount = character.skillProficiencies.filter(
           (s) => !backgroundSkills.includes(s)
         ).length;
         const required = character.class.skillCount;
-        return `Выберите навыки от класса (${classSkillCount}/${required})`;
+        return `Выберите навыки от класса (${classSkillCount}/${required})`; }
       case "abilities":
-        const scores = Object.values(character.abilityScores);
+        { const scores = Object.values(character.abilityScores);
         const standardArray = [15, 14, 13, 12, 10, 8];
         const remaining = standardArray.filter((val) => !scores.includes(val));
         if (remaining.length > 0) {
           return `Распределите все значения: ${remaining.join(", ")}`;
         }
-        return "Распределите характеристики";
+        return "Распределите характеристики"; }
       case "background":
         return "Выберите предысторию персонажа";
       case "abilityIncrease":
-        const increases = character.abilityScoreIncreases;
+        { const increases = character.abilityScoreIncreases;
         const plus2Count = Object.values(increases).filter(
           (v) => v === 2
         ).length;
@@ -94,7 +94,7 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
           return `Выберите ещё ${3 - plus1Count} характеристик(и) для +1`;
         }
 
-        return "Распределите бонусы";
+        return "Распределите бонусы"; }
       case "equipment":
         return "Снаряжение автоматически предоставлено";
       case "spells":

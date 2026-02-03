@@ -17,7 +17,7 @@ import type { Spell } from "@/types/character";
 export function SpellsStep() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLevel, setSelectedLevel] = useState<number>(0);
-  const { character, addSpell, removeSpell } = useCharacterStore();
+  const { character, addSpell, removeSpell, getStats } = useCharacterStore();
 
   // Загружаем заклинания с сервера
   const { data: spellsData, isLoading } = useBackendSpells();
@@ -25,6 +25,9 @@ export function SpellsStep() {
   // Проверяем, является ли класс заклинателем
   const isSpellcaster = character.class?.spellcasting !== undefined;
   const classId = character.class?.id || "";
+
+  // Получаем статистику персонажа
+  const stats = getStats();
 
   // Получаем заклинания для класса из данных сервера
   const availableSpells = useMemo(() => {
@@ -51,13 +54,20 @@ export function SpellsStep() {
   const classCantrips = availableSpells.filter((s: Spell) => s.level === 0);
   const classLevel1Spells = availableSpells.filter((s: Spell) => s.level === 1);
 
-  // Количество известных заговоров и заклинаний
-  const cantripsKnown =
-    character.class?.spellcasting?.cantripsKnown?.[character.level - 1] || 0;
-  const spellsKnown =
-    character.class?.spellcasting?.spellsKnown?.[character.level - 1] || 0;
-  const spellSlots =
-    character.class?.spellcasting?.spellSlots?.[character.level - 1] || [];
+  // Количество известных заговоров и заклинаний из stats
+  const cantripsKnown = stats.spellcasting?.cantripsKnown || 0;
+  const spellsKnown = stats.spellcasting?.spellsKnown || 0;
+  const spellSlots = stats.spellcasting?.spellSlots || {
+    level1: 0,
+    level2: 0,
+    level3: 0,
+    level4: 0,
+    level5: 0,
+    level6: 0,
+    level7: 0,
+    level8: 0,
+    level9: 0,
+  };
 
   const selectedCantrips = character.cantripsKnown.length;
   const selectedSpells = character.spellsKnown.length;
@@ -156,10 +166,10 @@ export function SpellsStep() {
                 </p>
               </div>
             )}
-            {spellSlots[0] > 0 && (
+            {spellSlots.level1 > 0 && (
               <div className="bg-card p-3 rounded-lg">
                 <p className="text-xs text-muted-foreground">Ячейки 1 круга</p>
-                <p className="text-xl font-bold">{spellSlots[0]}</p>
+                <p className="text-xl font-bold">{spellSlots.level1}</p>
               </div>
             )}
             <div className="bg-card p-3 rounded-lg">
