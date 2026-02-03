@@ -7,16 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import {
   Sparkles,
-  ChevronRight,
   Plus,
   Pencil,
   Trash2,
   Save,
   X,
   Wand2,
+  Search,
 } from "lucide-react";
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Types
@@ -100,6 +100,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   const { user } = useAuth();
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<number>(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const [editingSpell, setEditingSpell] = useState<SpellFormData>({
     externalId: "",
     name: "",
@@ -116,14 +117,6 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  // Selected spell data query
-  const selectedSpellData = useQuery({
-    queryKey: ["spell", selectedSpell],
-    queryFn: () => spellsApi.get(selectedSpell!),
-    enabled: !!selectedSpell,
-    staleTime: Infinity,
-  });
 
   // Create spell mutation
   const createSpellMutation = useMutation({
@@ -173,7 +166,6 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
       classes: [],
       source: "phb2024",
     });
-    setClassInput("");
   };
 
   const handleCreateSpell = () => {
@@ -200,7 +192,12 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   };
 
   const handleSaveSpell = () => {
-    if (!editingSpell.externalId || !editingSpell.name || !editingSpell.nameRu || !editingSpell.description) {
+    if (
+      !editingSpell.externalId ||
+      !editingSpell.name ||
+      !editingSpell.nameRu ||
+      !editingSpell.description
+    ) {
       alert("Пожалуйста, заполните все обязательные поля");
       return;
     }
@@ -237,6 +234,28 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
   const canEdit = user?.role === "master";
 
+  const spells = data?.data?.spells || [];
+
+  // Группируем заклинания по уровням
+  const spellsByLevel: Record<number, Spell[]> = {};
+  for (let i = 0; i <= 9; i++) {
+    spellsByLevel[i] = spells.filter((spell: Spell) => spell.level === i);
+  }
+
+  // Получаем заклинания выбранного уровня с учетом поиска
+  const currentLevelSpells = useMemo(() => {
+    const levelSpells = spellsByLevel[selectedLevel] || [];
+    if (!searchTerm.trim()) return levelSpells;
+
+    const search = searchTerm.toLowerCase();
+    return levelSpells.filter(
+      (spell: Spell) =>
+        spell.nameRu.toLowerCase().includes(search) ||
+        spell.name.toLowerCase().includes(search) ||
+        spell.description.toLowerCase().includes(search)
+    );
+  }, [spellsByLevel, selectedLevel, searchTerm]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen p-4">
@@ -271,8 +290,8 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               Ошибка загрузки заклинаний
             </h2>
             <p className="text-sm text-destructive/80">
-              Не удалось загрузить данные о заклинаниях с сервера. Пожалуйста, попробуйте
-              позже.
+              Не удалось загрузить данные о заклинаниях с сервера. Пожалуйста,
+              попробуйте позже.
             </p>
             {onBack && (
               <Button variant="outline" className="mt-4" onClick={onBack}>
@@ -285,151 +304,107 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     );
   }
 
-  const spells = data?.data?.spells || [];
-
-  // Группируем заклинания по уровням
-  const spellsByLevel: Record<number, Spell[]> = {};
-  for (let i = 0; i <= 9; i++) {
-    spellsByLevel[i] = spells.filter((spell: Spell) => spell.level === i);
-  }
-
-  // Получаем заклинания выбранного уровня
-  const currentLevelSpells = spellsByLevel[selectedLevel] || [];
-
-  const renderSpellCard = (spell: Spell, index: number) => {
+  const renderSpellCard = (spell: Spell) => {
     const isSelected = selectedSpell === spell.id;
 
     return (
-      <div key={spell.id} className="space-y-4">
-        <button
-          onClick={() => setSelectedSpell(isSelected ? null : spell.id)}
-          className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 backdrop-blur-sm ${
-            isSelected
-              ? "bg-card/80 border-primary/50 ring-2 ring-primary/20"
-              : "bg-card/60 border-border/50 hover:border-primary/30 hover:bg-card/80"
-          }`}
-          style={{ animationDelay: `${index * 50}ms` }}
-        >
-          <div className="flex items-start gap-4">
-            {/* Icon */}
-            <div
-              className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent ${
-                !isSelected && "hover:scale-110"
-              } transition-transform`}
-            >
-              {spell.level === 0 ? (
-                <Sparkles className="w-7 h-7 text-white" />
-              ) : (
-                <Wand2 className="w-7 h-7 text-white" />
-              )}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="font-semibold text-lg text-foreground">
-                  {spell.nameRu}
-                </h3>
-                {canEdit && isSelected && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditSpell(spell);
-                    }}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                )}
-                {!canEdit && (
-                  <ChevronRight
-                    className={`w-5 h-5 text-muted-foreground transition-all ${
-                      isSelected ? "rotate-90 text-primary" : ""
-                    }`}
-                  />
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                {spell.name}
-              </p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                  {spell.level === 0 ? "Заговор" : `${spell.level} уровень`}
-                </span>
-                <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                  {spell.school}
-                </span>
-                <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                  {spell.classes.length} {spell.classes.length === 1 ? "класс" : "классов"}
-                </span>
-              </div>
-            </div>
+      <div
+        key={spell.id}
+        onClick={() => setSelectedSpell(isSelected ? null : spell.id)}
+        className={`p-4 rounded-lg border cursor-pointer transition-all ${
+          isSelected
+            ? "bg-primary/10 border-primary"
+            : "bg-card border-border hover:border-primary/50"
+        }`}
+      >
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm text-foreground truncate">
+              {spell.nameRu}
+            </h3>
+            <p className="text-xs text-muted-foreground truncate">
+              {spell.name}
+            </p>
           </div>
-        </button>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground whitespace-nowrap">
+              {spell.school}
+            </span>
+            {canEdit && isSelected && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditSpell(spell);
+                }}
+              >
+                <Pencil className="w-3 h-3" />
+              </Button>
+            )}
+          </div>
+        </div>
 
-        {/* Expanded Details */}
         {isSelected && (
-          <div className="bg-card/80 border border-primary/20 rounded-2xl p-6 mt-2 animate-fade-in">
-            <div className="flex items-start justify-between mb-4">
-              <h4 className="font-semibold text-foreground">Детали заклинания</h4>
-              {canEdit && selectedSpellData.data?.data?.spell && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive p-1"
-                  onClick={() => {
-                    if (confirm(`Вы уверены, что хотите удалить заклинание "${selectedSpellData.data.data.spell.nameRu}"?`)) {
-                      deleteSpellMutation.mutate(selectedSpell);
-                    }
-                  }}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-
-            <div className="space-y-3 mb-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <span className="text-xs text-muted-foreground">Время накладывания:</span>
-                  <p className="text-sm text-foreground">{spell.castingTime}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">Дистанция:</span>
-                  <p className="text-sm text-foreground">{spell.range}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">Компоненты:</span>
-                  <p className="text-sm text-foreground">{spell.components}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">Длительность:</span>
-                  <p className="text-sm text-foreground">{spell.duration}</p>
-                </div>
+          <div className="mt-3 pt-3 border-t border-border space-y-2 animate-fade-in">
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="text-muted-foreground">Время:</span>
+                <span className="ml-1 text-foreground">
+                  {spell.castingTime}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Дистанция:</span>
+                <span className="ml-1 text-foreground">{spell.range}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Компоненты:</span>
+                <span className="ml-1 text-foreground">{spell.components}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Длительность:</span>
+                <span className="ml-1 text-foreground">{spell.duration}</span>
               </div>
             </div>
 
-            <h5 className="font-semibold text-foreground mb-2">Описание</h5>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {spell.description}
             </p>
 
-            <h5 className="font-semibold text-foreground mb-2">Доступно классам</h5>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1">
               {spell.classes.map((classId) => {
-                const classInfo = AVAILABLE_CLASSES.find(c => c.id === classId);
+                const classInfo = AVAILABLE_CLASSES.find(
+                  (c) => c.id === classId
+                );
                 return (
                   <span
                     key={classId}
-                    className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
+                    className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary"
                   >
                     {classInfo?.name || classId}
                   </span>
                 );
               })}
             </div>
+
+            {canEdit && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full mt-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm(`Удалить заклинание "${spell.nameRu}"?`)) {
+                    deleteSpellMutation.mutate(spell.id);
+                  }
+                }}
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Удалить
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -438,62 +413,72 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
   return (
     <div className="min-h-screen p-4">
-      <div className="max-w-5xl mx-auto">
-        {onBack && (
-          <div className="mb-6">
-            <Button variant="ghost" onClick={onBack}>
-              ← Назад
-            </Button>
-          </div>
-        )}
-
-        <div className="mb-8">
-          <div className="flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Wand2 className="w-5 h-5 text-white" />
-              </div>
+              {onBack && (
+                <Button variant="ghost" size="sm" onClick={onBack}>
+                  ← Назад
+                </Button>
+              )}
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Заклинания PHB 2024</h1>
+                <h1 className="text-2xl font-bold text-foreground">
+                  Заклинания
+                </h1>
                 <p className="text-sm text-muted-foreground">
-                  официальные заклинания из Книги игрока 2024
+                  {spells.length} заклинаний
                 </p>
               </div>
             </div>
 
             {canEdit && (
-              <Button onClick={handleCreateSpell} className="gap-2">
+              <Button onClick={handleCreateSpell} size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
-                Создать заклинание
+                Создать
               </Button>
             )}
           </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Поиск заклинаний..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
 
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">
-            Всего заклинаний: <span className="font-semibold text-foreground">{spells.length}</span>
-          </p>
-        </div>
-
-        {/* Tabs for spell levels */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
+        {/* Tabs */}
+        <div className="mb-4 overflow-x-auto">
+          <div className="flex gap-2 min-w-max pb-2">
             <Button
               variant={selectedLevel === 0 ? "default" : "outline"}
+              size="sm"
               onClick={() => setSelectedLevel(0)}
-              className="gap-2"
+              className="gap-1"
             >
-              <Sparkles className="w-4 h-4" />
-              Заговоры ({spellsByLevel[0]?.length || 0})
+              <Sparkles className="w-3 h-3" />
+              Заговоры
+              <span className="ml-1 text-xs opacity-70">
+                ({spellsByLevel[0]?.length || 0})
+              </span>
             </Button>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => (
               <Button
                 key={level}
                 variant={selectedLevel === level ? "default" : "outline"}
+                size="sm"
                 onClick={() => setSelectedLevel(level)}
               >
-                {level} уровень ({spellsByLevel[level]?.length || 0})
+                {level} ур.
+                <span className="ml-1 text-xs opacity-70">
+                  ({spellsByLevel[level]?.length || 0})
+                </span>
               </Button>
             ))}
           </div>
@@ -501,35 +486,21 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
         {/* Spells Grid */}
         {currentLevelSpells.length > 0 ? (
-          <div>
-            <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-              {selectedLevel === 0 ? (
-                <>
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  Заговоры
-                </>
-              ) : (
-                <>
-                  <Wand2 className="w-5 h-5 text-accent" />
-                  Заклинания {selectedLevel} уровня
-                </>
-              )}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {currentLevelSpells.map((spell: Spell, index: number) => renderSpellCard(spell, index))}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {currentLevelSpells.map((spell: Spell) => renderSpellCard(spell))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Wand2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              Нет заклинаний
+          <div className="text-center py-12 bg-muted/30 rounded-lg">
+            <Wand2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-foreground mb-1">
+              Ничего не найдено
             </h3>
             <p className="text-sm text-muted-foreground">
-              {selectedLevel === 0
+              {searchTerm
+                ? "Попробуйте изменить поисковый запрос"
+                : selectedLevel === 0
                 ? "Заговоры пока не загружены"
-                : `Заклинания ${selectedLevel} уровня пока не загружены`
-              }
+                : `Заклинания ${selectedLevel} уровня пока не загружены`}
             </p>
           </div>
         )}
@@ -541,13 +512,19 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
           <div className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
               <h2 className="text-xl font-semibold text-foreground">
-                {isCreateModalOpen ? "Создать заклинание" : "Редактировать заклинание"}
+                {isCreateModalOpen
+                  ? "Создать заклинание"
+                  : "Редактировать заклинание"}
               </h2>
-              <Button variant="ghost" size="sm" onClick={() => {
-                setIsCreateModalOpen(false);
-                setIsEditModalOpen(false);
-                resetCreateForm();
-              }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsCreateModalOpen(false);
+                  setIsEditModalOpen(false);
+                  resetCreateForm();
+                }}
+              >
                 <X className="w-4 h-4" />
               </Button>
             </div>
@@ -559,12 +536,18 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 <Input
                   id="externalId"
                   value={editingSpell.externalId}
-                  onChange={(e) => setEditingSpell({ ...editingSpell, externalId: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({
+                      ...editingSpell,
+                      externalId: e.target.value,
+                    })
+                  }
                   placeholder="Например: fire-bolt"
                   disabled={!isCreateModalOpen}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Уникальный идентификатор, используется в коде. Можно изменить только при создании.
+                  Уникальный идентификатор, используется в коде. Можно изменить
+                  только при создании.
                 </p>
               </div>
 
@@ -574,7 +557,9 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 <Input
                   id="nameRu"
                   value={editingSpell.nameRu}
-                  onChange={(e) => setEditingSpell({ ...editingSpell, nameRu: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({ ...editingSpell, nameRu: e.target.value })
+                  }
                   placeholder="Например: Огненный снаряд"
                 />
               </div>
@@ -585,7 +570,9 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 <Input
                   id="name"
                   value={editingSpell.name}
-                  onChange={(e) => setEditingSpell({ ...editingSpell, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({ ...editingSpell, name: e.target.value })
+                  }
                   placeholder="Например: Fire Bolt"
                 />
               </div>
@@ -598,7 +585,12 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                   options={SPELL_LEVELS}
                   value={editingSpell.level.toString()}
                   placeholder="Выберите уровень"
-                  onChange={(e) => setEditingSpell({ ...editingSpell, level: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setEditingSpell({
+                      ...editingSpell,
+                      level: parseInt(e.target.value),
+                    })
+                  }
                 />
               </div>
 
@@ -610,7 +602,9 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                   options={SCHOOLS}
                   value={editingSpell.school}
                   placeholder="Выберите школу"
-                  onChange={(e) => setEditingSpell({ ...editingSpell, school: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({ ...editingSpell, school: e.target.value })
+                  }
                 />
               </div>
 
@@ -620,7 +614,12 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 <Input
                   id="castingTime"
                   value={editingSpell.castingTime}
-                  onChange={(e) => setEditingSpell({ ...editingSpell, castingTime: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({
+                      ...editingSpell,
+                      castingTime: e.target.value,
+                    })
+                  }
                   placeholder="Например: 1 действие"
                 />
               </div>
@@ -631,7 +630,9 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 <Input
                   id="range"
                   value={editingSpell.range}
-                  onChange={(e) => setEditingSpell({ ...editingSpell, range: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({ ...editingSpell, range: e.target.value })
+                  }
                   placeholder="Например: 120 футов"
                 />
               </div>
@@ -642,7 +643,12 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 <Input
                   id="components"
                   value={editingSpell.components}
-                  onChange={(e) => setEditingSpell({ ...editingSpell, components: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({
+                      ...editingSpell,
+                      components: e.target.value,
+                    })
+                  }
                   placeholder="Например: В, С"
                 />
               </div>
@@ -653,7 +659,12 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 <Input
                   id="duration"
                   value={editingSpell.duration}
-                  onChange={(e) => setEditingSpell({ ...editingSpell, duration: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({
+                      ...editingSpell,
+                      duration: e.target.value,
+                    })
+                  }
                   placeholder="Например: Мгновенная"
                 />
               </div>
@@ -666,7 +677,9 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                   options={SOURCES}
                   value={editingSpell.source}
                   placeholder="Выберите источник"
-                  onChange={(e) => setEditingSpell({ ...editingSpell, source: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({ ...editingSpell, source: e.target.value })
+                  }
                 />
               </div>
 
@@ -676,7 +689,12 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 <Textarea
                   id="description"
                   value={editingSpell.description}
-                  onChange={(e) => setEditingSpell({ ...editingSpell, description: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSpell({
+                      ...editingSpell,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Описание заклинания..."
                   rows={4}
                 />
@@ -685,16 +703,21 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               {/* Classes */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-base font-medium">Доступно классам *</Label>
+                  <Label className="text-base font-medium">
+                    Доступно классам *
+                  </Label>
                   <span className="text-sm text-muted-foreground">
-                    {editingSpell.classes.length} {editingSpell.classes.length === 1 ? "класс" : "классов"}
+                    {editingSpell.classes.length}{" "}
+                    {editingSpell.classes.length === 1 ? "класс" : "классов"}
                   </span>
                 </div>
 
                 {/* Classes Grid with Checkboxes */}
                 <div className="grid grid-cols-2 gap-3">
                   {AVAILABLE_CLASSES.map((classOption) => {
-                    const isSelected = editingSpell.classes.includes(classOption.id);
+                    const isSelected = editingSpell.classes.includes(
+                      classOption.id
+                    );
                     return (
                       <label
                         key={classOption.id}
@@ -738,7 +761,10 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 </Button>
                 <Button
                   onClick={handleSaveSpell}
-                  disabled={createSpellMutation.isPending || updateSpellMutation.isPending}
+                  disabled={
+                    createSpellMutation.isPending ||
+                    updateSpellMutation.isPending
+                  }
                   className="gap-2"
                 >
                   <Save className="w-4 h-4" />
