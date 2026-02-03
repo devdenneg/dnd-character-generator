@@ -1,7 +1,5 @@
 // PHB 2024 Backgrounds Data - Полные переводы
 
-import type { Background } from "@/types/character";
-
 export const phb2024Backgrounds = [
   {
     id: "acolyte",
