@@ -15,6 +15,7 @@
     "migration:apply": "node migrate-production.js",
     "seed:races": "ts-node seed-races.ts",
     "seed:classes": "ts-node seed-classes.ts",
+    "seed:backgrounds": "ts-node seed-backgrounds.ts",
     "generate:classes:csv": "ts-node generate-classes-csv.ts"
   },
   "keywords": [

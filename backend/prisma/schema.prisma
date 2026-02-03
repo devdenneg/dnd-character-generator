@@ -205,3 +205,24 @@ model SubclassFeature {
 
   @@index([subclassId])
 }
+
+model Background {
+  id                  String   @id @default(uuid())
+  externalId          String   @unique // ID from the frontend (e.g., "acolyte", "artisan")
+  name                String
+  nameRu              String
+  description         String   @db.Text
+  skillProficiencies  String[] // Array of skill IDs
+  toolProficiencies   String[] // Array of tool names
+  languages           Int      // Number of additional languages
+  equipment           String[] // Array of equipment items
+  startingGold        Int
+  originFeat          String
+  abilityScoreIncrease Json    // { options: string[], amount: number[] }
+  source              String   // "phb2024", etc.
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([externalId])
+  @@index([source])
+}

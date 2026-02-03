@@ -1,0 +1,395 @@
+// Seed script for PHB 2024 Backgrounds data
+
+import { seedBackgrounds } from "./src/services/backgroundService";
+
+// Data from frontend
+const backgroundsData = [
+  {
+    id: "acolyte",
+    name: "Acolyte",
+    nameRu: "Прислужник",
+    description:
+      "Вы посвятили себя служению в святилище, расположенном в городе или укрытом в священной роще. Там вы совершали священные обряды в честь бога или пантеона богов. Вы служили под руководством жреца и изучали, как передавать божественное благословение, используя священные объекты и тексты.",
+    skillProficiencies: ["insight", "religion"],
+    toolProficiencies: ["Набор каллиграфа"],
+    languages: 2,
+    equipment: [
+      "Священный символ",
+      "Молитвенник",
+      "Набор каллиграфа",
+      "Одежда путешественника",
+    ],
+    startingGold: 15,
+    originFeat: "Посвящённый в магию (Жрец)",
+    abilityScoreIncrease: {
+      options: ["intelligence", "wisdom", "charisma"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "artisan",
+    name: "Artisan",
+    nameRu: "Ремесленник",
+    description:
+      "Вы начинали как ученик ремесленника, учась своему мастерству у опытного наставника. После много лет упорного труда и обучения вы достигли мастерства в вашем ремесле. Вы по-прежнему помните дни, когда начинали с нуля, и многому научились в своей пастельной мастерской или цехе.",
+    skillProficiencies: ["investigation", "persuasion"],
+    toolProficiencies: ["Инструменты ремесленника (на выбор)"],
+    languages: 1,
+    equipment: ["Инструменты ремесленника", "Одежда путешественника"],
+    startingGold: 25,
+    originFeat: "Самоделкин",
+    abilityScoreIncrease: {
+      options: ["strength", "dexterity", "intelligence"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "charlatan",
+    name: "Charlatan",
+    nameRu: "Шарлатан",
+    description:
+      "Вы — мастер обмана, изобретатель личин и создатель невероятных историй. Годами вы выдавали себя за разных персон, обманывая людей для получения денег и влияния. Вы быстро читаете людей и знаете, как их манипулировать, используя их желания и страхи против них.",
+    skillProficiencies: ["deception", "sleight_of_hand"],
+    toolProficiencies: ["Набор для подделок"],
+    languages: 1,
+    equipment: ["Набор для подделок", "Костюм", "Красивая одежда"],
+    startingGold: 15,
+    originFeat: "Одарённый",
+    abilityScoreIncrease: {
+      options: ["dexterity", "constitution", "charisma"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "criminal",
+    name: "Criminal",
+    nameRu: "Преступник",
+    description:
+      "Вы зарабатывали на жизнь вне закона. Вы были вором, грабителем, контрабандистом, убийцей или занимались иной незаконной деятельностью. Возможно, вы действовали с партнерами, входили в преступный синдикат или действовали в одиночку. Но каким бы ни был ваш путь, вы достигли некоторого мастерства и выжили благодаря своим навыкам.",
+    skillProficiencies: ["sleight_of_hand", "stealth"],
+    toolProficiencies: ["Воровские инструменты"],
+    languages: 1,
+    equipment: ["Воровские инструменты", "Ломик", "Тёмная одежда с капюшоном"],
+    startingGold: 15,
+    originFeat: "Бдительный",
+    abilityScoreIncrease: {
+      options: ["dexterity", "constitution", "intelligence"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "entertainer",
+    name: "Entertainer",
+    nameRu: "Артист",
+    description:
+      "Большую часть юности вы провели, следуя за группой артистов, минстрелей, акробатов или других развлекателей. Вы изучали разные формы искусства, надеясь найти свой собственный путь. Вы научились притягивать внимание аудитории и использовать выступление, чтобы произвести впечатление.",
+    skillProficiencies: ["acrobatics", "performance"],
+    toolProficiencies: ["Музыкальный инструмент (на выбор)"],
+    languages: 1,
+    equipment: ["Музыкальный инструмент", "Костюм", "Зеркало", "Духи"],
+    startingGold: 11,
+    originFeat: "Музыкант",
+    abilityScoreIncrease: {
+      options: ["strength", "dexterity", "charisma"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "farmer",
+    name: "Farmer",
+    nameRu: "Фермер",
+    description:
+      "Вы выросли, работая на земле, ухаживая за культурами, полями, или животными. Жизнь на ферме была нелегкой, но она дала вам крепкое телосложение и уважение к честному труду. Вы понимаете жизнь животных и растений, цикл сезонов и как выживать, используя то, что дает земля.",
+    skillProficiencies: ["animal_handling", "nature"],
+    toolProficiencies: ["Инструменты плотника"],
+    languages: 1,
+    equipment: [
+      "Серп",
+      "Инструменты плотника",
+      "Комплект целителя",
+      "Железный горшок",
+      "Лопата",
+      "Дорожная одежда",
+    ],
+    startingGold: 30,
+    originFeat: "Крепкий",
+    abilityScoreIncrease: {
+      options: ["strength", "constitution", "wisdom"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "guard",
+    name: "Guard",
+    nameRu: "Стражник",
+    description:
+      "Вы служили охраной поселения, города или важного объекта. Вы были солдатом городской стражи, охранником замка, караульным караванов или дозорным стены. Вы обучались боевому мастерству и понимаете ценность дисциплины, ответственности и служения.",
+    skillProficiencies: ["athletics", "perception"],
+    toolProficiencies: ["Игровой набор (на выбор)"],
+    languages: 1,
+    equipment: [
+      "Копьё",
+      "Лёгкий арбалет",
+      "20 болтов",
+      "Игровой набор (выбранный выше)",
+      "Закрытый фонарь",
+      "Кандалы",
+      "Колчан",
+      "Одежда путешественника",
+    ],
+    startingGold: 12,
+    originFeat: "Бдительный",
+    abilityScoreIncrease: {
+      options: ["strength", "intelligence", "wisdom"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "guide",
+    name: "Guide",
+    nameRu: "Проводник",
+    description:
+      "Вы выросли в дикой местности, и она — ваш дом. Вы знаете, как выживать среди дикой природы, ориентироваться в лесах, горах и болотах. Вы выступали в качестве проводника для купцов, исследователей и авантюристов, ведя их через опасные земли.",
+    skillProficiencies: ["stealth", "survival"],
+    toolProficiencies: ["Инструменты картографа"],
+    languages: 1,
+    equipment: [
+      "Короткий лук",
+      "20 Стрел",
+      "Инструменты картографа",
+      "Спальник",
+      "Колчан",
+      "Палатка",
+      "Дорожная одежда",
+    ],
+    startingGold: 3,
+    originFeat: "Посвящённый в магию (Друид)",
+    abilityScoreIncrease: {
+      options: ["dexterity", "constitution", "wisdom"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "hermit",
+    name: "Hermit",
+    nameRu: "Отшельник",
+    description:
+      "Вы жили в уединении, далеко от общества людей. Возможно, вы искали духовное просветление в горной пещере, молились в скиту или проводили годы в поиске ответов на философские вопросы. Какой бы ни была причина вашего затворничества, оно научило вас размышлять, видеть мир иначе и находить истину в молчании.",
+    skillProficiencies: ["medicine", "religion"],
+    toolProficiencies: ["Набор травника"],
+    languages: 1,
+    equipment: [
+      "Набор травника",
+      "Спальник",
+      "Лампа",
+      "Масло (3 фляги)",
+      "Одежда путешественника",
+    ],
+    startingGold: 16,
+    originFeat: "Лекарь",
+    abilityScoreIncrease: {
+      options: ["constitution", "wisdom", "charisma"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "merchant",
+    name: "Merchant",
+    nameRu: "Торговец",
+    description:
+      "Вы провели свою жизнь на торговых путях, покупая и продавая товары. Вы знаете цену всего и умеете вести переговоры. Вы торговали с купцами, фермерами, городскими жителями и высокомерной аристократией. Вы разбираетесь в товарах, знаете, где их купить дешево и где продать дорого.",
+    skillProficiencies: ["animal_handling", "persuasion"],
+    toolProficiencies: ["Инструменты навигатора"],
+    languages: 1,
+    equipment: [
+      "Инструменты навигатора",
+      "Мул",
+      "Повозка",
+      "Одежда путешественника",
+    ],
+    startingGold: 22,
+    originFeat: "Везунчик",
+    abilityScoreIncrease: {
+      options: ["constitution", "intelligence", "charisma"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "noble",
+    name: "Noble",
+    nameRu: "Благородный",
+    description:
+      "Вы выросли в семье благородного происхождения, в окружении роскоши и богатства. Вы привыкли к высочайшему обществу и знаете, как вести себя в кругах силы и влияния. Титул дает вам определенные привилегии, но также возлагает на вас ответственность перед вашим домом и землями.",
+    skillProficiencies: ["history", "persuasion"],
+    toolProficiencies: ["Игровой набор (на выбор)"],
+    languages: 1,
+    equipment: [
+      "Игровой набор",
+      "Красивая одежда",
+      "Духи",
+      "Перстень с печатью",
+    ],
+    startingGold: 29,
+    originFeat: "Одарённый",
+    abilityScoreIncrease: {
+      options: ["strength", "intelligence", "charisma"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "sage",
+    name: "Sage",
+    nameRu: "Мудрец",
+    description:
+      "Вы провели большую часть жизни в книжном мире — в библиотеках, скриториях, академиях и университетах. Вы знаток истории, языков и магии. Ваша любовь к знаниям привела вас в путь приключений, чтобы найти ответы на вопросы, которые не могут быть найдены в книгах.",
+    skillProficiencies: ["arcana", "history"],
+    toolProficiencies: ["Набор каллиграфа"],
+    languages: 2,
+    equipment: [
+      "Боевой посох",
+      "Инструменты каллиграфа",
+      "Книга (история)",
+      "Пергамент (8 листов)",
+      "Мантия",
+    ],
+    startingGold: 8,
+    originFeat: "Посвящённый в магию (Волшебник)",
+    abilityScoreIncrease: {
+      options: ["constitution", "intelligence", "wisdom"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "sailor",
+    name: "Sailor",
+    nameRu: "Моряк",
+    description:
+      "Вы провели много лет в море, работая матросом на торговых кораблях или военных судах. Вы знаете, как обращаться с парусами, заплетать узлы, лазать по такелажу и ориентироваться по звёздам. Вы видели много портов и побережий, встречали странные народы и сталкивались с опасностями морей.",
+    skillProficiencies: ["acrobatics", "perception"],
+    toolProficiencies: ["Инструменты навигатора"],
+    languages: 1,
+    equipment: [
+      "Кинжал",
+      "Инструменты навигатора",
+      "Верёвка (50 футов)",
+      "Дорожная одежда",
+    ],
+    startingGold: 20,
+    originFeat: "Дебошир",
+    abilityScoreIncrease: {
+      options: ["strength", "dexterity", "wisdom"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "scribe",
+    name: "Scribe",
+    nameRu: "Писарь",
+    description:
+      "Вы проводили дни и ночи в копировании документов, манускриптов и писем. Вы писец, хранитель записей и переписчик. Ваша кропотливая работа требует внимания к деталям, терпения и аккуратности. Вы знакомы с писчей культурой и историей письма.",
+    skillProficiencies: ["investigation", "perception"],
+    toolProficiencies: ["Набор каллиграфа"],
+    languages: 2,
+    equipment: [
+      "Инструменты каллиграфа",
+      "Отличная одежда",
+      "Лампа",
+      "Масло (3 фляги)",
+      "Пергамент (12 листов)",
+    ],
+    startingGold: 23,
+    originFeat: "Умелец",
+    abilityScoreIncrease: {
+      options: ["dexterity", "intelligence", "wisdom"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "soldier",
+    name: "Soldier",
+    nameRu: "Солдат",
+    description:
+      "Вы служили в армии, отдав годы боевой подготовке и боевым действиям. Вы знаете дисциплину, строй и тактику. Вы видели войну во всей её ужасной реальности и знаете ценность товарищества с товарищами по оружию. Вы гордитесь своей службой, даже если эта служба оставила вас с психическими или физическими ранами.",
+    skillProficiencies: ["athletics", "intimidation"],
+    toolProficiencies: ["Игровой набор (на выбор)"],
+    languages: 1,
+    equipment: [
+      "Копьё",
+      "Короткий лук",
+      "20 Стрел",
+      "Игровой набор (выбранный выше)",
+      "Набор целителя",
+      "Колчан",
+      "Дорожная одежда",
+    ],
+    startingGold: 14,
+    originFeat: "Дикий атакующий",
+    abilityScoreIncrease: {
+      options: ["strength", "dexterity", "constitution"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+  {
+    id: "wayfarer",
+    name: "Wayfarer",
+    nameRu: "Бродяга",
+    description:
+      "Вы вырастили на дороге, мигрируя из города в город, из земли в землю. Вы не имели постоянного дома и познали жизнь путешественника. Вы научились быть независимым и адаптивным, умея найти пищу, воду и убежище в любой местности. Дорога — ваша жизнь, и вы знаете её лучше, чем кто-либо.",
+    skillProficiencies: ["insight", "stealth"],
+    toolProficiencies: ["Воровские инструменты"],
+    languages: 1,
+    equipment: [
+      "2 Кинжала",
+      "Воровские инструменты",
+      "Игровой набор (любой)",
+      "Спальник",
+      "2 Кошеля",
+      "Дорожная одежда",
+    ],
+    startingGold: 16,
+    originFeat: "Везунчик",
+    abilityScoreIncrease: {
+      options: ["dexterity", "wisdom", "charisma"],
+      amount: [2, 1, 0],
+    },
+    source: "phb2024",
+  },
+];
+
+// Main seeding function
+async function main() {
+  try {
+    console.log("Starting to seed PHB 2024 backgrounds...");
+
+    const seededBackgrounds = await seedBackgrounds(backgroundsData);
+
+    console.log(`Successfully seeded ${seededBackgrounds.length} backgrounds:`);
+    seededBackgrounds.forEach((background) => {
+      console.log(`  - ${background.name} (${background.nameRu})`);
+    });
+
+    console.log("\nDone!");
+    process.exit(0);
+  } catch (error) {
+    console.error("Error seeding backgrounds:", error);
+    process.exit(1);
+  }
+}
+
+// Run the seed
+main();
