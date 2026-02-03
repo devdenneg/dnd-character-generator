@@ -11,7 +11,6 @@ import type {
   Character,
   CharacterStats,
   Wallet,
-  SpellSlots,
 } from "@/types/character";
 import {
   calculateModifier,
@@ -33,13 +32,6 @@ import {
   validateSkillSelection,
   validateAbilityScores,
 } from "@/utils/validation";
-import {
-  FULL_CASTER_SPELL_SLOTS,
-  HALF_CASTER_SPELL_SLOTS,
-  WARLOCK_SPELL_SLOTS,
-  CANTRIPS_KNOWN,
-  SPELLS_KNOWN,
-} from "@/constants/dnd";
 
 const initialWallet: Wallet = {
   copper: 0,
