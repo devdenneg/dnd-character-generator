@@ -305,7 +305,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
           )}
 
           {/* Hero Section */}
-          <div className="mb-16 text-center">
+          {/* <div className="mb-16 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-6 animate-fade-in backdrop-blur-sm">
               <Sparkles className="w-4 h-4" />
               <span className="font-medium">PHB 2024 Edition</span>
@@ -317,7 +317,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               Полный комплект инструментов для мастеров и игроков Dungeons &
               Dragons 5th Edition
             </p>
-          </div>
+          </div> */}
 
           {/* First Section: Characters */}
           <div className="mb-16">
@@ -434,13 +434,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
                             </p>
                           </div>
                         </div>
-
-                        {/* Arrow on hover */}
-                        {!isDisabled && (
-                          <div className="absolute bottom-6 right-6 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-                            <ChevronRight className="w-5 h-5 text-primary" />
-                          </div>
-                        )}
                       </button>
                     );
                   })}
