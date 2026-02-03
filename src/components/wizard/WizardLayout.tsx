@@ -54,7 +54,7 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
         if (!character.class) return "Сначала выберите класс";
         const backgroundSkills = character.background?.skillProficiencies || [];
         const classSkillCount = character.skillProficiencies.filter(
-          (s) => !backgroundSkills.includes(s),
+          (s) => !backgroundSkills.includes(s)
         ).length;
         const required = character.class.skillCount;
         return `Выберите навыки от класса (${classSkillCount}/${required})`;
@@ -71,10 +71,10 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
       case "abilityIncrease":
         const increases = character.abilityScoreIncreases;
         const plus2Count = Object.values(increases).filter(
-          (v) => v === 2,
+          (v) => v === 2
         ).length;
         const plus1Count = Object.values(increases).filter(
-          (v) => v === 1,
+          (v) => v === 1
         ).length;
 
         if (plus2Count === 0 && plus1Count === 0) {
@@ -96,37 +96,7 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
 
         return "Распределите бонусы";
       case "equipment":
-        const hasGearPack = character.equipment.some(
-          (e) => e.category === "gear",
-        );
-        const weaponCount = character.equipment.filter(
-          (e) => e.category === "weapon",
-        ).length;
-        const armorCount = character.equipment.filter(
-          (e) => e.category === "armor" && e.id !== "shield",
-        ).length;
-        const hasShield = character.equipment.some((e) => e.id === "shield");
-
-        const messages: string[] = [];
-        if (!hasGearPack) messages.push("набор снаряжения");
-
-        const hasWeaponProf =
-          (character.class?.weaponProficiencies || []).length > 0;
-        if (hasWeaponProf && weaponCount === 0) messages.push("оружие");
-
-        const hasArmorProf =
-          (character.class?.armorProficiencies || []).length > 0;
-        const isBarbarianOrMonk =
-          character.class?.id === "barbarian" || character.class?.id === "monk";
-        const hasAnyArmor = armorCount > 0 || hasShield;
-        if (hasArmorProf && !isBarbarianOrMonk && !hasAnyArmor) {
-          messages.push("доспех или щит");
-        }
-
-        if (messages.length > 0) {
-          return `Выберите: ${messages.join(", ")}`;
-        }
-        return "Выберите снаряжение";
+        return "Снаряжение автоматически предоставлено";
       case "spells":
         return "Выберите заклинания (необязательно)";
       case "details":
@@ -149,7 +119,7 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
   const totalSteps = visibleSteps.length;
   const stepInfo = STEP_INFO[currentStep];
   const currentVisibleIndex = visibleSteps.findIndex(
-    ([step]) => step === currentStep,
+    ([step]) => step === currentStep
   );
   const progress = ((currentVisibleIndex + 1) / totalSteps) * 100;
 
@@ -224,8 +194,8 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
                         isActive
                           ? "bg-primary/15 text-primary"
                           : isCompleted || isPast
-                            ? "text-foreground/80 hover:bg-muted/50 cursor-pointer"
-                            : "text-muted-foreground cursor-not-allowed"
+                          ? "text-foreground/80 hover:bg-muted/50 cursor-pointer"
+                          : "text-muted-foreground cursor-not-allowed"
                       }
                     `}
                   >
@@ -238,8 +208,8 @@ export function WizardLayout({ children, onBack }: WizardLayoutProps) {
                           isActive
                             ? "bg-primary text-white shadow-lg shadow-primary/30"
                             : isCompleted
-                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                              : "bg-muted text-muted-foreground"
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                            : "bg-muted text-muted-foreground"
                         }
                       `}
                     >

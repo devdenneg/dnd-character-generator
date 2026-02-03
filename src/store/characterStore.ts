@@ -258,32 +258,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
           (plus2Count === 0 && plus1Count === 3)
         );
       case "equipment":
-        // Проверяем обязательное снаряжение
-        const hasGearPack = character.equipment.some(
-          (e) => e.category === "gear",
-        );
-        const weaponCount = character.equipment.filter(
-          (e) => e.category === "weapon",
-        ).length;
-        const armorCount = character.equipment.filter(
-          (e) => e.category === "armor" && e.id !== "shield",
-        ).length;
-
-        // Проверка оружия: если класс владеет оружием, нужно минимум 1
-        const hasWeaponProf =
-          (character.class?.weaponProficiencies || []).length > 0;
-        const needsWeapon = hasWeaponProf && weaponCount === 0;
-
-        // Проверка доспеха: если класс владеет доспехами (кроме варвара/монаха), нужен доспех или щит
-        const hasArmorProf =
-          (character.class?.armorProficiencies || []).length > 0;
-        const isBarbarianOrMonk =
-          character.class?.id === "barbarian" || character.class?.id === "monk";
-        const hasAnyArmor =
-          armorCount > 0 || character.equipment.some((e) => e.id === "shield");
-        const needsArmor = hasArmorProf && !isBarbarianOrMonk && !hasAnyArmor;
-
-        return hasGearPack && !needsWeapon && !needsArmor;
+        // Снаряжение автоматически предоставляется, проверка не требуется
+        return true;
       case "spells":
         return true; // Spells are optional (non-casters can skip)
       case "details":
