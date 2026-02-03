@@ -16,17 +16,18 @@ const badgeVariants = cva(
         outline:
           "border-border text-foreground hover:bg-muted/50 hover:border-primary/50",
         gold: "border-amber-700/50 bg-gradient-to-r from-amber-600 via-primary to-amber-600 text-primary-foreground shadow-sm",
+        warning:
+          "border-amber-500/50 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm",
       },
     },
     defaultVariants: {
       variant: "default",
     },
-  },
+  }
 );
 
 export interface BadgeProps
-  extends
-    React.HTMLAttributes<HTMLDivElement>,
+  extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {

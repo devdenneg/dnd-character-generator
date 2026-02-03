@@ -127,7 +127,16 @@ function getRoleplayHooks(backgroundId: string) {
 export function BackgroundStep() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState<Background | null>(null);
-  const { character, setBackground } = useCharacterStore();
+  const [showSkillConflict, setShowSkillConflict] = useState<Background | null>(
+    null
+  );
+  const {
+    character,
+    setBackground,
+    setStep,
+    setSkillProficiencies,
+    resetStep,
+  } = useCharacterStore();
   const { data, isLoading } = useBackendBackgrounds("phb2024");
 
   // Transform backend data to Background type
@@ -174,8 +183,50 @@ export function BackgroundStep() {
     );
   }
 
+  const hasSkillConflict = (background: Background): boolean => {
+    const backgroundSkills = background.skillProficiencies || [];
+    const selectedSkills = character.skillProficiencies || [];
+    const conflicts = backgroundSkills.filter((skill) =>
+      selectedSkills.includes(skill)
+    );
+    return conflicts.length > 0;
+  };
+
   const handleSelectBackground = (background: Background) => {
-    setBackground(background);
+    if (hasSkillConflict(background)) {
+      // Есть конфликт - показываем предупреждение
+      setShowSkillConflict(background);
+    } else {
+      // Нет конфликтов - просто устанавливаем предысторию
+      setBackground(background);
+    }
+  };
+
+  const handleConfirmWithConflict = () => {
+    if (!showSkillConflict) return;
+
+    // Удаляем конфликтующие навыки из выбранных (от класса)
+    const backgroundSkills = showSkillConflict.skillProficiencies || [];
+    const newSelectedSkills = (character.skillProficiencies || []).filter(
+      (skill) => !backgroundSkills.includes(skill)
+    );
+
+    // Сначала обновляем навыки (удаляем конфликтующие)
+    setSkillProficiencies(newSelectedSkills);
+
+    // Затем устанавливаем предысторию (добавит свои навыки автоматически)
+    setBackground(showSkillConflict);
+
+    // Сбрасываем шаг навыков
+    resetStep("skills");
+
+    // Возвращаемся на шаг выбора навыков
+    setStep("skills");
+    setShowSkillConflict(null);
+  };
+
+  const handleCancelConflict = () => {
+    setShowSkillConflict(null);
   };
 
   return (
@@ -465,6 +516,55 @@ export function BackgroundStep() {
         </Card>
       )}
 
+      {/* Модалка с предупреждением о конфликте навыков */}
+      {showSkillConflict && (
+        <Modal
+          isOpen={!!showSkillConflict}
+          onClose={handleCancelConflict}
+          title="⚠️ Конфликт навыков"
+          maxWidth="max-w-md"
+        >
+          <ModalContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Выбранная предыстория{" "}
+                <strong className="text-foreground">
+                  {showSkillConflict.nameRu}
+                </strong>{" "}
+                даёт следующие навыки:
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {showSkillConflict.skillProficiencies.map((skill) => (
+                  <Badge key={skill} variant="warning" className="text-xs">
+                    {getSkillNameRu(skill)}
+                  </Badge>
+                ))}
+              </div>
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p className="text-sm font-medium text-amber-600">
+                  Эти навыки пересекаются с уже выбранными на предыдущем шаге.
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  При выборе этой предыстории конфликтующие навыки будут
+                  удалены, и вы сможете выбрать другие.
+                </p>
+              </div>
+            </div>
+          </ModalContent>
+          <ModalFooter>
+            <Button variant="outline" onClick={handleCancelConflict}>
+              Отмена
+            </Button>
+            <Button
+              onClick={handleConfirmWithConflict}
+              className="bg-amber-500 hover:bg-amber-600"
+            >
+              Выбрать и вернуться к навыкам
+            </Button>
+          </ModalFooter>
+        </Modal>
+      )}
+
       {/* Модалка с полным описанием */}
       <Modal
         isOpen={!!showModal}
@@ -558,7 +658,10 @@ export function BackgroundStep() {
                 className="flex-1"
                 onClick={() => {
                   handleSelectBackground(showModal);
-                  setShowModal(null);
+                  // Закрываем модалку только если нет конфликта
+                  if (!hasSkillConflict(showModal)) {
+                    setShowModal(null);
+                  }
                 }}
               >
                 <Check className="w-4 h-4 mr-2" />

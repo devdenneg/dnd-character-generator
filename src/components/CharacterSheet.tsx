@@ -312,8 +312,8 @@ function SkillRow({
           hasExpertise
             ? "bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30"
             : isProficient
-              ? "bg-primary/10 hover:bg-primary/20"
-              : "bg-muted/20 hover:bg-muted/40"
+            ? "bg-primary/10 hover:bg-primary/20"
+            : "bg-muted/20 hover:bg-muted/40"
         }`}
       >
         <span className="text-xs sm:text-sm flex items-center gap-1.5 min-w-0 flex-1">
@@ -342,7 +342,9 @@ function SkillRow({
         </span>
         <Badge
           variant={isProficient ? "default" : "secondary"}
-          className={`flex-shrink-0 text-xs ${hasExpertise ? "bg-amber-500 text-amber-950" : ""}`}
+          className={`flex-shrink-0 text-xs ${
+            hasExpertise ? "bg-amber-500 text-amber-950" : ""
+          }`}
         >
           {formatModifier(bonus)}
         </Badge>
@@ -398,8 +400,12 @@ function WeaponCard({
 
       {source && (
         <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-lg">
-          <p className="font-medium mb-1 text-xs text-blue-600 dark:text-blue-400">Источник:</p>
-          <p className="font-mono text-xs text-blue-700 dark:text-blue-300">{source}</p>
+          <p className="font-medium mb-1 text-xs text-blue-600 dark:text-blue-400">
+            Источник:
+          </p>
+          <p className="font-mono text-xs text-blue-700 dark:text-blue-300">
+            {source}
+          </p>
         </div>
       )}
 
@@ -734,7 +740,9 @@ export function CharacterSheet() {
           <ExplanationBox title="Максимум хитов">
             <CalculationBlock
               label="На 1 уровне"
-              formula={`${character.class?.hitDie || 0} (макс. кость хитов) + ${stats.abilityModifiers.constitution} (мод. Телосложения)`}
+              formula={`${character.class?.hitDie || 0} (макс. кость хитов) + ${
+                stats.abilityModifiers.constitution
+              } (мод. Телосложения)`}
               result={stats.hitPointMaximum}
             />
             <p className="mt-2">
@@ -753,8 +761,12 @@ export function CharacterSheet() {
               <p className="font-medium mb-2 text-sm">С учётом снаряжения:</p>
               {(() => {
                 const dexMod = stats.abilityModifiers.dexterity;
-                const equippedArmor = character.equipment?.find((e) => e.category === "armor" && e.armorType !== "shield");
-                const hasShield = character.equipment?.some((e) => e.armorType === "shield");
+                const equippedArmor = character.equipment?.find(
+                  (e) => e.category === "armor" && e.armorType !== "shield"
+                );
+                const hasShield = character.equipment?.some(
+                  (e) => e.armorType === "shield"
+                );
 
                 if (equippedArmor && equippedArmor.armorClass) {
                   const armorBase = equippedArmor.armorClass;
@@ -778,7 +790,7 @@ export function CharacterSheet() {
 
                   let ac = armorBase + dexBonus;
                   let formula = "";
-                  
+
                   if (equippedArmor.armorType === "light") {
                     formula = `${armorBase} (база доспеха) + ${dexBonus} (ЛОВ)`;
                   } else if (equippedArmor.armorType === "medium") {
@@ -914,22 +926,25 @@ export function CharacterSheet() {
             <strong>владение</strong> навыком (★), добавляется ещё{" "}
             <strong>+{stats.proficiencyBonus}</strong> (бонус мастерства).
           </p>
-          {character.expertiseSkills && character.expertiseSkills.length > 0 && (
-            <p className="mt-2 text-amber-400 text-xs">
-              ⚡ <strong>Мастерство (Expertise):</strong> для некоторых навыков
-              бонус мастерства удваивается (+{stats.proficiencyBonus * 2})!
-            </p>
-          )}
+          {character.expertiseSkills &&
+            character.expertiseSkills.length > 0 && (
+              <p className="mt-2 text-amber-400 text-xs">
+                ⚡ <strong>Мастерство (Expertise):</strong> для некоторых
+                навыков бонус мастерства удваивается (+
+                {stats.proficiencyBonus * 2})!
+              </p>
+            )}
           <p className="mt-2 text-xs">
             <strong>Источники навыков:</strong>
           </p>
           <ul className="mt-1 text-xs space-y-1">
             <li>
               • От класса: {character.class?.nameRu} даёт{" "}
-              {(character.skillProficiencies || []).filter(
-                (s) =>
-                  !character.background?.skillProficiencies.includes(s),
-              ).length}{" "}
+              {
+                (character.skillProficiencies || []).filter(
+                  (s) => !character.background?.skillProficiencies.includes(s)
+                ).length
+              }{" "}
               навыков
             </li>
             {character.background && (
@@ -938,12 +953,13 @@ export function CharacterSheet() {
                 {character.background.skillProficiencies.length} навыков
               </li>
             )}
-            {character.expertiseSkills && character.expertiseSkills.length > 0 && (
-              <li className="text-amber-400">
-                • Мастерство: {character.expertiseSkills.length} навыков с
-                удвоенным бонусом
-              </li>
-            )}
+            {character.expertiseSkills &&
+              character.expertiseSkills.length > 0 && (
+                <li className="text-amber-400">
+                  • Мастерство: {character.expertiseSkills.length} навыков с
+                  удвоенным бонусом
+                </li>
+              )}
           </ul>
         </ExplanationBox>
 
@@ -953,13 +969,16 @@ export function CharacterSheet() {
             const isFromBackground =
               character.background?.skillProficiencies.includes(skillId) ||
               false;
-            const isProficient = character.skillProficiencies?.includes(skillId) || false;
-            const hasExpertise = character.expertiseSkills?.includes(skillId) || false;
-            const source = isProficient && !hasExpertise
-              ? isFromBackground
-                ? "background"
-                : "class"
-              : undefined;
+            const isProficient =
+              character.skillProficiencies?.includes(skillId) || false;
+            const hasExpertise =
+              character.expertiseSkills?.includes(skillId) || false;
+            const source =
+              isProficient && !hasExpertise
+                ? isFromBackground
+                  ? "background"
+                  : "class"
+                : undefined;
 
             return (
               <SkillRow
@@ -1004,13 +1023,14 @@ export function CharacterSheet() {
               .map((weapon) => {
                 const isFinesse =
                   weapon.properties?.some((p) =>
-                    p.toLowerCase().includes("фехтовальное"),
+                    p.toLowerCase().includes("фехтовальное")
                   ) || false;
                 const isRanged =
                   weapon.properties?.some((p) =>
-                    p.toLowerCase().includes("дистанция"),
+                    p.toLowerCase().includes("дистанция")
                   ) || false;
-                const sourceLabel = weapon.source === "class" ? "Класс" : "Предыстория";
+                const sourceLabel =
+                  weapon.source === "class" ? "Класс" : "Предыстория";
 
                 return (
                   <WeaponCard
@@ -1036,7 +1056,10 @@ export function CharacterSheet() {
         <CollapsibleSection
           title="Заклинания"
           icon={<Sparkles className="w-5 h-5" />}
-          badge={`${(character.cantripsKnown?.length || 0) + (character.spellsKnown?.length || 0)} известно`}
+          badge={`${
+            (character.cantripsKnown?.length || 0) +
+            (character.spellsKnown?.length || 0)
+          } известно`}
         >
           {/* Магические характеристики */}
           <ExplanationBox title="Магия вашего класса">
@@ -1128,7 +1151,9 @@ export function CharacterSheet() {
                       {level} кр
                     </div>
                     <div
-                      className={`font-bold text-lg ${slots > 0 ? "text-purple-400" : "text-muted-foreground"}`}
+                      className={`font-bold text-lg ${
+                        slots > 0 ? "text-purple-400" : "text-muted-foreground"
+                      }`}
                     >
                       {slots}
                     </div>
@@ -1264,16 +1289,18 @@ export function CharacterSheet() {
                 {character.equipment
                   .filter((e) => e.category === "armor")
                   .map((armor) => {
-                    const sourceLabel = armor.source === "class" ? "Класс" : "Предыстория";
-                    const armorTypeLabel = armor.armorType === "shield"
-                      ? "щит"
-                      : armor.armorType === "light"
-                      ? "лёгкий"
-                      : armor.armorType === "medium"
-                      ? "средний"
-                      : armor.armorType === "heavy"
-                      ? "тяжёлый"
-                      : "";
+                    const sourceLabel =
+                      armor.source === "class" ? "Класс" : "Предыстория";
+                    const armorTypeLabel =
+                      armor.armorType === "shield"
+                        ? "щит"
+                        : armor.armorType === "light"
+                        ? "лёгкий"
+                        : armor.armorType === "medium"
+                        ? "средний"
+                        : armor.armorType === "heavy"
+                        ? "тяжёлый"
+                        : "";
                     return (
                       <Badge
                         key={armor.id}
@@ -1286,7 +1313,9 @@ export function CharacterSheet() {
                             {armorTypeLabel}
                           </span>
                         )}
-                        <span className="text-xs opacity-70 ml-1">[{sourceLabel}]</span>
+                        <span className="text-xs opacity-70 ml-1">
+                          [{sourceLabel}]
+                        </span>
                       </Badge>
                     );
                   })}
@@ -1458,42 +1487,63 @@ export function CharacterSheet() {
               <BookOpen className="w-4 h-4 text-emerald-400" />
               Навыки ({character.skillProficiencies?.length || 0})
             </h4>
-            
-            {/* Навыки от класса */}
-            {(character.skillProficiencies || []).filter(
-              (s) => !character.background?.skillProficiencies.includes(s)
-            ).length > 0 && (
+
+            {/* Все выбранные навыки вместе */}
+            {(character.skillProficiencies || []).length > 0 && (
               <div className="mb-3">
                 <p className="text-xs text-muted-foreground mb-1.5">
-                  От класса {character.class?.nameRu}:
+                  Все выбранные навыки:
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {(character.skillProficiencies || [])
-                    .filter((s) => !character.background?.skillProficiencies.includes(s))
-                    .map((s) => (
-                      <Badge key={s} variant="outline">
+                  {(character.skillProficiencies || []).map((s) => {
+                    const isFromBackground =
+                      character.background?.skillProficiencies.includes(s) ||
+                      false;
+                    const isFromClass = !isFromBackground;
+                    return (
+                      <Badge
+                        key={s}
+                        variant={isFromBackground ? "secondary" : "outline"}
+                        className="gap-1"
+                      >
+                        {isFromBackground && (
+                          <span className="text-xs">📜</span>
+                        )}
+                        {isFromClass && <span className="text-xs">⚔️</span>}
                         {getSkillNameRu(s)}
                       </Badge>
-                    ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Навыки от предыстории */}
-            {character.background && character.background.skillProficiencies.length > 0 && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1.5">
-                  От предыстории {character.background.nameRu}:
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {character.background.skillProficiencies.map((s) => (
-                    <Badge key={s} variant="secondary">
-                      {getSkillNameRu(s)}
-                    </Badge>
-                  ))}
+            {/* Разделение по источникам (информационно) */}
+            <div className="border-t border-border/30 pt-3 mt-3">
+              {(character.skillProficiencies || []).filter(
+                (s) => !character.background?.skillProficiencies.includes(s)
+              ).length > 0 && (
+                <div className="mb-2">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    От класса {character.class?.nameRu}:{" "}
+                    {
+                      (character.skillProficiencies || []).filter(
+                        (s) =>
+                          !character.background?.skillProficiencies.includes(s)
+                      ).length
+                    }{" "}
+                    навыков
+                  </p>
                 </div>
-              </div>
-            )}
+              )}
+              {character.background &&
+                character.background.skillProficiencies.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    От предыстории {character.background.nameRu}:{" "}
+                    {character.background.skillProficiencies.length} навыков
+                  </p>
+                )}
+            </div>
           </div>
         </div>
       </CollapsibleSection>

@@ -77,6 +77,18 @@ const initialAbilityScores: AbilityScores = {
   charisma: 10,
 };
 
+// Helper to safely get array item or default
+function getSafeArrayItem<T>(
+  arr: T[] | undefined,
+  index: number,
+  defaultValue: T
+): T {
+  if (!arr || !Array.isArray(arr) || index < 0 || index >= arr.length) {
+    return defaultValue;
+  }
+  return arr[index];
+}
+
 // Initial character state
 const initialCharacter: Character = {
   name: "",
@@ -188,7 +200,9 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       let nextIndex = currentIndex + 1;
 
       // Пропускаем шаг заклинаний если класс не заклинатель
-      const isSpellcaster = character.class?.spellcasting !== undefined;
+      const isSpellcaster =
+        character.class?.spellcasting !== undefined &&
+        character.class?.spellcasting !== null;
       if (WIZARD_STEPS[nextIndex] === "spells" && !isSpellcaster) {
         nextIndex++;
       }
@@ -208,7 +222,9 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       let prevIndex = currentIndex - 1;
 
       // Пропускаем шаг заклинаний если класс не заклинатель
-      const isSpellcaster = character.class?.spellcasting !== undefined;
+      const isSpellcaster =
+        character.class?.spellcasting !== undefined &&
+        character.class?.spellcasting !== null;
       if (WIZARD_STEPS[prevIndex] === "spells" && !isSpellcaster) {
         prevIndex--;
       }
@@ -225,7 +241,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         return validateRaceSelection(character.race);
       case "class":
         return validateClassSelection(character.class);
-      case "skills":
+      case "skills": {
         // Проверяем, что выбрано нужное количество навыков от класса
         if (!character.class) return false;
         const backgroundSkills = character.background?.skillProficiencies || [];
@@ -234,6 +250,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
           character.class.skillCount,
           backgroundSkills
         );
+      }
       case "abilities":
         // Проверяем, что все значения из стандартного набора распределены
         return validateAbilityScores(
@@ -242,7 +259,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         );
       case "background":
         return character.background !== null;
-      case "abilityIncrease":
+      case "abilityIncrease": {
         // Проверяем, что выбраны бонусы (+2 и +1 ИЛИ три раза +1)
         const increases = character.abilityScoreIncreases;
         const plus2Count = Object.values(increases).filter(
@@ -256,6 +273,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
           (plus2Count === 1 && plus1Count === 1) ||
           (plus2Count === 0 && plus1Count === 3)
         );
+      }
       case "equipment":
         // Снаряжение автоматически предоставляется, проверка не требуется
         return true;
@@ -452,7 +470,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
 
   getTotalAbilityScore: (ability) => {
     const { character } = get();
-    const baseScore = character.abilityScores[ability];
+    const baseScore = character.abilityScores[ability] || 10;
     const increase = character.abilityScoreIncreases[ability] || 0;
     return baseScore + increase;
   },
@@ -576,29 +594,46 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         spellMod
       );
 
+      // Safely get spell slots array
+      const spellSlotsArray = character.class.spellcasting.spellSlots || [];
+
       spellcasting = {
         ability: spellAbility,
         abilityModifier: spellMod,
         spellSaveDC,
         spellAttackBonus,
         spellSlots: {
-          level1: character.class.spellcasting.spellSlots[0][0] ?? 0,
-          level2: 0,
-          level3: 0,
-          level4: 0,
-          level5: 0,
-          level6: 0,
-          level7: 0,
-          level8: 0,
-          level9: 0,
+          level1: getSafeArrayItem(spellSlotsArray[0] || [], 0, 0),
+          level2: getSafeArrayItem(spellSlotsArray[1] || [], 0, 0),
+          level3: getSafeArrayItem(spellSlotsArray[2] || [], 0, 0),
+          level4: getSafeArrayItem(spellSlotsArray[3] || [], 0, 0),
+          level5: getSafeArrayItem(spellSlotsArray[4] || [], 0, 0),
+          level6: getSafeArrayItem(spellSlotsArray[5] || [], 0, 0),
+          level7: getSafeArrayItem(spellSlotsArray[6] || [], 0, 0),
+          level8: getSafeArrayItem(spellSlotsArray[7] || [], 0, 0),
+          level9: getSafeArrayItem(spellSlotsArray[8] || [], 0, 0),
         },
-        cantripsKnown: character.class.spellcasting.cantripsKnown[0] ?? 0,
-        spellsKnown: character.class.spellcasting.spellsKnown?.[0] ?? 0,
+        cantripsKnown: getSafeArrayItem(
+          character.class.spellcasting.cantripsKnown || [],
+          0,
+          0
+        ),
+        spellsKnown: getSafeArrayItem(
+          character.class.spellcasting.spellsKnown || [],
+          0,
+          0
+        ),
       };
     }
 
     // Кошелёк
-    const wallet: Wallet = { ...character.wallet };
+    const wallet: Wallet = {
+      copper: character.wallet?.copper ?? 0,
+      silver: character.wallet?.silver ?? 0,
+      electrum: character.wallet?.electrum ?? 0,
+      gold: character.wallet?.gold ?? 0,
+      platinum: character.wallet?.platinum ?? 0,
+    };
 
     return {
       proficiencyBonus,
@@ -685,8 +720,61 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       return;
     }
 
+    // Normalize and validate data with safe defaults
+    const normalizedData: Character = {
+      name: data.name || "",
+      level: Math.max(1, Math.min(20, data.level || 1)),
+      experience: data.experience || 0,
+      race: data.race || null,
+      class: data.class || null,
+      subclass: data.subclass || null,
+      background: data.background || null,
+      abilityScores: {
+        strength: data.abilityScores?.strength || 10,
+        dexterity: data.abilityScores?.dexterity || 10,
+        constitution: data.abilityScores?.constitution || 10,
+        intelligence: data.abilityScores?.intelligence || 10,
+        wisdom: data.abilityScores?.wisdom || 10,
+        charisma: data.abilityScores?.charisma || 10,
+      },
+      abilityScoreMethod: data.abilityScoreMethod || "standard",
+      abilityScoreIncreases: data.abilityScoreIncreases || {},
+      skillProficiencies: data.skillProficiencies || [],
+      expertiseSkills: data.expertiseSkills || [],
+      toolProficiencies: data.toolProficiencies || [],
+      languages: data.languages || ["Common"],
+      equipment: Array.isArray(data.equipment) ? data.equipment : [],
+      wallet: {
+        copper: data.wallet?.copper ?? 0,
+        silver: data.wallet?.silver ?? 0,
+        electrum: data.wallet?.electrum ?? 0,
+        gold: data.wallet?.gold ?? 0,
+        platinum: data.wallet?.platinum ?? 0,
+      },
+      cantripsKnown: Array.isArray(data.cantripsKnown)
+        ? data.cantripsKnown
+        : [],
+      spellsKnown: Array.isArray(data.spellsKnown) ? data.spellsKnown : [],
+      spellsPrepared: Array.isArray(data.spellsPrepared)
+        ? data.spellsPrepared
+        : [],
+      alignment: data.alignment || "",
+      personalityTraits: data.personalityTraits || "",
+      ideals: data.ideals || "",
+      bonds: data.bonds || "",
+      flaws: data.flaws || "",
+      backstory: data.backstory || "",
+      appearance: data.appearance || "",
+      age: data.age || "",
+      height: data.height || "",
+      weight: data.weight || "",
+      eyes: data.eyes || "",
+      skin: data.skin || "",
+      hair: data.hair || "",
+    };
+
     set({
-      character: { ...data },
+      character: normalizedData,
       currentStep: "summary",
       loadedCharacterId: characterId || null,
       completedSteps: [
