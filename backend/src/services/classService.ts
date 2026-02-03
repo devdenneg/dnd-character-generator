@@ -349,3 +349,29 @@ export async function seedClasses(classes: CharacterClassInput[]) {
 
   return createdClasses;
 }
+
+export async function searchClasses(query: string) {
+  const classes = await prisma.characterClass.findMany({
+    where: {
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { nameRu: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    select: {
+      externalId: true,
+      name: true,
+      nameRu: true,
+    },
+    take: 50,
+  });
+
+  return classes.map((cls) => ({
+    id: cls.externalId,
+    name: cls.name,
+    nameRu: cls.nameRu,
+    type: "class" as const,
+    category: "Классы" as const,
+  }));
+}

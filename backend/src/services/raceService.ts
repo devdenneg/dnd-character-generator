@@ -102,8 +102,8 @@ export async function createManyRaces(inputs: RaceInput[]) {
             orderBy: { createdAt: "asc" },
           },
         },
-      }),
-    ),
+      })
+    )
   );
 
   return results;
@@ -170,4 +170,30 @@ export async function seedRaces(races: RaceInput[]) {
   const createdRaces = await createManyRaces(races);
 
   return createdRaces;
+}
+
+export async function searchRaces(query: string) {
+  const races = await prisma.race.findMany({
+    where: {
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { nameRu: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    select: {
+      externalId: true,
+      name: true,
+      nameRu: true,
+    },
+    take: 50,
+  });
+
+  return races.map((race) => ({
+    id: race.externalId,
+    name: race.name,
+    nameRu: race.nameRu,
+    type: "race" as const,
+    category: "Расы" as const,
+  }));
 }

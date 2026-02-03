@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BookOpen, Home } from "lucide-react";
 import {
@@ -234,7 +240,7 @@ function GlossaryPage() {
 function HomePageWrapper() {
   const navigate = useNavigate();
 
-  const handleNavigate = (page: string) => {
+  const handleNavigate = (page: string, itemId?: string) => {
     switch (page) {
       case "character-wizard":
         navigate("/character");
@@ -243,16 +249,16 @@ function HomePageWrapper() {
         navigate("/my-characters");
         break;
       case "races":
-        navigate("/races");
+        navigate(itemId ? `/races#${itemId}` : "/races");
         break;
       case "classes":
-        navigate("/classes");
+        navigate(itemId ? `/classes#${itemId}` : "/classes");
         break;
       case "backgrounds":
-        navigate("/backgrounds");
+        navigate(itemId ? `/backgrounds#${itemId}` : "/backgrounds");
         break;
       case "spells":
-        navigate("/spells");
+        navigate(itemId ? `/spells#${itemId}` : "/spells");
         break;
       case "my-achievements":
         navigate("/achievements");
@@ -341,7 +347,8 @@ function AppRoutes() {
 
   // Определяем, нужно ли показывать Header и Footer
   const isCharacterWizard = location.pathname === "/character";
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/register";
   const showHeaderFooter = !isCharacterWizard && !isAuthPage;
 
   return (
@@ -359,7 +366,10 @@ function AppRoutes() {
         <Route path="/my-rooms" element={<MyRoomsPage />} />
         <Route path="/create-room" element={<CreateRoomPage />} />
         <Route path="/room/:id" element={<RoomDetailsPage />} />
-        <Route path="/room/:roomId/achievements" element={<MasterAchievementsPage />} />
+        <Route
+          path="/room/:roomId/achievements"
+          element={<MasterAchievementsPage />}
+        />
         <Route path="/achievements" element={<PlayerAchievementsPage />} />
         <Route path="/glossary" element={<GlossaryPage />} />
         <Route path="/login" element={<LoginPage />} />

@@ -20,10 +20,11 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ElementType } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 
 // Types
 interface Background {
@@ -124,9 +125,33 @@ interface BackgroundsPageProps {
 export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   const { data, isLoading, error, refetch } = useBackendBackgrounds();
   const { user } = useAuth();
+  const location = useLocation();
   const [selectedBackground, setSelectedBackground] = useState<string | null>(
     null
   );
+
+  // Handle hash navigation
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    if (hash) {
+      setTimeout(() => {
+        const bg = data?.data?.backgrounds?.find(
+          (b: Background) => b.externalId === hash
+        );
+        if (bg) {
+          setSelectedBackground(bg.id);
+          const bgElement = document.getElementById(`background-${bg.id}`);
+          if (bgElement) {
+            bgElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            bgElement.classList.add("ring-2", "ring-primary");
+            setTimeout(() => {
+              bgElement.classList.remove("ring-2", "ring-primary");
+            }, 2000);
+          }
+        }
+      }, 100);
+    }
+  }, [location.hash, data]);
   const [editingBackground, setEditingBackground] =
     useState<BackgroundFormData>({
       externalId: "",
@@ -414,6 +439,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
             return (
               <button
                 key={background.id + index}
+                id={`background-${background.id}`}
                 onClick={() => setSelectedBackground(background.id)}
                 className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
               >

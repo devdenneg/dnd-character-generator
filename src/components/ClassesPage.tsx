@@ -25,11 +25,12 @@ import {
   Backpack,
   Wand2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ElementType } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import type { AbilityName } from "@/types/character";
+import { useLocation } from "react-router-dom";
 
 // Types
 interface ClassFeature {
@@ -591,9 +592,36 @@ interface ClassesPageProps {
 export function ClassesPage({ onBack }: ClassesPageProps) {
   const { data, isLoading, error, refetch } = useBackendClasses();
   const { user } = useAuth();
+  const location = useLocation();
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [viewTab, setViewTab] = useState("overview");
   const [activeTab, setActiveTab] = useState("basic");
+
+  // Handle hash navigation
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    if (hash) {
+      setTimeout(() => {
+        const cls = data?.data?.classes?.find(
+          (c: CharacterClass) => c.externalId === hash
+        );
+        if (cls) {
+          setSelectedClass(cls.id);
+          const classElement = document.getElementById(`class-${cls.id}`);
+          if (classElement) {
+            classElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+            classElement.classList.add("ring-2", "ring-primary");
+            setTimeout(() => {
+              classElement.classList.remove("ring-2", "ring-primary");
+            }, 2000);
+          }
+        }
+      }, 100);
+    }
+  }, [location.hash, data]);
   const [editingClass, setEditingClass] = useState<ClassFormData>({
     externalId: "",
     name: "",
@@ -951,6 +979,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
             return (
               <button
                 key={cls.id + index}
+                id={`class-${cls.id}`}
                 onClick={() => setSelectedClass(cls.id)}
                 className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
               >

@@ -20,10 +20,11 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ElementType } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 
 // Types
 interface RaceTrait {
@@ -87,7 +88,34 @@ interface RacesPageProps {
 export function RacesPage({ onBack }: RacesPageProps) {
   const { data, isLoading, error, refetch } = useBackendRaces();
   const { user } = useAuth();
+  const location = useLocation();
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
+
+  // Handle hash navigation
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    if (hash) {
+      // Use setTimeout to ensure the race list is loaded first
+      setTimeout(() => {
+        const race = data?.data?.races?.find(
+          (r: Race) => r.externalId === hash
+        );
+        if (race) {
+          setSelectedRace(race.id);
+          // Scroll to the race element if it exists in the list
+          const raceElement = document.getElementById(`race-${race.id}`);
+          if (raceElement) {
+            raceElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            // Highlight the element
+            raceElement.classList.add("ring-2", "ring-primary");
+            setTimeout(() => {
+              raceElement.classList.remove("ring-2", "ring-primary");
+            }, 2000);
+          }
+        }
+      }, 100);
+    }
+  }, [location.hash, data]);
   const [editingRace, setEditingRace] = useState<RaceFormData>({
     externalId: "",
     name: "",
@@ -327,6 +355,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
             return (
               <button
                 key={race.id + index}
+                id={`race-${race.id}`}
                 onClick={() => setSelectedRace(race.id)}
                 className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
               >
@@ -535,7 +564,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
               <div className="grid grid-cols-2 gap-3">
                 {/* External ID */}
                 <div className="space-y-1">
-                  <Label htmlFor="externalId" className="text-xs">Внешний ID *</Label>
+                  <Label htmlFor="externalId" className="text-xs">
+                    Внешний ID *
+                  </Label>
                   <Input
                     id="externalId"
                     value={editingRace.externalId}
@@ -553,7 +584,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
                 {/* Name (Russian) */}
                 <div className="space-y-1">
-                  <Label htmlFor="nameRu" className="text-xs">Название (RU) *</Label>
+                  <Label htmlFor="nameRu" className="text-xs">
+                    Название (RU) *
+                  </Label>
                   <Input
                     id="nameRu"
                     value={editingRace.nameRu}
@@ -567,7 +600,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
                 {/* Name (English) */}
                 <div className="space-y-1">
-                  <Label htmlFor="name" className="text-xs">Название (EN) *</Label>
+                  <Label htmlFor="name" className="text-xs">
+                    Название (EN) *
+                  </Label>
                   <Input
                     id="name"
                     value={editingRace.name}
@@ -581,7 +616,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
                 {/* Source */}
                 <div className="space-y-1">
-                  <Label htmlFor="source" className="text-xs">Источник *</Label>
+                  <Label htmlFor="source" className="text-xs">
+                    Источник *
+                  </Label>
                   <Select
                     id="source"
                     options={SOURCES}
@@ -599,7 +636,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
                 {/* Speed */}
                 <div className="space-y-1">
-                  <Label htmlFor="speed" className="text-xs">Скорость (футы) *</Label>
+                  <Label htmlFor="speed" className="text-xs">
+                    Скорость (футы) *
+                  </Label>
                   <Input
                     id="speed"
                     type="number"
@@ -618,7 +657,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
                 {/* Size */}
                 <div className="space-y-1">
-                  <Label htmlFor="size" className="text-xs">Размер *</Label>
+                  <Label htmlFor="size" className="text-xs">
+                    Размер *
+                  </Label>
                   <Select
                     id="size"
                     options={SIZES}
@@ -637,7 +678,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
               {/* Description */}
               <div className="space-y-1">
-                <Label htmlFor="description" className="text-xs">Описание *</Label>
+                <Label htmlFor="description" className="text-xs">
+                  Описание *
+                </Label>
                 <Textarea
                   id="description"
                   value={editingRace.description}
@@ -656,7 +699,9 @@ export function RacesPage({ onBack }: RacesPageProps) {
               {/* Traits */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold">Черты расы ({editingRace.traits.length})</Label>
+                  <Label className="text-sm font-semibold">
+                    Черты расы ({editingRace.traits.length})
+                  </Label>
                 </div>
 
                 {/* Add New Trait Form */}

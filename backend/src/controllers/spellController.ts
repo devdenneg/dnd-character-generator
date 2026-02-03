@@ -9,6 +9,7 @@ import {
   createSpell,
   updateSpell,
   deleteSpell,
+  searchSpells,
 } from "../services/spellService";
 
 // Validation schemas
@@ -61,6 +62,33 @@ export async function list(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+export async function search(req: AuthenticatedRequest, res: Response) {
+  try {
+    const query = req.query.q as string;
+
+    if (!query || query.trim().length === 0) {
+      res.status(200).json({
+        success: true,
+        data: { results: [] },
+      });
+      return;
+    }
+
+    const results = await searchSpells(query);
+
+    res.status(200).json({
+      success: true,
+      data: { results },
+    });
+  } catch (error) {
+    console.error("Search spells error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function getOne(req: AuthenticatedRequest, res: Response) {
   try {
     const id = req.params.id as string;
@@ -88,7 +116,10 @@ export async function getOne(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function getByExternalId(req: AuthenticatedRequest, res: Response) {
+export async function getByExternalId(
+  req: AuthenticatedRequest,
+  res: Response
+) {
   try {
     const externalId = req.params.externalId as string;
 

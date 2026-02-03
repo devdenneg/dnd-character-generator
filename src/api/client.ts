@@ -37,7 +37,7 @@ apiClient.interceptors.response.use(
       window.location.href = "/#/login";
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 // Auth API
@@ -81,17 +81,25 @@ export const charactersApi = {
   },
 
   create: async (data: { name: string; data: CharacterData }) => {
-    const response = await apiClient.post<CharacterResponse>("/characters", data);
+    const response = await apiClient.post<CharacterResponse>(
+      "/characters",
+      data
+    );
     return response.data;
   },
 
   get: async (id: string) => {
-    const response = await apiClient.get<CharacterResponse>(`/characters/${id}`);
+    const response = await apiClient.get<CharacterResponse>(
+      `/characters/${id}`
+    );
     return response.data;
   },
 
   update: async (id: string, data: { name?: string; data?: CharacterData }) => {
-    const response = await apiClient.put<CharacterResponse>(`/characters/${id}`, data);
+    const response = await apiClient.put<CharacterResponse>(
+      `/characters/${id}`,
+      data
+    );
     return response.data;
   },
 
@@ -134,7 +142,7 @@ export const roomsApi = {
       maxPlayers?: number;
       password?: string;
       isActive?: boolean;
-    },
+    }
   ) => {
     const response = await apiClient.put(`/rooms/${id}`, data);
     return response.data;
@@ -222,7 +230,7 @@ export const racesApi = {
         nameRu: string;
         description: string;
       }>;
-    },
+    }
   ) => {
     const response = await apiClient.put(`/races/${id}`, data);
     return response.data;
@@ -329,7 +337,7 @@ export const classesApi = {
       }>;
       startingEquipment?: StartingEquipment;
       spellcasting?: SpellcastingConfig;
-    },
+    }
   ) => {
     const response = await apiClient.put(`/classes/${id}`, data);
     return response.data;
@@ -398,7 +406,7 @@ export const backgroundsApi = {
         amount: number[];
       };
       source?: string;
-    },
+    }
   ) => {
     const response = await apiClient.put(`/backgrounds/${id}`, data);
     return response.data;
@@ -430,7 +438,9 @@ export const spellsApi = {
 
   getByClass: async (classId: string, source?: string) => {
     const params = source ? { source } : {};
-    const response = await apiClient.get(`/spells/class/${classId}`, { params });
+    const response = await apiClient.get(`/spells/class/${classId}`, {
+      params,
+    });
     return response.data;
   },
 
@@ -467,7 +477,7 @@ export const spellsApi = {
       description?: string;
       classes?: string[];
       source?: string;
-    },
+    }
   ) => {
     const response = await apiClient.put(`/spells/${id}`, data);
     return response.data;
@@ -475,6 +485,14 @@ export const spellsApi = {
 
   delete: async (id: string) => {
     const response = await apiClient.delete(`/spells/${id}`);
+    return response.data;
+  },
+};
+
+// Search API
+export const searchApi = {
+  search: async (query: string) => {
+    const response = await apiClient.get("/search", { params: { q: query } });
     return response.data;
   },
 };

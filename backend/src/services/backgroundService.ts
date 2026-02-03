@@ -82,8 +82,8 @@ export async function createManyBackgrounds(inputs: BackgroundInput[]) {
           abilityScoreIncrease: input.abilityScoreIncrease,
           source: input.source,
         },
-      }),
-    ),
+      })
+    )
   );
 
   return results;
@@ -91,7 +91,7 @@ export async function createManyBackgrounds(inputs: BackgroundInput[]) {
 
 export async function updateBackground(
   id: string,
-  input: Partial<BackgroundInput>,
+  input: Partial<BackgroundInput>
 ) {
   const background = await prisma.background.update({
     where: { id },
@@ -138,4 +138,30 @@ export async function seedBackgrounds(backgrounds: BackgroundInput[]) {
   const createdBackgrounds = await createManyBackgrounds(backgrounds);
 
   return createdBackgrounds;
+}
+
+export async function searchBackgrounds(query: string) {
+  const backgrounds = await prisma.background.findMany({
+    where: {
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { nameRu: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    select: {
+      externalId: true,
+      name: true,
+      nameRu: true,
+    },
+    take: 50,
+  });
+
+  return backgrounds.map((bg) => ({
+    id: bg.externalId,
+    name: bg.name,
+    nameRu: bg.nameRu,
+    type: "background" as const,
+    category: "Предыстории" as const,
+  }));
 }

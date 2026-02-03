@@ -8,6 +8,7 @@ import raceRoutes from "./routes/races";
 import classRoutes from "./routes/classes";
 import backgroundRoutes from "./routes/backgrounds";
 import spellRoutes from "./routes/spells";
+import searchRoutes from "./routes/search";
 
 const app = express();
 
@@ -32,7 +33,7 @@ app.use(
       }
     },
     credentials: true,
-  }),
+  })
 );
 app.use(express.json());
 
@@ -50,6 +51,7 @@ app.use("/api/races", raceRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/backgrounds", backgroundRoutes);
 app.use("/api/spells", spellRoutes);
+app.use("/api/search", searchRoutes);
 
 // 404 handler
 app.use((_req, res) => {
@@ -65,14 +67,14 @@ app.use(
     err: Error,
     _req: express.Request,
     res: express.Response,
-    _next: express.NextFunction,
+    _next: express.NextFunction
   ) => {
     console.error("Error:", err);
     res.status(500).json({
       success: false,
       error: "Internal server error",
     });
-  },
+  }
 );
 
 export default app;

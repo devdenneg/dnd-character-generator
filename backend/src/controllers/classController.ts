@@ -8,6 +8,7 @@ import {
   createClass,
   updateClass,
   deleteClass,
+  searchClasses,
 } from "../services/classService";
 
 // Validation schemas
@@ -31,15 +32,27 @@ const createSubclassSchema = z.object({
   nameRu: z.string().min(1, "Subclass Russian name is required"),
   description: z.string().min(1, "Subclass description is required"),
   source: z.enum(["srd", "phb2024"]).optional(),
-  features: z.array(createSubclassFeatureSchema).min(1, "Subclass must have at least one feature"),
+  features: z
+    .array(createSubclassFeatureSchema)
+    .min(1, "Subclass must have at least one feature"),
 });
 
-const spellcastingSchema = z.object({
-  ability: z.string().min(1, "Spellcasting ability is required"),
-  cantripsKnown: z.array(z.number()).length(20, "Cantrips known must have 20 values"),
-  spellsKnown: z.array(z.number()).length(20, "Spells known must have 20 values").optional(),
-  spellSlots: z.array(z.array(z.number())).length(20, "Spell slots must have 20 character levels").optional(),
-}).optional();
+const spellcastingSchema = z
+  .object({
+    ability: z.string().min(1, "Spellcasting ability is required"),
+    cantripsKnown: z
+      .array(z.number())
+      .length(20, "Cantrips known must have 20 values"),
+    spellsKnown: z
+      .array(z.number())
+      .length(20, "Spells known must have 20 values")
+      .optional(),
+    spellSlots: z
+      .array(z.array(z.number()))
+      .length(20, "Spell slots must have 20 character levels")
+      .optional(),
+  })
+  .optional();
 
 const createClassSchema = z.object({
   externalId: z.string().min(1, "External ID is required"),
@@ -57,7 +70,9 @@ const createClassSchema = z.object({
   source: z.enum(["srd", "phb2024"], {
     errorMap: () => ({ message: "Source must be srd or phb2024" }),
   }),
-  features: z.array(createClassFeatureSchema).min(1, "Class must have at least one feature"),
+  features: z
+    .array(createClassFeatureSchema)
+    .min(1, "Class must have at least one feature"),
   subclasses: z.array(createSubclassSchema),
   startingEquipment: z.any().optional(),
   spellcasting: spellcastingSchema,
@@ -102,6 +117,33 @@ export async function list(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+export async function search(req: AuthenticatedRequest, res: Response) {
+  try {
+    const query = req.query.q as string;
+
+    if (!query || query.trim().length === 0) {
+      res.status(200).json({
+        success: true,
+        data: { results: [] },
+      });
+      return;
+    }
+
+    const results = await searchClasses(query);
+
+    res.status(200).json({
+      success: true,
+      data: { results },
+    });
+  } catch (error) {
+    console.error("Search classes error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function getOne(req: AuthenticatedRequest, res: Response) {
   try {
     const id = req.params.id as string;
@@ -129,7 +171,10 @@ export async function getOne(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function getByExternalId(req: AuthenticatedRequest, res: Response) {
+export async function getByExternalId(
+  req: AuthenticatedRequest,
+  res: Response
+) {
   try {
     const externalId = req.params.externalId as string;
 

@@ -93,8 +93,8 @@ export async function createManySpells(inputs: SpellInput[]) {
           classes: input.classes,
           source: input.source || "phb2024",
         },
-      }),
-    ),
+      })
+    )
   );
 
   return results;
@@ -138,4 +138,31 @@ export async function seedSpells(spells: SpellInput[]) {
   const createdSpells = await createManySpells(spells);
 
   return createdSpells;
+}
+
+export async function searchSpells(query: string) {
+  const spells = await prisma.spell.findMany({
+    where: {
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { nameRu: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+        { school: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    select: {
+      externalId: true,
+      name: true,
+      nameRu: true,
+    },
+    take: 50,
+  });
+
+  return spells.map((spell) => ({
+    id: spell.externalId,
+    name: spell.name,
+    nameRu: spell.nameRu,
+    type: "spell" as const,
+    category: "Заклинания" as const,
+  }));
 }

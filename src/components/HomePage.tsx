@@ -1,7 +1,6 @@
-import {
-  User,
-} from "lucide-react";
+import { User, Search, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import createCharImage from "@/components/assets/createChar.jpg";
@@ -10,9 +9,10 @@ import racesImage from "@/components/assets/races.jpg";
 import classesImage from "@/components/assets/classes.jpg";
 import backgroundsImage from "@/components/assets/backgrounds.jpg";
 import spellsImage from "@/components/assets/spells.jpg";
+import { useSearch } from "@/api/search";
 
 interface HomePageProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, itemId?: string) => void;
 }
 
 interface MenuItem {
@@ -23,6 +23,14 @@ interface MenuItem {
   roles: ("player" | "master")[];
   inDevelopment: boolean;
   image?: string;
+}
+
+interface SearchResult {
+  id: string;
+  name: string;
+  nameRu: string;
+  type: "race" | "class" | "background" | "spell";
+  category: string;
 }
 
 const MENU_ITEMS: MenuItem[] = [
@@ -135,6 +143,36 @@ export function HomePage({ onNavigate }: HomePageProps) {
     return unlocked ? JSON.parse(unlocked) : [];
   });
 
+  // Состояние для поиска
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Используем API для поиска
+  const { data: searchResults = [], isLoading: isSearchLoading } =
+    useSearch(searchQuery);
+
+  // Обработчик клика на результат поиска
+  const handleSearchResultClick = (result: SearchResult) => {
+    let navigateTo = "";
+
+    switch (result.type) {
+      case "race":
+        navigateTo = "races";
+        break;
+      case "class":
+        navigateTo = "classes";
+        break;
+      case "background":
+        navigateTo = "backgrounds";
+        break;
+      case "spell":
+        navigateTo = "spells";
+        break;
+    }
+
+    setSearchQuery("");
+    onNavigate(navigateTo, result.id);
+  };
+
   const handleDevClick = (itemId: string) => {
     const currentCount = (devClickCounts[itemId] || 0) + 1;
     const newCounts = { ...devClickCounts, [itemId]: currentCount };
@@ -182,8 +220,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 Создайте аккаунт
               </h3>
               <p className="text-base text-muted-foreground mb-6 leading-relaxed">
-                Регистрируйтесь, чтобы сохранять созданных персонажей и
-                получать к ним доступ с любого устройства.
+                Регистрируйтесь, чтобы сохранять созданных персонажей и получать
+                к ним доступ с любого устройства.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button
@@ -205,8 +243,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
         </div>
       )}
 
-          {/* Hero Section */}
-          {/* <div className="mb-16 text-center">
+      {/* Hero Section */}
+      {/* <div className="mb-16 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-6 animate-fade-in backdrop-blur-sm">
               <Sparkles className="w-4 h-4" />
               <span className="font-medium">PHB 2024 Edition</span>
@@ -220,61 +258,60 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </p>
           </div> */}
 
-          {/* First Section: Characters */}
-          <div className="mb-16">
-            <div className="flex items-center justify-between gap-4 mb-8">
-              <div>
-                <h2 className="text-3xl font-display font-semibold text-foreground">
-                  Персонажи
-                </h2>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Создание и управление персонажами
-                </p>
-              </div>
-            </div>
+      {/* First Section: Characters */}
+      <div className="mb-16">
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-3xl font-display font-semibold text-foreground">
+              Персонажи
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Создание и управление персонажами
+            </p>
+          </div>
+        </div>
 
-            {isLoading ? (
-              // Loading skeleton
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {[1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="w-full p-6 rounded-2xl border bg-card/60 backdrop-blur-sm border-border/50 animate-pulse"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-muted" />
-                      <div className="flex-1 space-y-3">
-                        <div className="h-6 bg-muted rounded w-3/4" />
-                        <div className="h-4 bg-muted rounded w-full" />
-                      </div>
-                    </div>
+        {isLoading ? (
+          // Loading skeleton
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-full p-6 rounded-2xl border bg-card/60 backdrop-blur-sm border-border/50 animate-pulse"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-muted" />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-6 bg-muted rounded w-3/4" />
+                    <div className="h-4 bg-muted rounded w-full" />
                   </div>
-                ))}
+                </div>
               </div>
-            ) : (
-              // Character items
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {visibleMenuItems
-                  .filter(
-                    (item) =>
-                      item.id === "character-wizard" ||
-                      item.id === "my-characters"
-                  )
-                  .map((item, index) => {
-                    const isDisabled =
-                      item.inDevelopment && !unlockedFeatures.includes(item.id);
+            ))}
+          </div>
+        ) : (
+          // Character items
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {visibleMenuItems
+              .filter(
+                (item) =>
+                  item.id === "character-wizard" || item.id === "my-characters"
+              )
+              .map((item, index) => {
+                const isDisabled =
+                  item.inDevelopment && !unlockedFeatures.includes(item.id);
 
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          if (isDisabled) {
-                            handleDevClick(item.id);
-                          } else {
-                            onNavigate(item.id);
-                          }
-                        }}
-                        className={`
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (isDisabled) {
+                        handleDevClick(item.id);
+                      } else {
+                        onNavigate(item.id);
+                      }
+                    }}
+                    className={`
                           w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden
                           ${
                             isDisabled
@@ -282,117 +319,186 @@ export function HomePage({ onNavigate }: HomePageProps) {
                               : "group animate-fade-in-up bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative"
                           }
                         `}
-                        style={{
-                          animationDelay: `${index * 100}ms`,
-                        }}
-                      >
-                        {/* Background image with fade effect */}
-                        {item.image && !isDisabled && (
-                          <div className="absolute inset-0">
-                            <img
-                              src={item.image}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                            {/* Fade overlay from left */}
-                            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/80 to-card/95" />
-                            {/* Top/bottom gradients for better text readability */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/40" />
-                          </div>
-                        )}
+                    style={{
+                      animationDelay: `${index * 100}ms`,
+                    }}
+                  >
+                    {/* Background image with fade effect */}
+                    {item.image && !isDisabled && (
+                      <div className="absolute inset-0">
+                        <img
+                          src={item.image}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                        {/* Fade overlay from left */}
+                        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/80 to-card/95" />
+                        {/* Top/bottom gradients for better text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/40" />
+                      </div>
+                    )}
 
-                        {/* Glassmorphism glow effect */}
-                        {!isDisabled && !item.image && (
-                          <div
-                            className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity blur-xl`}
-                          />
-                        )}
+                    {/* Glassmorphism glow effect */}
+                    {!isDisabled && !item.image && (
+                      <div
+                        className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity blur-xl`}
+                      />
+                    )}
 
-                        {/* Shine effect on hover */}
-                        {!isDisabled && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
-                        )}
+                    {/* Shine effect on hover */}
+                    {!isDisabled && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
+                    )}
 
-                        {/* Content */}
-                        <div className="flex items-start gap-5 relative z-5 p-6">
-                          {/* Text Content */}
-                          <div className="flex-1 min-w-0">
-                            <h3
-                              className={`font-semibold text-lg md:text-xl text-foreground mb-2 ${
-                                !isDisabled
-                                  ? "group-hover:text-primary transition-colors"
-                                  : ""
-                              }`}
-                            >
-                              {item.title}
-                            </h3>
-                            <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                              {item.description}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
+                    {/* Content */}
+                    <div className="flex items-start gap-5 relative z-5 p-6">
+                      {/* Text Content */}
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className={`font-semibold text-lg md:text-xl text-foreground mb-2 ${
+                            !isDisabled
+                              ? "group-hover:text-primary transition-colors"
+                              : ""
+                          }`}
+                        >
+                          {item.title}
+                        </h3>
+                        <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+          </div>
+        )}
+      </div>
+
+      {/* Second Section: Game Content */}
+      <div className="mb-16">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-3xl font-display font-semibold text-foreground">
+              Справочник
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Расы, классы, предыстории и заклинания
+            </p>
+          </div>
+        </div>
+
+        {/* Search Input */}
+        <div className="relative mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+            <Input
+              type="text"
+              placeholder="Поиск по справочнику..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 h-11 text-base bg-card/60 backdrop-blur-sm border-border/40 focus:border-primary/50"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             )}
           </div>
 
-          {/* Second Section: Game Content */}
-          <div className="mb-16">
-            <div className="flex items-center justify-between gap-4 mb-8">
-              <div>
-                <h2 className="text-3xl font-display font-semibold text-foreground">
-                  Справочник
-                </h2>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Расы, классы, предыстории и заклинания
-                </p>
+          {/* Loading indicator */}
+          {isSearchLoading && searchQuery && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-50 p-4 animate-fade-in">
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                <span className="text-sm text-muted-foreground">Поиск...</span>
               </div>
             </div>
+          )}
 
-            {isLoading ? (
-              // Loading skeleton
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="w-full p-6 rounded-2xl border bg-card/60 backdrop-blur-sm border-border/50 animate-pulse"
+          {/* Search Results Dropdown */}
+          {!isSearchLoading && searchQuery && searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-50 max-h-96 overflow-y-auto animate-fade-in">
+              <div className="p-2">
+                {searchResults.map((result) => (
+                  <button
+                    key={`${result.type}-${result.id}`}
+                    onClick={() => handleSearchResultClick(result)}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors text-left group"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-muted" />
-                      <div className="flex-1 space-y-3">
-                        <div className="h-6 bg-muted rounded w-3/4" />
-                        <div className="h-4 bg-muted rounded w-full" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                          {result.category}
+                        </span>
                       </div>
+                      <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                        {result.nameRu}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {result.name}
+                      </p>
                     </div>
-                  </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                  </button>
                 ))}
               </div>
-            ) : (
-              // Content items
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {visibleMenuItems
-                  .filter((item) =>
-                    ["races", "classes", "backgrounds", "spells"].includes(
-                      item.id
-                    )
-                  )
-                  .map((item, index) => {
-                    const isDisabled =
-                      item.inDevelopment && !unlockedFeatures.includes(item.id);
+            </div>
+          )}
 
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          if (isDisabled) {
-                            handleDevClick(item.id);
-                          } else {
-                            onNavigate(item.id);
-                          }
-                        }}
-                        className={`
+          {/* No Results Message */}
+          {!isSearchLoading && searchQuery && searchResults.length === 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-50 p-4 animate-fade-in">
+              <p className="text-sm text-muted-foreground text-center">
+                Ничего не найдено по запросу "{searchQuery}"
+              </p>
+            </div>
+          )}
+        </div>
+
+        {isLoading ? (
+          // Loading skeleton
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="w-full p-6 rounded-2xl border bg-card/60 backdrop-blur-sm border-border/50 animate-pulse"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-muted" />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-6 bg-muted rounded w-3/4" />
+                    <div className="h-4 bg-muted rounded w-full" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          // Content items
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {visibleMenuItems
+              .filter((item) =>
+                ["races", "classes", "backgrounds", "spells"].includes(item.id)
+              )
+              .map((item, index) => {
+                const isDisabled =
+                  item.inDevelopment && !unlockedFeatures.includes(item.id);
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (isDisabled) {
+                        handleDevClick(item.id);
+                      } else {
+                        onNavigate(item.id);
+                      }
+                    }}
+                    className={`
                           w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden
                           ${
                             isDisabled
@@ -400,61 +506,61 @@ export function HomePage({ onNavigate }: HomePageProps) {
                               : "group animate-fade-in-up bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative"
                           }
                         `}
-                        style={{
-                          animationDelay: `${index * 100}ms`,
-                        }}
-                      >
-                        {/* Background image with fade effect */}
-                        {item.image && !isDisabled && (
-                          <div className="absolute inset-0">
-                            <img
-                              src={item.image}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                            {/* Fade overlay from left */}
-                            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/80 to-card/95" />
-                            {/* Top/bottom gradients for better text readability */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/40" />
-                          </div>
-                        )}
+                    style={{
+                      animationDelay: `${index * 100}ms`,
+                    }}
+                  >
+                    {/* Background image with fade effect */}
+                    {item.image && !isDisabled && (
+                      <div className="absolute inset-0">
+                        <img
+                          src={item.image}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                        {/* Fade overlay from left */}
+                        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/80 to-card/95" />
+                        {/* Top/bottom gradients for better text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/40" />
+                      </div>
+                    )}
 
-                        {/* Glassmorphism glow effect */}
-                        {!isDisabled && !item.image && (
-                          <div
-                            className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity blur-xl`}
-                          />
-                        )}
+                    {/* Glassmorphism glow effect */}
+                    {!isDisabled && !item.image && (
+                      <div
+                        className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity blur-xl`}
+                      />
+                    )}
 
-                        {/* Shine effect on hover */}
-                        {!isDisabled && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
-                        )}
+                    {/* Shine effect on hover */}
+                    {!isDisabled && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
+                    )}
 
-                        {/* Content */}
-                        <div className="flex items-start gap-4 relative z-5 p-6">
-                          {/* Text Content */}
-                          <div className="flex-1 min-w-0">
-                            <h3
-                              className={`font-semibold text-base md:text-lg text-foreground mb-1 ${
-                                !isDisabled
-                                  ? "group-hover:text-primary transition-colors"
-                                  : ""
-                              }`}
-                            >
-                              {item.title}
-                            </h3>
-                            <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                              {item.description}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
-            )}
+                    {/* Content */}
+                    <div className="flex items-start gap-4 relative z-5 p-6">
+                      {/* Text Content */}
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className={`font-semibold text-base md:text-lg text-foreground mb-1 ${
+                            !isDisabled
+                              ? "group-hover:text-primary transition-colors"
+                              : ""
+                          }`}
+                        >
+                          {item.title}
+                        </h3>
+                        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
           </div>
+        )}
+      </div>
     </div>
   );
 }
