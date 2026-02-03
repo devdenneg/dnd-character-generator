@@ -14,6 +14,7 @@ import {
   Lock,
   Skull,
   Shield,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -66,6 +67,15 @@ const MENU_ITEMS = [
     description: "Все предыстории из Книги игрока 2024 года",
     icon: BookOpen,
     gradient: "from-purple-500 to-indigo-500",
+    roles: ["player", "master"],
+    inDevelopment: false,
+  },
+  {
+    id: "spells",
+    title: "Заклинания PHB 2024",
+    description: "Все заклинания из Книги игрока 2024 года",
+    icon: Wand2,
+    gradient: "from-violet-500 to-purple-500",
     roles: ["player", "master"],
     inDevelopment: false,
   },

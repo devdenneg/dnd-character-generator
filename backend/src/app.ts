@@ -7,6 +7,7 @@ import achievementRoutes from "./routes/achievements";
 import raceRoutes from "./routes/races";
 import classRoutes from "./routes/classes";
 import backgroundRoutes from "./routes/backgrounds";
+import spellRoutes from "./routes/spells";
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use("/api/achievements", achievementRoutes);
 app.use("/api/races", raceRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/backgrounds", backgroundRoutes);
+app.use("/api/spells", spellRoutes);
 
 // 404 handler
 app.use((_req, res) => {

@@ -30,6 +30,7 @@ import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
 import { RacesPage } from "@/components/RacesPage";
 import { ClassesPage } from "@/components/ClassesPage";
 import { BackgroundsPage } from "@/components/BackgroundsPage";
+import { SpellsPage } from "@/components/SpellsPage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -266,6 +267,9 @@ function HomePageWrapper() {
       case "backgrounds":
         navigate("/backgrounds");
         break;
+      case "spells":
+        navigate("/spells");
+        break;
       case "my-achievements":
         navigate("/achievements");
         break;
@@ -325,6 +329,16 @@ function BackgroundsPageWrapper() {
   return <BackgroundsPage onBack={handleBack} />;
 }
 
+function SpellsPageWrapper() {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate("/");
+  };
+
+  return <SpellsPage onBack={handleBack} />;
+}
+
 function AppRoutes() {
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -349,6 +363,7 @@ function AppRoutes() {
       <Route path="/races" element={<RacesPageWrapper />} />
       <Route path="/classes" element={<ClassesPageWrapper />} />
       <Route path="/backgrounds" element={<BackgroundsPageWrapper />} />
+      <Route path="/spells" element={<SpellsPageWrapper />} />
       <Route path="/join-room" element={<BrowseRoomsPage />} />
       <Route path="/join-room/:id" element={<JoinRoomPage />} />
       <Route path="/my-rooms" element={<MyRoomsPage />} />

@@ -409,3 +409,66 @@ export const backgroundsApi = {
     return response.data;
   },
 };
+
+// Spells API
+export const spellsApi = {
+  list: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/spells", { params });
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get(`/spells/${id}`);
+    return response.data;
+  },
+
+  getByExternalId: async (externalId: string) => {
+    const response = await apiClient.get(`/spells/external/${externalId}`);
+    return response.data;
+  },
+
+  create: async (data: {
+    externalId: string;
+    name: string;
+    nameRu: string;
+    level: number;
+    school: string;
+    castingTime: string;
+    range: string;
+    components: string;
+    duration: string;
+    description: string;
+    classes: string[];
+    source?: string;
+  }) => {
+    const response = await apiClient.post("/spells", data);
+    return response.data;
+  },
+
+  update: async (
+    id: string,
+    data: {
+      externalId?: string;
+      name?: string;
+      nameRu?: string;
+      level?: number;
+      school?: string;
+      castingTime?: string;
+      range?: string;
+      components?: string;
+      duration?: string;
+      description?: string;
+      classes?: string[];
+      source?: string;
+    },
+  ) => {
+    const response = await apiClient.put(`/spells/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/spells/${id}`);
+    return response.data;
+  },
+};

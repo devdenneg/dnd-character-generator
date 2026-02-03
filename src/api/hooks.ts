@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { dnd5eApi } from "./dnd5e";
-import { racesApi, classesApi, backgroundsApi } from "./client";
+import { racesApi, classesApi, backgroundsApi, spellsApi } from "./client";
 
 // Query keys
 export const queryKeys = {
@@ -236,6 +236,10 @@ export const backendQueryKeys = {
   backgroundsBySource: (source: string) => ["backend", "backgrounds", "source", source] as const,
   background: (id: string) => ["backend", "background", id] as const,
   backgroundByExternalId: (externalId: string) => ["backend", "background", "external", externalId] as const,
+  spells: ["backend", "spells"] as const,
+  spellsBySource: (source: string) => ["backend", "spells", "source", source] as const,
+  spell: (id: string) => ["backend", "spell", id] as const,
+  spellByExternalId: (externalId: string) => ["backend", "spell", "external", externalId] as const,
 };
 
 // Races (from backend - PHB 2024 data)
@@ -317,6 +321,34 @@ export function useBackendBackgroundByExternalId(externalId: string) {
   return useQuery({
     queryKey: backendQueryKeys.backgroundByExternalId(externalId),
     queryFn: () => backgroundsApi.getByExternalId(externalId),
+    enabled: !!externalId,
+    staleTime: Infinity,
+  });
+}
+
+// Spells (from backend - PHB 2024 data)
+export function useBackendSpells(source?: string) {
+  return useQuery({
+    queryKey: source ? backendQueryKeys.spellsBySource(source) : backendQueryKeys.spells,
+    queryFn: () => spellsApi.list(source),
+    staleTime: 0, // Always refetch to get latest data
+    refetchOnMount: 'always', // Always fetch on component mount
+  });
+}
+
+export function useBackendSpell(id: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.spell(id),
+    queryFn: () => spellsApi.get(id),
+    enabled: !!id,
+    staleTime: Infinity,
+  });
+}
+
+export function useBackendSpellByExternalId(externalId: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.spellByExternalId(externalId),
+    queryFn: () => spellsApi.getByExternalId(externalId),
     enabled: !!externalId,
     staleTime: Infinity,
   });
