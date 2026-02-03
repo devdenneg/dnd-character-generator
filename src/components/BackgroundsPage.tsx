@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
-import { PageLayout } from "@/components/PageLayout";
 import {
   BookOpen,
   Briefcase,
@@ -374,7 +373,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   const backgrounds = data?.data?.backgrounds || [];
 
   return (
-    <PageLayout>
+    <>
       <div className="max-w-7xl mx-auto p-4 pt-8 pb-8">
         {/* Header */}
         <div className="mb-6">
@@ -973,6 +972,6 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
           </div>
         </div>
       )}
-    </PageLayout>
+    </>
   );
 }

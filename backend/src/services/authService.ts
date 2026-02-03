@@ -29,7 +29,7 @@ const SALT_ROUNDS = 10;
 export async function registerUser(
   input: RegisterInput,
 ): Promise<AuthResponse> {
-  const { email, password, name, role } = input;
+  const { email, password, name } = input;
 
   // Check if user exists
   const existingUser = await prisma.user.findUnique({
@@ -43,13 +43,13 @@ export async function registerUser(
   // Hash password
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  // Create user
+  // Create user - always as player
   const user = await prisma.user.create({
     data: {
       email,
       password: hashedPassword,
       name,
-      role: role || "player",
+      role: "player",
     },
   });
 

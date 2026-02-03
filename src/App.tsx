@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BookOpen, Home } from "lucide-react";
 import {
@@ -68,7 +68,7 @@ function CharacterWizardPage() {
   // Show login required message
   if (!authLoading && !isAuthenticated) {
     return (
-      <PageLayout>
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="relative z-20 max-w-md w-full mx-auto bg-card/80 backdrop-blur-xl rounded-2xl border border-border/50 p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/20 flex items-center justify-center">
             <Home className="w-8 h-8 text-primary" />
@@ -91,7 +91,7 @@ function CharacterWizardPage() {
             ← На главную
           </Button>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
@@ -132,40 +132,38 @@ function CharacterWizardPage() {
 
   if (showGlossary) {
     return (
-      <PageLayout>
-        <div className="relative z-10">
-          <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
-            <div className="max-w-4xl mx-auto px-4 py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1
-                    className="text-xl font-bold text-gradient"
-                    style={{ fontFamily: "var(--font-display)" }}
-                  >
-                    Глоссарий D&D
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    PHB 2024 — Справочник терминов
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowGlossary(false)}
-                  className="gap-2"
+      <div className="relative z-10">
+        <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1
+                  className="text-xl font-bold text-gradient"
+                  style={{ fontFamily: "var(--font-display)" }}
                 >
-                  ← Вернуться
-                </Button>
+                  Глоссарий D&D
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  PHB 2024 — Справочник терминов
+                </p>
               </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowGlossary(false)}
+                className="gap-2"
+              >
+                ← Вернуться
+              </Button>
             </div>
-          </header>
+          </div>
+        </header>
 
-          <main className="max-w-4xl mx-auto px-4 py-6">
-            <div className="animate-fade-in-up">
-              <Glossary />
-            </div>
-          </main>
-        </div>
-      </PageLayout>
+        <main className="max-w-4xl mx-auto px-4 py-6">
+          <div className="animate-fade-in-up">
+            <Glossary />
+          </div>
+        </main>
+      </div>
     );
   }
 
@@ -196,41 +194,39 @@ function GlossaryPage() {
   const navigate = useNavigate();
 
   return (
-    <PageLayout>
-      <div className="relative z-10">
-        <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
-          <div className="max-w-4xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1
-                  className="text-xl font-bold text-gradient"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  Глоссарий D&D
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  PHB 2024 — Справочник терминов
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/")}
-                className="gap-2"
+    <div className="relative z-10">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1
+                className="text-xl font-bold text-gradient"
+                style={{ fontFamily: "var(--font-display)" }}
               >
-                <Home className="w-4 h-4" />
-                На главную
-              </Button>
+                Глоссарий D&D
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                PHB 2024 — Справочник терминов
+              </p>
             </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/")}
+              className="gap-2"
+            >
+              <Home className="w-4 h-4" />
+              На главную
+            </Button>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-6">
-          <div className="animate-fade-in-up">
-            <Glossary />
-          </div>
-        </main>
-      </div>
-    </PageLayout>
+      <main className="max-w-4xl mx-auto px-4 py-6">
+        <div className="animate-fade-in-up">
+          <Glossary />
+        </div>
+      </main>
+    </div>
   );
 }
 
@@ -328,6 +324,7 @@ function SpellsPageWrapper() {
 
 function AppRoutes() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -341,26 +338,33 @@ function AppRoutes() {
     );
   }
 
+  // Определяем, нужно ли показывать Header и Footer
+  const isCharacterWizard = location.pathname === "/character";
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+  const showHeaderFooter = !isCharacterWizard && !isAuthPage;
+
   return (
-    <Routes>
-      <Route path="/" element={<HomePageWrapper />} />
-      <Route path="/character" element={<CharacterWizardPage />} />
-      <Route path="/my-characters" element={<MyCharactersPage />} />
-      <Route path="/races" element={<RacesPageWrapper />} />
-      <Route path="/classes" element={<ClassesPageWrapper />} />
-      <Route path="/backgrounds" element={<BackgroundsPageWrapper />} />
-      <Route path="/spells" element={<SpellsPageWrapper />} />
-      <Route path="/join-room" element={<BrowseRoomsPage />} />
-      <Route path="/join-room/:id" element={<JoinRoomPage />} />
-      <Route path="/my-rooms" element={<MyRoomsPage />} />
-      <Route path="/create-room" element={<CreateRoomPage />} />
-      <Route path="/room/:id" element={<RoomDetailsPage />} />
-      <Route path="/room/:roomId/achievements" element={<MasterAchievementsPage />} />
-      <Route path="/achievements" element={<PlayerAchievementsPage />} />
-      <Route path="/glossary" element={<GlossaryPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-    </Routes>
+    <PageLayout showHeader={showHeaderFooter} showFooter={showHeaderFooter}>
+      <Routes>
+        <Route path="/" element={<HomePageWrapper />} />
+        <Route path="/character" element={<CharacterWizardPage />} />
+        <Route path="/my-characters" element={<MyCharactersPage />} />
+        <Route path="/races" element={<RacesPageWrapper />} />
+        <Route path="/classes" element={<ClassesPageWrapper />} />
+        <Route path="/backgrounds" element={<BackgroundsPageWrapper />} />
+        <Route path="/spells" element={<SpellsPageWrapper />} />
+        <Route path="/join-room" element={<BrowseRoomsPage />} />
+        <Route path="/join-room/:id" element={<JoinRoomPage />} />
+        <Route path="/my-rooms" element={<MyRoomsPage />} />
+        <Route path="/create-room" element={<CreateRoomPage />} />
+        <Route path="/room/:id" element={<RoomDetailsPage />} />
+        <Route path="/room/:roomId/achievements" element={<MasterAchievementsPage />} />
+        <Route path="/achievements" element={<PlayerAchievementsPage />} />
+        <Route path="/glossary" element={<GlossaryPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Routes>
+    </PageLayout>
   );
 }
 

@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
-import { PageLayout } from "@/components/PageLayout";
 import {
   Sparkles,
   Plus,
@@ -287,29 +286,27 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
   if (error) {
     return (
-      <PageLayout>
-        <div className="max-w-5xl mx-auto p-4">
-          <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-6">
-            <h2 className="text-xl font-semibold text-destructive mb-2">
-              Ошибка загрузки заклинаний
-            </h2>
-            <p className="text-sm text-destructive/80">
-              Не удалось загрузить данные о заклинаниях с сервера. Пожалуйста,
-              попробуйте позже.
-            </p>
-            {onBack && (
-              <Button variant="outline" className="mt-4" onClick={onBack}>
-                Назад
-              </Button>
-            )}
-          </div>
+      <div className="max-w-5xl mx-auto p-4">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-6">
+          <h2 className="text-xl font-semibold text-destructive mb-2">
+            Ошибка загрузки заклинаний
+          </h2>
+          <p className="text-sm text-destructive/80">
+            Не удалось загрузить данные о заклинаниях с сервера. Пожалуйста,
+            попробуйте позже.
+          </p>
+          {onBack && (
+            <Button variant="outline" className="mt-4" onClick={onBack}>
+              Назад
+            </Button>
+          )}
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   return (
-    <PageLayout>
+    <>
       <div className="max-w-7xl mx-auto p-4 pt-8 pb-8">
         {/* Header */}
         <div className="mb-6">
@@ -554,9 +551,10 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
             })()}
           </SlideOverDrawer>
         )}
+      </div>
 
-        {/* Create/Edit Modal */}
-        {(isCreateModalOpen || isEditModalOpen) && (
+      {/* Create/Edit Modal */}
+      {(isCreateModalOpen || isEditModalOpen) && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
@@ -836,7 +834,6 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
             </div>
           </div>
         )}
-      </div>
-    </PageLayout>
+    </>
   );
 }

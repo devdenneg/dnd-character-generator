@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
-import { PageLayout } from "@/components/PageLayout";
 import {
   Shield,
   Zap,
@@ -593,6 +592,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
   const { data, isLoading, error, refetch } = useBackendClasses();
   const { user } = useAuth();
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [viewTab, setViewTab] = useState("overview");
   const [activeTab, setActiveTab] = useState("basic");
   const [editingClass, setEditingClass] = useState<ClassFormData>({
     externalId: "",
@@ -916,7 +916,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
   const classes = data?.data?.classes || [];
 
   return (
-    <PageLayout>
+    <>
       <div className="max-w-7xl mx-auto p-4 pt-8 pb-8">
         {/* Header */}
         <div className="mb-6">
@@ -1057,79 +1057,152 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
               );
               if (!cls) return null;
 
-              return (
-                <div className="space-y-6">
-                  {/* Description */}
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2">
-                      Описание
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {cls.description}
-                    </p>
-                  </div>
+              const hasSpellcasting = !!cls.spellcasting;
+              const hasSubclasses = cls.subclasses.length > 0;
 
-                  {/* Class Statistics */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                      <h4 className="font-medium text-foreground text-sm mb-3">
+              return (
+                <div className="space-y-4">
+                  {/* Tabs */}
+                  <Tabs
+                    value={viewTab}
+                    onValueChange={setViewTab}
+                    className="w-full"
+                  >
+                    <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
+                      <TabsTrigger
+                        value="overview"
+                        className="gap-2 whitespace-nowrap"
+                      >
+                        <Info className="w-4 h-4" />
+                        Обзор
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="stats"
+                        className="gap-2 whitespace-nowrap"
+                      >
+                        <Sparkles className="w-4 h-4" />
                         Характеристики
-                      </h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Кость хитов:
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="features"
+                        className="gap-2 whitespace-nowrap"
+                      >
+                        <Swords className="w-4 h-4" />
+                        Черты ({cls.features.length})
+                      </TabsTrigger>
+                      {hasSubclasses && (
+                        <TabsTrigger
+                          value="subclasses"
+                          className="gap-2 whitespace-nowrap"
+                        >
+                          <Shield className="w-4 h-4" />
+                          Подклассы ({cls.subclasses.length})
+                        </TabsTrigger>
+                      )}
+                      <TabsTrigger
+                        value="equipment"
+                        className="gap-2 whitespace-nowrap"
+                      >
+                        <Backpack className="w-4 h-4" />
+                        Снаряжение
+                      </TabsTrigger>
+                      {hasSpellcasting && (
+                        <TabsTrigger
+                          value="spellcasting"
+                          className="gap-2 whitespace-nowrap"
+                        >
+                          <Wand2 className="w-4 h-4" />
+                          Магия
+                        </TabsTrigger>
+                      )}
+                    </TabsList>
+
+                    {/* Overview Tab */}
+                    <TabsContent value="overview" className="mt-4 space-y-4">
+                      {/* Quick Stats */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                          <span className="text-xs text-muted-foreground block mb-1">
+                            Кость хитов
                           </span>
-                          <span className="font-medium">d{cls.hitDie}</span>
+                          <span className="text-lg font-bold text-primary">
+                            d{cls.hitDie}
+                          </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Основная:
+                        <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                          <span className="text-xs text-muted-foreground block mb-1">
+                            Основная характеристика
                           </span>
-                          <span className="font-medium">
+                          <span className="text-sm font-medium text-foreground">
                             {cls.primaryAbility.join(", ")}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Спасброски:
+                        <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                          <span className="text-xs text-muted-foreground block mb-1">
+                            Спасброски
                           </span>
-                          <span className="font-medium">
+                          <span className="text-sm font-medium text-foreground">
                             {cls.savingThrows.join(", ")}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Подкласс с уровня:
+                        <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                          <span className="text-xs text-muted-foreground block mb-1">
+                            Подкласс
                           </span>
-                          <span className="font-medium">
-                            {cls.subclassLevel}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Навыки:</span>
-                          <span className="font-medium">
-                            {cls.skillCount} из {cls.skillChoices.length}
+                          <span className="text-sm font-medium text-foreground">
+                            с {cls.subclassLevel} уровня
                           </span>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                      <h4 className="font-medium text-foreground text-sm mb-3">
-                        Владения
-                      </h4>
-                      <div className="space-y-2 text-sm">
-                        <div>
-                          <span className="text-muted-foreground block mb-1">
-                            Доспехи:
-                          </span>
+                      {/* Description */}
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2 text-sm">
+                          Описание
+                        </h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {cls.description}
+                        </p>
+                      </div>
+                    </TabsContent>
+
+                    {/* Stats Tab */}
+                    <TabsContent value="stats" className="mt-4 space-y-4">
+                      {/* Skills */}
+                      <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                        <h4 className="font-medium text-foreground text-sm mb-2">
+                          Навыки
+                        </h4>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {cls.skillCount} из {cls.skillChoices.length} на
+                          выбор:
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {cls.skillChoices.map(
+                            (skill: string, idx: number) => (
+                              <span
+                                key={idx}
+                                className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
+                              >
+                                {skill}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Proficiencies */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                          <h4 className="font-medium text-foreground text-sm mb-2">
+                            Доспехи
+                          </h4>
                           <div className="flex flex-wrap gap-1">
                             {cls.armorProficiencies.map(
                               (prof: string, idx: number) => (
                                 <span
                                   key={idx}
-                                  className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary"
+                                  className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
                                 >
                                   {prof}
                                 </span>
@@ -1137,16 +1210,16 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                             )}
                           </div>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground block mb-1">
-                            Оружие:
-                          </span>
+                        <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                          <h4 className="font-medium text-foreground text-sm mb-2">
+                            Оружие
+                          </h4>
                           <div className="flex flex-wrap gap-1">
                             {cls.weaponProficiencies.map(
                               (prof: string, idx: number) => (
                                 <span
                                   key={idx}
-                                  className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary"
+                                  className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
                                 >
                                   {prof}
                                 </span>
@@ -1155,213 +1228,224 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </TabsContent>
 
-                  {/* Features */}
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3">
-                      Черты класса
-                    </h3>
-                    <div className="space-y-3">
-                      {cls.features.map((feature: ClassFeature) => (
-                        <div
-                          key={feature.id}
-                          className="p-4 rounded-xl bg-muted/30 border border-border/30"
-                        >
-                          <div className="mb-1">
-                            <h5 className="font-medium text-foreground text-sm">
-                              {feature.nameRu} (уровень {feature.level})
-                            </h5>
-                            <span className="text-xs text-muted-foreground/70">
+                    {/* Features Tab */}
+                    <TabsContent value="features" className="mt-4 space-y-3">
+                      {cls.features.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-8">
+                          Нет черт
+                        </p>
+                      ) : (
+                        cls.features.map((feature: ClassFeature) => (
+                          <div
+                            key={feature.id}
+                            className="p-3 rounded-xl bg-muted/30 border border-border/30"
+                          >
+                            <div className="flex items-start justify-between mb-1">
+                              <h5 className="font-medium text-foreground text-sm">
+                                {feature.nameRu}
+                              </h5>
+                              <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent flex-shrink-0 ml-2">
+                                Ур. {feature.level}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground/70 block mb-1">
                               {feature.name}
                             </span>
+                            <p className="text-sm text-muted-foreground">
+                              {feature.description}
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {feature.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                        ))
+                      )}
+                    </TabsContent>
 
-                  {/* Subclasses */}
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3">
-                      Подклассы
-                    </h3>
-                    <div className="space-y-3">
+                    {/* Subclasses Tab */}
+                    <TabsContent value="subclasses" className="mt-4 space-y-3">
                       {cls.subclasses.map((subclass: Subclass) => (
                         <div
                           key={subclass.id}
-                          className="p-4 rounded-xl bg-muted/30 border border-border/30"
+                          className="p-3 rounded-xl bg-muted/30 border border-border/30"
                         >
-                          <h5 className="font-medium text-foreground text-sm">
+                          <h5 className="font-medium text-foreground text-sm mb-1">
                             {subclass.nameRu}
                           </h5>
-                          <span className="text-xs text-muted-foreground/70">
+                          <span className="text-xs text-muted-foreground/70 block mb-1">
                             {subclass.name}
                           </span>
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <p className="text-sm text-muted-foreground">
                             {subclass.description}
                           </p>
                         </div>
                       ))}
-                    </div>
-                  </div>
+                    </TabsContent>
 
-                  {/* Starting Equipment */}
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3">
-                      Начальное снаряжение
-                    </h3>
-                    {cls.startingEquipment ? (
-                      <div className="space-y-3">
-                        {cls.startingEquipment.gold > 0 && (
-                          <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-                            <span className="font-medium text-foreground text-sm">
-                              Золото: {cls.startingEquipment.gold} gp
-                            </span>
-                          </div>
-                        )}
-                        <div className="space-y-2">
-                          {cls.startingEquipment.equipment.map(
-                            (item: EquipmentItem, index: number) => (
-                              <EquipmentDisplay key={index} item={item} />
-                            )
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Начальное снаряжение не указано
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Spellcasting */}
-                  {cls.spellcasting && (
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-3">
-                        Владение заклинаниями (Spellcasting)
-                      </h3>
-                      <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
-                          <div>
-                            <span className="text-muted-foreground">
-                              Базовая характеристика:
-                            </span>
-                            <span className="font-medium ml-2">
-                              {cls.spellcasting.ability === "strength" &&
-                                "Сила"}
-                              {cls.spellcasting.ability === "dexterity" &&
-                                "Ловкость"}
-                              {cls.spellcasting.ability === "constitution" &&
-                                "Телосложение"}
-                              {cls.spellcasting.ability === "intelligence" &&
-                                "Интеллект"}
-                              {cls.spellcasting.ability === "wisdom" &&
-                                "Мудрость"}
-                              {cls.spellcasting.ability === "charisma" &&
-                                "Харизма"}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              Заговоры (1-20 уровень):
-                            </span>
-                            <span className="font-medium ml-2">
-                              {cls.spellcasting.cantripsKnown.join(", ")}
-                            </span>
-                          </div>
-                          {cls.spellcasting.spellsKnown && (
-                            <div>
-                              <span className="text-muted-foreground">
-                                Известные заклинания (1-20 уровень):
-                              </span>
-                              <span className="font-medium ml-2">
-                                {cls.spellcasting.spellsKnown.join(", ")}
+                    {/* Equipment Tab */}
+                    <TabsContent value="equipment" className="mt-4 space-y-3">
+                      {cls.startingEquipment ? (
+                        <>
+                          {cls.startingEquipment.gold > 0 && (
+                            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                              <span className="font-medium text-foreground text-sm">
+                                🪙 {cls.startingEquipment.gold} gp
                               </span>
                             </div>
                           )}
-                        </div>
+                          {cls.startingEquipment.equipment.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-8">
+                              Нет снаряжения
+                            </p>
+                          ) : (
+                            <div className="space-y-2">
+                              {cls.startingEquipment.equipment.map(
+                                (item: EquipmentItem, index: number) => (
+                                  <EquipmentDisplay key={index} item={item} />
+                                )
+                              )}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-8">
+                          Снаряжение не указано
+                        </p>
+                      )}
+                    </TabsContent>
 
-                        {/* Spell Slots Table - Read-only */}
-                        {(() => {
-                          const maxSpellLevel =
-                            cls.spellcasting.spellSlots.reduce(
-                              (max: number, level: number[]) =>
-                                Math.max(max, level.length),
-                              0
-                            );
+                    {/* Spellcasting Tab */}
+                    <TabsContent
+                      value="spellcasting"
+                      className="mt-4 space-y-4"
+                    >
+                      {cls.spellcasting ? (
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                              <span className="text-xs text-muted-foreground block mb-1">
+                                Базовая характеристика
+                              </span>
+                              <span className="text-sm font-medium text-foreground">
+                                {cls.spellcasting.ability === "strength" &&
+                                  "Сила"}
+                                {cls.spellcasting.ability === "dexterity" &&
+                                  "Ловкость"}
+                                {cls.spellcasting.ability === "constitution" &&
+                                  "Телосложение"}
+                                {cls.spellcasting.ability === "intelligence" &&
+                                  "Интеллект"}
+                                {cls.spellcasting.ability === "wisdom" &&
+                                  "Мудрость"}
+                                {cls.spellcasting.ability === "charisma" &&
+                                  "Харизма"}
+                              </span>
+                            </div>
+                            <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                              <span className="text-xs text-muted-foreground block mb-1">
+                                Заговоры (максимум)
+                              </span>
+                              <span className="text-sm font-medium text-foreground">
+                                {Math.max(...cls.spellcasting.cantripsKnown)}
+                              </span>
+                            </div>
+                            {cls.spellcasting.spellsKnown && (
+                              <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                                <span className="text-xs text-muted-foreground block mb-1">
+                                  Известные заклинания (максимум)
+                                </span>
+                                <span className="text-sm font-medium text-foreground">
+                                  {Math.max(...cls.spellcasting.spellsKnown)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
 
-                          return maxSpellLevel > 0 ? (
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="bg-muted/50">
-                                    <th className="p-2 text-left font-medium min-w-[100px]">
-                                      Уровень персонажа \u2192 Уровень
-                                      заклинания
-                                    </th>
-                                    {Array.from(
-                                      { length: maxSpellLevel },
-                                      (_, i) => (
-                                        <th
-                                          key={i}
-                                          className="p-2 text-center font-medium min-w-[40px]"
-                                        >
-                                          {i + 1}
+                          {/* Spell Slots Table */}
+                          {(() => {
+                            const maxSpellLevel =
+                              cls.spellcasting.spellSlots.reduce(
+                                (max: number, level: number[]) =>
+                                  Math.max(max, level.length),
+                                0
+                              );
+
+                            return maxSpellLevel > 0 ? (
+                              <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                                <h4 className="font-medium text-foreground text-sm mb-3">
+                                  Ячейки заклинаний
+                                </h4>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-sm">
+                                    <thead>
+                                      <tr className="bg-muted/50">
+                                        <th className="p-2 text-left font-medium min-w-[80px] text-xs">
+                                          Ур. перс.
                                         </th>
-                                      )
-                                    )}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {Array.from(
-                                    { length: 20 },
-                                    (_, charLevel) => {
-                                      const rowHasData =
-                                        cls?.spellcasting?.spellSlots[
-                                          charLevel
-                                        ] &&
-                                        cls?.spellcasting?.spellSlots[
-                                          charLevel
-                                        ].some((slot: number) => slot > 0);
+                                        {Array.from(
+                                          { length: maxSpellLevel },
+                                          (_, i) => (
+                                            <th
+                                              key={i}
+                                              className="p-1 text-center font-medium min-w-[30px] text-xs"
+                                            >
+                                              {i + 1}
+                                            </th>
+                                          )
+                                        )}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {Array.from(
+                                        { length: 20 },
+                                        (_, charLevel) => {
+                                          const rowHasData =
+                                            cls?.spellcasting?.spellSlots[
+                                              charLevel
+                                            ] &&
+                                            cls?.spellcasting?.spellSlots[
+                                              charLevel
+                                            ].some((slot: number) => slot > 0);
 
-                                      return rowHasData ? (
-                                        <tr
-                                          key={charLevel}
-                                          className="border-b border-border/30"
-                                        >
-                                          <td className="p-2 font-medium bg-muted/20">
-                                            {charLevel + 1}
-                                          </td>
-                                          {Array.from(
-                                            { length: maxSpellLevel },
-                                            (_, spellLevel) => (
-                                              <td
-                                                key={`${charLevel}-${spellLevel}`}
-                                                className="p-1 text-center"
-                                              >
-                                                {cls?.spellcasting?.spellSlots[
-                                                  charLevel
-                                                ]?.[spellLevel] || 0}
+                                          return rowHasData ? (
+                                            <tr
+                                              key={charLevel}
+                                              className="border-b border-border/30"
+                                            >
+                                              <td className="p-1 font-medium bg-muted/20 text-xs">
+                                                {charLevel + 1}
                                               </td>
-                                            )
-                                          )}
-                                        </tr>
-                                      ) : null;
-                                    }
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
-                          ) : null;
-                        })()}
-                      </div>
-                    </div>
-                  )}
+                                              {Array.from(
+                                                { length: maxSpellLevel },
+                                                (_, spellLevel) => (
+                                                  <td
+                                                    key={`${charLevel}-${spellLevel}`}
+                                                    className="p-1 text-center text-xs"
+                                                  >
+                                                    {cls?.spellcasting
+                                                      ?.spellSlots[charLevel]?.[
+                                                      spellLevel
+                                                    ] || 0}
+                                                  </td>
+                                                )
+                                              )}
+                                            </tr>
+                                          ) : null;
+                                        }
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            ) : null;
+                          })()}
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-8">
+                          Класс не владеет магией
+                        </p>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </div>
               );
             })()}
@@ -2384,6 +2468,6 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
           </div>
         </div>
       )}
-    </PageLayout>
+    </>
   );
 }
