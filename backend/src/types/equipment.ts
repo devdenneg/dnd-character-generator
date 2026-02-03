@@ -3,6 +3,8 @@
 export interface StartingEquipment {
   equipment: EquipmentItem[];
   gold: number;
+  // Index signature for Prisma JSON compatibility
+  [key: string]: any;
 }
 
 export interface EquipmentItem {
@@ -24,6 +26,8 @@ export interface EquipmentItem {
   armorType?: 'light' | 'medium' | 'heavy' | 'shield';
   maxDexBonus?: number;
   properties?: string[];
+  // Index signature for Prisma JSON compatibility
+  [key: string]: any;
 }
 
 export interface SpellcastingConfig {
@@ -31,4 +35,6 @@ export interface SpellcastingConfig {
   cantripsKnown: number[];
   spellsKnown?: number[];
   spellSlots: number[][];
+  // Index signature for Prisma JSON compatibility
+  [key: string]: any;
 }

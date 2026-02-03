@@ -16,7 +16,7 @@ export interface CharacterData {
     wisdom: number;
     charisma: number;
   };
-  abilityScoreMethod: 'standard' | 'pointbuy' | 'roll';
+  abilityScoreMethod: "standard" | "pointbuy" | "roll";
   abilityScoreIncreases: Partial<{
     strength: number;
     dexterity: number;
@@ -61,6 +61,9 @@ export interface CharacterData {
   eyes: string;
   skin: string;
   hair: string;
+
+  // Index signature for Prisma JSON compatibility
+  [key: string]: any;
 }
 
 export interface CreateCharacterInput {

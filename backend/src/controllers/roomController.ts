@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import * as roomService from "../services/roomService";
+import { AuthenticatedRequest } from "../middleware/authMiddleware";
 
 const createRoomSchema = z.object({
   name: z.string().min(1).max(100),
@@ -24,7 +25,7 @@ const joinRoomSchema = z.object({
   characterId: z.string().uuid(),
 });
 
-export async function create(req: Request, res: Response) {
+export async function create(req: AuthenticatedRequest, res: Response) {
   try {
     const validatedData = createRoomSchema.parse(req.body);
     const userId = req.userId;
@@ -118,7 +119,7 @@ export async function getById(req: Request, res: Response) {
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthenticatedRequest, res: Response) {
   try {
     const roomId = req.params.id as string;
     const userId = req.userId;
@@ -157,7 +158,7 @@ export async function update(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthenticatedRequest, res: Response) {
   try {
     const roomId = req.params.id as string;
     const userId = req.userId;
@@ -212,7 +213,7 @@ export async function verifyPassword(req: Request, res: Response) {
   }
 }
 
-export async function joinRoom(req: Request, res: Response) {
+export async function joinRoom(req: AuthenticatedRequest, res: Response) {
   try {
     const roomId = req.params.id as string;
     const userId = req.userId;
@@ -272,7 +273,7 @@ export async function getRoomPlayers(req: Request, res: Response) {
   }
 }
 
-export async function startGame(req: Request, res: Response) {
+export async function startGame(req: AuthenticatedRequest, res: Response) {
   try {
     const roomId = req.params.id as string;
     const userId = req.userId;
