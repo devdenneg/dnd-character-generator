@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Search,
   Check,
@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Modal, ModalContent, ModalFooter } from "@/components/ui/modal";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useCharacterStore } from "@/store/characterStore";
-import { getAllBackgrounds } from "@/data/phb2024";
+import { useBackendBackgrounds } from "@/api/hooks";
 import { getFeatByName } from "@/data/phb2024/feats";
 import type { Background } from "@/types/character";
 import { t, getSkillNameRu } from "@/data/translations/ru";
@@ -128,13 +128,48 @@ export function BackgroundStep() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState<Background | null>(null);
   const { character, setBackground } = useCharacterStore();
-  const backgrounds = getAllBackgrounds();
+  const { data, isLoading } = useBackendBackgrounds("phb2024");
+
+  // Transform backend data to Background type
+  const backgrounds = useMemo(() => {
+    if (!data?.data?.backgrounds) return [];
+    return data.data.backgrounds.map((bg: any) => ({
+      id: bg.externalId,
+      name: bg.name,
+      nameRu: bg.nameRu,
+      description: bg.description,
+      skillProficiencies: bg.skillProficiencies,
+      toolProficiencies: bg.toolProficiencies,
+      languages: bg.languages,
+      equipment: bg.equipment,
+      startingGold: bg.startingGold,
+      originFeat: bg.originFeat,
+      abilityScoreIncrease: {
+        options: bg.abilityScoreIncrease.options,
+        // Ensure amount is a tuple of 3 numbers
+        amount: [
+          bg.abilityScoreIncrease.amount[0] || 0,
+          bg.abilityScoreIncrease.amount[1] || 0,
+          bg.abilityScoreIncrease.amount[2] || 0,
+        ] as [number, number, number],
+      },
+      source: bg.source,
+    }));
+  }, [data]);
 
   const filteredBackgrounds = backgrounds.filter(
     (bg) =>
       bg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bg.nameRu.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-pulse text-muted-foreground">Загрузка предысторий...</div>
+      </div>
+    );
+  }
 
   const handleSelectBackground = (background: Background) => {
     setBackground(background);
@@ -217,7 +252,7 @@ export function BackgroundStep() {
 
                 {/* Навыки */}
                 <div className="flex flex-wrap gap-1 mb-2">
-                  {bg.skillProficiencies.map((skill) => (
+                  {bg.skillProficiencies.map((skill:any) => (
                     <Badge key={skill} variant="secondary" className="text-xs">
                       {getSkillNameRu(skill)}
                     </Badge>
