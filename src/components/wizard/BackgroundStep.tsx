@@ -209,7 +209,7 @@ export function BackgroundStep() {
 
       {/* Сетка предысторий */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredBackgrounds.map((bg) => {
+        {filteredBackgrounds.map((bg: Background) => {
           const isSelected = character.background?.id === bg.id;
           const feat = getFeatByName(bg.originFeat || "");
 
@@ -252,7 +252,7 @@ export function BackgroundStep() {
 
                 {/* Навыки */}
                 <div className="flex flex-wrap gap-1 mb-2">
-                  {bg.skillProficiencies.map((skill:any) => (
+                  {bg.skillProficiencies.map((skill: string) => (
                     <Badge key={skill} variant="secondary" className="text-xs">
                       {getSkillNameRu(skill)}
                     </Badge>
