@@ -80,6 +80,17 @@ const SCHOOLS = [
   { value: "Преобразование", label: "Преобразование" },
 ];
 
+const AVAILABLE_CLASSES = [
+  { id: "wizard", name: "Волшебник", nameEn: "Wizard" },
+  { id: "sorcerer", name: "Чародей", nameEn: "Sorcerer" },
+  { id: "warlock", name: "Колдун", nameEn: "Warlock" },
+  { id: "bard", name: "Бард", nameEn: "Bard" },
+  { id: "cleric", name: "Жрец", nameEn: "Cleric" },
+  { id: "druid", name: "Друид", nameEn: "Druid" },
+  { id: "paladin", name: "Паладин", nameEn: "Paladin" },
+  { id: "ranger", name: "Следопыт", nameEn: "Ranger" },
+];
+
 interface SpellsPageProps {
   onBack?: () => void;
 }
@@ -88,6 +99,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   const { data, isLoading, error, refetch } = useBackendSpells();
   const { user } = useAuth();
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<number>(0);
   const [editingSpell, setEditingSpell] = useState<SpellFormData>({
     externalId: "",
     name: "",
@@ -104,7 +116,6 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [classInput, setClassInput] = useState("");
 
   // Selected spell data query
   const selectedSpellData = useQuery({
@@ -194,6 +205,11 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
       return;
     }
 
+    if (editingSpell.classes.length === 0) {
+      alert("Пожалуйста, выберите хотя бы один класс");
+      return;
+    }
+
     if (isCreateModalOpen) {
       createSpellMutation.mutate(editingSpell);
     } else {
@@ -204,24 +220,19 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     }
   };
 
-  const handleAddClass = () => {
-    if (!classInput.trim()) return;
-
+  const handleToggleClass = (classId: string) => {
     const classes = editingSpell.classes || [];
-    if (!classes.includes(classInput.trim())) {
+    if (classes.includes(classId)) {
       setEditingSpell({
         ...editingSpell,
-        classes: [...classes, classInput.trim()],
+        classes: classes.filter((c) => c !== classId),
+      });
+    } else {
+      setEditingSpell({
+        ...editingSpell,
+        classes: [...classes, classId],
       });
     }
-    setClassInput("");
-  };
-
-  const handleRemoveClass = (classToRemove: string) => {
-    setEditingSpell({
-      ...editingSpell,
-      classes: editingSpell.classes.filter((c) => c !== classToRemove),
-    });
   };
 
   const canEdit = user?.role === "master";
@@ -275,8 +286,15 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   }
 
   const spells = data?.data?.spells || [];
-  const cantrips = spells.filter((spell: Spell) => spell.level === 0);
-  const leveledSpells = spells.filter((spell: Spell) => spell.level > 0);
+
+  // Группируем заклинания по уровням
+  const spellsByLevel: Record<number, Spell[]> = {};
+  for (let i = 0; i <= 9; i++) {
+    spellsByLevel[i] = spells.filter((spell: Spell) => spell.level === i);
+  }
+
+  // Получаем заклинания выбранного уровня
+  const currentLevelSpells = spellsByLevel[selectedLevel] || [];
 
   const renderSpellCard = (spell: Spell, index: number) => {
     const isSelected = selectedSpell === spell.id;
@@ -400,14 +418,17 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
             <h5 className="font-semibold text-foreground mb-2">Доступно классам</h5>
             <div className="flex flex-wrap gap-2">
-              {spell.classes.map((className) => (
-                <span
-                  key={className}
-                  className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
-                >
-                  {className}
-                </span>
-              ))}
+              {spell.classes.map((classId) => {
+                const classInfo = AVAILABLE_CLASSES.find(c => c.id === classId);
+                return (
+                  <span
+                    key={classId}
+                    className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
+                  >
+                    {classInfo?.name || classId}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}
@@ -452,44 +473,63 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">
             Всего заклинаний: <span className="font-semibold text-foreground">{spells.length}</span>
-            {" "}(Заговоры: {cantrips.length}, Заклинания: {leveledSpells.length})
           </p>
         </div>
 
-        {/* Cantrips Section */}
-        {cantrips.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              Заговоры
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {cantrips.map((spell: Spell, index: number) => renderSpellCard(spell, index))}
-            </div>
+        {/* Tabs for spell levels */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={selectedLevel === 0 ? "default" : "outline"}
+              onClick={() => setSelectedLevel(0)}
+              className="gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Заговоры ({spellsByLevel[0]?.length || 0})
+            </Button>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => (
+              <Button
+                key={level}
+                variant={selectedLevel === level ? "default" : "outline"}
+                onClick={() => setSelectedLevel(level)}
+              >
+                {level} уровень ({spellsByLevel[level]?.length || 0})
+              </Button>
+            ))}
           </div>
-        )}
+        </div>
 
-        {/* Leveled Spells Section */}
-        {leveledSpells.length > 0 && (
+        {/* Spells Grid */}
+        {currentLevelSpells.length > 0 ? (
           <div>
             <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-              <Wand2 className="w-5 h-5 text-accent" />
-              Заклинания
+              {selectedLevel === 0 ? (
+                <>
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  Заговоры
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-5 h-5 text-accent" />
+                  Заклинания {selectedLevel} уровня
+                </>
+              )}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {leveledSpells.map((spell: Spell, index: number) => renderSpellCard(spell, index))}
+              {currentLevelSpells.map((spell: Spell, index: number) => renderSpellCard(spell, index))}
             </div>
           </div>
-        )}
-
-        {spells.length === 0 && (
+        ) : (
           <div className="text-center py-12">
             <Wand2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">
               Нет заклинаний
             </h3>
             <p className="text-sm text-muted-foreground">
-              Заклинания пока не загружены
+              {selectedLevel === 0
+                ? "Заговоры пока не загружены"
+                : `Заклинания ${selectedLevel} уровня пока не загружены`
+              }
             </p>
           </div>
         )}
@@ -645,54 +685,43 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               {/* Classes */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-base font-medium">Доступно классам</Label>
+                  <Label className="text-base font-medium">Доступно классам *</Label>
                   <span className="text-sm text-muted-foreground">
                     {editingSpell.classes.length} {editingSpell.classes.length === 1 ? "класс" : "классов"}
                   </span>
                 </div>
 
-                {/* Add Class Form */}
-                <div className="flex gap-2">
-                  <Input
-                    value={classInput}
-                    onChange={(e) => setClassInput(e.target.value)}
-                    placeholder="Название класса (например: wizard)"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddClass();
-                      }
-                    }}
-                  />
-                  <Button
-                    onClick={handleAddClass}
-                    disabled={!classInput.trim()}
-                    className="gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Добавить
-                  </Button>
-                </div>
-
-                {/* Classes List */}
-                {editingSpell.classes.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {editingSpell.classes.map((className) => (
-                      <div
-                        key={className}
-                        className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
+                {/* Classes Grid with Checkboxes */}
+                <div className="grid grid-cols-2 gap-3">
+                  {AVAILABLE_CLASSES.map((classOption) => {
+                    const isSelected = editingSpell.classes.includes(classOption.id);
+                    return (
+                      <label
+                        key={classOption.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50 hover:bg-muted/50"
+                        }`}
                       >
-                        <span className="text-sm">{className}</span>
-                        <button
-                          onClick={() => handleRemoveClass(className)}
-                          className="hover:text-destructive"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleClass(classOption.id)}
+                          className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-foreground">
+                            {classOption.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {classOption.nameEn}
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Action Buttons */}
