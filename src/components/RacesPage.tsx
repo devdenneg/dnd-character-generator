@@ -294,45 +294,34 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
   return (
     <div className="min-h-screen p-4">
-      <div className="max-w-5xl mx-auto">
-        {onBack && (
-          <div className="mb-6">
-            <Button variant="ghost" onClick={onBack}>
-              ← Назад
-            </Button>
-          </div>
-        )}
-
-        <div className="mb-8">
-          <div className="flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Users className="w-5 h-5 text-white" />
-              </div>
+              {onBack && (
+                <Button variant="ghost" size="sm" onClick={onBack}>
+                  ← Назад
+                </Button>
+              )}
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Расы PHB 2024</h1>
+                <h1 className="text-2xl font-bold text-foreground">Расы</h1>
                 <p className="text-sm text-muted-foreground">
-                  официальные расы из Книги игрока 2024
+                  {races.length} рас
                 </p>
               </div>
             </div>
 
             {canEdit && (
-              <Button onClick={handleCreateRace} className="gap-2">
+              <Button onClick={handleCreateRace} size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
-                Создать расу
+                Создать
               </Button>
             )}
           </div>
         </div>
 
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">
-            Загружено рас: <span className="font-semibold text-foreground">{races.length}</span>
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {races.map((race: Race, index: number) => {
             const Icon = RACE_ICONS[race.externalId] || Users;
             const isSelected = selectedRace === race.id;
@@ -341,59 +330,47 @@ export function RacesPage({ onBack }: RacesPageProps) {
               <div key={race.id} className="space-y-4">
                 <button
                   onClick={() => setSelectedRace(isSelected ? null : race.id)}
-                  className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 backdrop-blur-sm ${
+                  className={`w-full text-left p-4 rounded-lg border transition-all ${
                     isSelected
-                      ? "bg-card/80 border-primary/50 ring-2 ring-primary/20"
-                      : "bg-card/60 border-border/50 hover:border-primary/30 hover:bg-card/80"
+                      ? "bg-primary/10 border-primary"
+                      : "bg-card border-border hover:border-primary/50"
                   }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3">
                     {/* Icon */}
-                    <div
-                      className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent ${
-                        !isSelected && "hover:scale-110"
-                      } transition-transform`}
-                    >
-                      <Icon className="w-7 h-7 text-white" />
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-lg text-foreground">
+                        <h3 className="font-semibold text-sm text-foreground truncate">
                           {race.nameRu}
                         </h3>
                         {canEdit && isSelected && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="p-1 h-8 w-8"
+                            className="h-6 w-6 p-0"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditRace(race);
                             }}
                           >
-                            <Pencil className="w-4 h-4" />
+                            <Pencil className="w-3 h-3" />
                           </Button>
                         )}
-                        {!canEdit && (
-                          <ChevronRight
-                            className={`w-5 h-5 text-muted-foreground transition-all ${
-                              isSelected ? "rotate-90 text-primary" : ""
-                            }`}
-                          />
-                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
+                      <p className="text-xs text-muted-foreground truncate">
                         {race.name}
                       </p>
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1 flex-wrap mt-1">
                         <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                          Скорость: {race.speed} футов
+                          {race.speed} фт
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                          Размер: {race.size === "Medium" ? "Средний" : race.size === "Small" ? "Малый" : "Большой"}
+                          {race.size === "Medium" ? "Средний" : race.size === "Small" ? "Малый" : "Большой"}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
                           {(race.traits as RaceTrait[])?.length || 0} черт
@@ -405,38 +382,38 @@ export function RacesPage({ onBack }: RacesPageProps) {
 
                 {/* Expanded Details */}
                 {isSelected && (
-                  <div className="bg-card/80 border border-primary/20 rounded-2xl p-6 mt-2 animate-fade-in">
-                    <div className="flex items-start justify-between mb-4">
-                      <h4 className="font-semibold text-foreground">Описание</h4>
+                  <div className="bg-card border border-primary/20 rounded-lg p-4 mt-2 animate-fade-in">
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="font-semibold text-sm text-foreground">Описание</h4>
                       {canEdit && selectedRaceData.data?.data?.race && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-destructive hover:text-destructive p-1"
+                          className="text-destructive hover:text-destructive h-6 w-6 p-0"
                           onClick={() => {
-                            if (confirm(`Вы уверены, что хотите удалить расу "${selectedRaceData.data.data.race.nameRu}"?`)) {
+                            if (confirm(`Удалить расу "${selectedRaceData.data.data.race.nameRu}"?`)) {
                               deleteRaceMutation.mutate(selectedRace);
                             }
                           }}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                       {race.description}
                     </p>
 
-                    <h4 className="font-semibold text-foreground mb-2">Черты</h4>
-                    <div className="space-y-3">
+                    <h4 className="font-semibold text-sm text-foreground mb-2">Черты</h4>
+                    <div className="space-y-2">
                       {(race.traits as RaceTrait[])?.map((trait: RaceTrait) => (
                         <div
                           key={trait.id}
-                          className="p-4 rounded-xl bg-muted/30 border border-border/30"
+                          className="p-3 rounded-lg bg-muted/30 border border-border/30"
                         >
                           <div className="flex items-center justify-between gap-2 mb-1">
                             <div>
-                              <h5 className="font-medium text-foreground text-sm">
+                              <h5 className="font-medium text-foreground text-xs">
                                 {trait.nameRu}
                               </h5>
                               <span className="text-xs text-muted-foreground/70">
@@ -447,7 +424,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-destructive hover:text-destructive p-1 h-6 w-6"
+                                className="text-destructive hover:text-destructive h-5 w-5 p-0"
                                 onClick={() => handleRemoveTrait(trait.id)}
                               >
                                 <X className="w-3 h-3" />

@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import {
   BookOpen,
-  ChevronRight,
   Briefcase,
   Scroll,
   Crown,
@@ -369,101 +368,78 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
 
   return (
     <div className="min-h-screen p-4">
-      <div className="max-w-5xl mx-auto">
-        {onBack && (
-          <div className="mb-6">
-            <Button variant="ghost" onClick={onBack}>
-              ← Назад
-            </Button>
-          </div>
-        )}
-
-        <div className="mb-8">
-          <div className="flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
+              {onBack && (
+                <Button variant="ghost" size="sm" onClick={onBack}>
+                  ← Назад
+                </Button>
+              )}
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Предыстории PHB 2024</h1>
+                <h1 className="text-2xl font-bold text-foreground">Предыстории</h1>
                 <p className="text-sm text-muted-foreground">
-                  официальные предыстории из Книги игрока 2024
+                  {backgrounds.length} предысторий
                 </p>
               </div>
             </div>
 
             {canEdit && (
-              <Button onClick={handleCreateBackground} className="gap-2">
+              <Button onClick={handleCreateBackground} size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
-                Создать предысторию
+                Создать
               </Button>
             )}
           </div>
         </div>
 
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">
-            Загружено предысторий: <span className="font-semibold text-foreground">{backgrounds.length}</span>
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {backgrounds.map((background: Background, index: number) => {
             const Icon = BACKGROUND_ICONS[background.externalId] || BookOpen;
             const isSelected = selectedBackground === background.id;
 
             return (
-              <div key={background.id} className="space-y-4">
+              <div key={background.id + index} className="space-y-4">
                 <button
                   onClick={() => setSelectedBackground(isSelected ? null : background.id)}
-                  className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 backdrop-blur-sm ${
+                  className={`w-full text-left p-4 rounded-lg border transition-all ${
                     isSelected
-                      ? "bg-card/80 border-primary/50 ring-2 ring-primary/20"
-                      : "bg-card/60 border-border/50 hover:border-primary/30 hover:bg-card/80"
+                      ? "bg-primary/10 border-primary"
+                      : "bg-card border-border hover:border-primary/50"
                   }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3">
                     {/* Icon */}
-                    <div
-                      className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent ${
-                        !isSelected && "hover:scale-110"
-                      } transition-transform`}
-                    >
-                      <Icon className="w-7 h-7 text-white" />
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-lg text-foreground">
+                        <h3 className="font-semibold text-sm text-foreground truncate">
                           {background.nameRu}
                         </h3>
                         {canEdit && isSelected && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="p-1 h-8 w-8"
+                            className="h-6 w-6 p-0"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditBackground(background);
                             }}
                           >
-                            <Pencil className="w-4 h-4" />
+                            <Pencil className="w-3 h-3" />
                           </Button>
                         )}
-                        {!canEdit && (
-                          <ChevronRight
-                            className={`w-5 h-5 text-muted-foreground transition-all ${
-                              isSelected ? "rotate-90 text-primary" : ""
-                            }`}
-                          />
-                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
+                      <p className="text-xs text-muted-foreground truncate">
                         {background.name}
                       </p>
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1 flex-wrap mt-1">
                         <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
                           {background.skillProficiencies.length} навыка
                         </span>
