@@ -72,6 +72,7 @@ export interface CharacterClass {
 
 export interface Background {
   id: string;
+  externalId: string;
   name: string;
   nameRu: string;
   description: string;

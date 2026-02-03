@@ -2,7 +2,7 @@
 
 import type { Background } from "@/types/character";
 
-export const phb2024Backgrounds: Background[] = [
+export const phb2024Backgrounds = [
   {
     id: "acolyte",
     name: "Acolyte",
@@ -370,10 +370,10 @@ export const phb2024Backgrounds: Background[] = [
   },
 ];
 
-export function getBackgroundById(id: string): Background | undefined {
+export function getBackgroundById(id: string) {
   return phb2024Backgrounds.find((bg) => bg.id === id);
 }
 
-export function getAllBackgrounds(): Background[] {
+export function getAllBackgrounds() {
   return phb2024Backgrounds;
 }

@@ -133,7 +133,7 @@ export function BackgroundStep() {
   // Transform backend data to Background type
   const backgrounds = useMemo(() => {
     if (!data?.data?.backgrounds) return [];
-    return data.data.backgrounds.map((bg: any) => ({
+    return data.data.backgrounds.map((bg: Background) => ({
       id: bg.externalId,
       name: bg.name,
       nameRu: bg.nameRu,
@@ -158,7 +158,7 @@ export function BackgroundStep() {
   }, [data]);
 
   const filteredBackgrounds = backgrounds.filter(
-    (bg) =>
+    (bg: Background) =>
       bg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bg.nameRu.toLowerCase().includes(searchTerm.toLowerCase()),
   );
