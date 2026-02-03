@@ -36,6 +36,7 @@ import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { TelegramProvider } from "@/contexts/TelegramContext";
+import { PageLayout } from "@/components/PageLayout";
 import "@/i18n";
 
 const queryClient = new QueryClient({
@@ -54,7 +55,7 @@ function CharacterWizardPage() {
   const [showGlossary, setShowGlossary] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Clear character store when leaving the page
+  // Clear character store when leaving page
   useEffect(() => {
     return () => {
       // Не сбрасываем если персонаж был загружен из сохранения
@@ -67,12 +68,8 @@ function CharacterWizardPage() {
   // Show login required message
   if (!authLoading && !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="app-background" />
-        <div className="ambient-glow ambient-glow-1" />
-        <div className="ambient-glow ambient-glow-2" />
-
-        <div className="relative z-10 max-w-md w-full bg-card/80 backdrop-blur-xl rounded-2xl border border-border/50 p-8 text-center">
+      <PageLayout>
+        <div className="relative z-20 max-w-md w-full mx-auto bg-card/80 backdrop-blur-xl rounded-2xl border border-border/50 p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/20 flex items-center justify-center">
             <Home className="w-8 h-8 text-primary" />
           </div>
@@ -94,7 +91,7 @@ function CharacterWizardPage() {
             ← На главную
           </Button>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
@@ -135,12 +132,7 @@ function CharacterWizardPage() {
 
   if (showGlossary) {
     return (
-      <div className="min-h-screen animate-fade-in">
-        {/* Background */}
-        <div className="app-background" />
-        <div className="ambient-glow ambient-glow-1" />
-        <div className="ambient-glow ambient-glow-2" />
-
+      <PageLayout>
         <div className="relative z-10">
           <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
             <div className="max-w-4xl mx-auto px-4 py-4">
@@ -173,7 +165,7 @@ function CharacterWizardPage() {
             </div>
           </main>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
@@ -204,12 +196,7 @@ function GlossaryPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen animate-fade-in">
-      {/* Background */}
-      <div className="app-background" />
-      <div className="ambient-glow ambient-glow-1" />
-      <div className="ambient-glow ambient-glow-2" />
-
+    <PageLayout>
       <div className="relative z-10">
         <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
           <div className="max-w-4xl mx-auto px-4 py-4">
@@ -243,7 +230,7 @@ function GlossaryPage() {
           </div>
         </main>
       </div>
-    </div>
+    </PageLayout>
   );
 }
 
@@ -349,7 +336,6 @@ function AppRoutes() {
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="app-background" />
         <div className="animate-pulse text-muted-foreground">Загрузка...</div>
       </div>
     );

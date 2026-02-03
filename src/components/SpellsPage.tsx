@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { PageLayout } from "@/components/PageLayout";
 import {
   Sparkles,
   Plus,
@@ -97,7 +98,7 @@ interface SpellsPageProps {
 }
 
 export function SpellsPage({ onBack }: SpellsPageProps) {
-  const { data, isLoading, error, refetch } = useBackendSpells();
+  const { data, error, refetch } = useBackendSpells();
   const { user } = useAuth();
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<number>(0);
@@ -235,7 +236,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
   const canEdit = user?.role === "master";
 
-  const spells = data?.data?.spells || [];
+  const spells = useMemo(() => data?.data?.spells || [], [data?.data?.spells]);
 
   // Группируем заклинания по уровням
   const spellsByLevel: Record<number, Spell[]> = useMemo(() => {
@@ -259,54 +260,6 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
         spell.description.toLowerCase().includes(search)
     );
   }, [spellsByLevel, selectedLevel, searchTerm]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen p-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="w-full p-6 rounded-2xl border bg-card/60 backdrop-blur-sm border-border/50 animate-pulse"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-muted" />
-                  <div className="flex-1 space-y-3">
-                    <div className="h-5 bg-muted rounded w-1/2" />
-                    <div className="h-4 bg-muted rounded w-full" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen p-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-6">
-            <h2 className="text-xl font-semibold text-destructive mb-2">
-              Ошибка загрузки заклинаний
-            </h2>
-            <p className="text-sm text-destructive/80">
-              Не удалось загрузить данные о заклинаниях с сервера. Пожалуйста,
-              попробуйте позже.
-            </p>
-            {onBack && (
-              <Button variant="outline" className="mt-4" onClick={onBack}>
-                Назад
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const renderSpellCard = (spell: Spell) => {
     return (
@@ -332,9 +285,32 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     );
   };
 
+  if (error) {
+    return (
+      <PageLayout>
+        <div className="max-w-5xl mx-auto p-4">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-6">
+            <h2 className="text-xl font-semibold text-destructive mb-2">
+              Ошибка загрузки заклинаний
+            </h2>
+            <p className="text-sm text-destructive/80">
+              Не удалось загрузить данные о заклинаниях с сервера. Пожалуйста,
+              попробуйте позже.
+            </p>
+            {onBack && (
+              <Button variant="outline" className="mt-4" onClick={onBack}>
+                Назад
+              </Button>
+            )}
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-7xl mx-auto">
+    <PageLayout>
+      <div className="max-w-7xl mx-auto p-4 pt-8 pb-8">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between gap-4 mb-4">
@@ -578,277 +554,289 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
             })()}
           </SlideOverDrawer>
         )}
-      </div>
 
-      {/* Create/Edit Modal */}
-      {(isCreateModalOpen || isEditModalOpen) && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
-              <h2 className="text-xl font-semibold text-foreground">
-                {isCreateModalOpen
-                  ? "Создать заклинание"
-                  : "Редактировать заклинание"}
-              </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setIsCreateModalOpen(false);
-                  setIsEditModalOpen(false);
-                  resetCreateForm();
-                }}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              {/* External ID */}
-              <div className="space-y-2">
-                <Label htmlFor="externalId">Внешний ID *</Label>
-                <Input
-                  id="externalId"
-                  value={editingSpell.externalId}
-                  onChange={(e) =>
-                    setEditingSpell({
-                      ...editingSpell,
-                      externalId: e.target.value,
-                    })
-                  }
-                  placeholder="Например: fire-bolt"
-                  disabled={!isCreateModalOpen}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Уникальный идентификатор, используется в коде. Можно изменить
-                  только при создании.
-                </p>
-              </div>
-
-              {/* Name (Russian) */}
-              <div className="space-y-2">
-                <Label htmlFor="nameRu">Название (русский) *</Label>
-                <Input
-                  id="nameRu"
-                  value={editingSpell.nameRu}
-                  onChange={(e) =>
-                    setEditingSpell({ ...editingSpell, nameRu: e.target.value })
-                  }
-                  placeholder="Например: Огненный снаряд"
-                />
-              </div>
-
-              {/* Name (English) */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Название (английский) *</Label>
-                <Input
-                  id="name"
-                  value={editingSpell.name}
-                  onChange={(e) =>
-                    setEditingSpell({ ...editingSpell, name: e.target.value })
-                  }
-                  placeholder="Например: Fire Bolt"
-                />
-              </div>
-
-              {/* Level */}
-              <div className="space-y-2">
-                <Label htmlFor="level">Уровень заклинания *</Label>
-                <Select
-                  id="level"
-                  options={SPELL_LEVELS}
-                  value={editingSpell.level.toString()}
-                  placeholder="Выберите уровень"
-                  onChange={(e) =>
-                    setEditingSpell({
-                      ...editingSpell,
-                      level: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-
-              {/* School */}
-              <div className="space-y-2">
-                <Label htmlFor="school">Школа магии *</Label>
-                <Select
-                  id="school"
-                  options={SCHOOLS}
-                  value={editingSpell.school}
-                  placeholder="Выберите школу"
-                  onChange={(e) =>
-                    setEditingSpell({ ...editingSpell, school: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* Casting Time */}
-              <div className="space-y-2">
-                <Label htmlFor="castingTime">Время накладывания *</Label>
-                <Input
-                  id="castingTime"
-                  value={editingSpell.castingTime}
-                  onChange={(e) =>
-                    setEditingSpell({
-                      ...editingSpell,
-                      castingTime: e.target.value,
-                    })
-                  }
-                  placeholder="Например: 1 действие"
-                />
-              </div>
-
-              {/* Range */}
-              <div className="space-y-2">
-                <Label htmlFor="range">Дистанция *</Label>
-                <Input
-                  id="range"
-                  value={editingSpell.range}
-                  onChange={(e) =>
-                    setEditingSpell({ ...editingSpell, range: e.target.value })
-                  }
-                  placeholder="Например: 120 футов"
-                />
-              </div>
-
-              {/* Components */}
-              <div className="space-y-2">
-                <Label htmlFor="components">Компоненты *</Label>
-                <Input
-                  id="components"
-                  value={editingSpell.components}
-                  onChange={(e) =>
-                    setEditingSpell({
-                      ...editingSpell,
-                      components: e.target.value,
-                    })
-                  }
-                  placeholder="Например: В, С"
-                />
-              </div>
-
-              {/* Duration */}
-              <div className="space-y-2">
-                <Label htmlFor="duration">Длительность *</Label>
-                <Input
-                  id="duration"
-                  value={editingSpell.duration}
-                  onChange={(e) =>
-                    setEditingSpell({
-                      ...editingSpell,
-                      duration: e.target.value,
-                    })
-                  }
-                  placeholder="Например: Мгновенная"
-                />
-              </div>
-
-              {/* Source */}
-              <div className="space-y-2">
-                <Label htmlFor="source">Источник *</Label>
-                <Select
-                  id="source"
-                  options={SOURCES}
-                  value={editingSpell.source}
-                  placeholder="Выберите источник"
-                  onChange={(e) =>
-                    setEditingSpell({ ...editingSpell, source: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Описание *</Label>
-                <Textarea
-                  id="description"
-                  value={editingSpell.description}
-                  onChange={(e) =>
-                    setEditingSpell({
-                      ...editingSpell,
-                      description: e.target.value,
-                    })
-                  }
-                  placeholder="Описание заклинания..."
-                  rows={4}
-                />
-              </div>
-
-              {/* Classes */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-base font-medium">
-                    Доступно классам *
-                  </Label>
-                  <span className="text-sm text-muted-foreground">
-                    {editingSpell.classes.length}{" "}
-                    {editingSpell.classes.length === 1 ? "класс" : "классов"}
-                  </span>
-                </div>
-
-                {/* Classes Grid with Checkboxes */}
-                <div className="grid grid-cols-2 gap-3">
-                  {AVAILABLE_CLASSES.map((classOption) => {
-                    const isSelected = editingSpell.classes.includes(
-                      classOption.id
-                    );
-                    return (
-                      <label
-                        key={classOption.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50 hover:bg-muted/50"
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleToggleClass(classOption.id)}
-                          className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
-                        />
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-foreground">
-                            {classOption.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {classOption.nameEn}
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-border/50">
+        {/* Create/Edit Modal */}
+        {(isCreateModalOpen || isEditModalOpen) && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
+                <h2 className="text-xl font-semibold text-foreground">
+                  {isCreateModalOpen
+                    ? "Создать заклинание"
+                    : "Редактировать заклинание"}
+                </h2>
                 <Button
-                  variant="outline"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setIsCreateModalOpen(false);
                     setIsEditModalOpen(false);
                     resetCreateForm();
                   }}
                 >
-                  Отмена
+                  <X className="w-4 h-4" />
                 </Button>
-                <Button
-                  onClick={handleSaveSpell}
-                  disabled={
-                    createSpellMutation.isPending ||
-                    updateSpellMutation.isPending
-                  }
-                  className="gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {isCreateModalOpen ? "Создать" : "Сохранить"}
-                </Button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {/* External ID */}
+                <div className="space-y-2">
+                  <Label htmlFor="externalId">Внешний ID *</Label>
+                  <Input
+                    id="externalId"
+                    value={editingSpell.externalId}
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        externalId: e.target.value,
+                      })
+                    }
+                    placeholder="Например: fire-bolt"
+                    disabled={!isCreateModalOpen}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Уникальный идентификатор, используется в коде. Можно
+                    изменить только при создании.
+                  </p>
+                </div>
+
+                {/* Name (Russian) */}
+                <div className="space-y-2">
+                  <Label htmlFor="nameRu">Название (русский) *</Label>
+                  <Input
+                    id="nameRu"
+                    value={editingSpell.nameRu}
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        nameRu: e.target.value,
+                      })
+                    }
+                    placeholder="Например: Огненный снаряд"
+                  />
+                </div>
+
+                {/* Name (English) */}
+                <div className="space-y-2">
+                  <Label htmlFor="name">Название (английский) *</Label>
+                  <Input
+                    id="name"
+                    value={editingSpell.name}
+                    onChange={(e) =>
+                      setEditingSpell({ ...editingSpell, name: e.target.value })
+                    }
+                    placeholder="Например: Fire Bolt"
+                  />
+                </div>
+
+                {/* Level */}
+                <div className="space-y-2">
+                  <Label htmlFor="level">Уровень заклинания *</Label>
+                  <Select
+                    id="level"
+                    options={SPELL_LEVELS}
+                    value={editingSpell.level.toString()}
+                    placeholder="Выберите уровень"
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        level: parseInt(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                {/* School */}
+                <div className="space-y-2">
+                  <Label htmlFor="school">Школа магии *</Label>
+                  <Select
+                    id="school"
+                    options={SCHOOLS}
+                    value={editingSpell.school}
+                    placeholder="Выберите школу"
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        school: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Casting Time */}
+                <div className="space-y-2">
+                  <Label htmlFor="castingTime">Время накладывания *</Label>
+                  <Input
+                    id="castingTime"
+                    value={editingSpell.castingTime}
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        castingTime: e.target.value,
+                      })
+                    }
+                    placeholder="Например: 1 действие"
+                  />
+                </div>
+
+                {/* Range */}
+                <div className="space-y-2">
+                  <Label htmlFor="range">Дистанция *</Label>
+                  <Input
+                    id="range"
+                    value={editingSpell.range}
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        range: e.target.value,
+                      })
+                    }
+                    placeholder="Например: 120 футов"
+                  />
+                </div>
+
+                {/* Components */}
+                <div className="space-y-2">
+                  <Label htmlFor="components">Компоненты *</Label>
+                  <Input
+                    id="components"
+                    value={editingSpell.components}
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        components: e.target.value,
+                      })
+                    }
+                    placeholder="Например: В, С"
+                  />
+                </div>
+
+                {/* Duration */}
+                <div className="space-y-2">
+                  <Label htmlFor="duration">Длительность *</Label>
+                  <Input
+                    id="duration"
+                    value={editingSpell.duration}
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        duration: e.target.value,
+                      })
+                    }
+                    placeholder="Например: Мгновенная"
+                  />
+                </div>
+
+                {/* Source */}
+                <div className="space-y-2">
+                  <Label htmlFor="source">Источник *</Label>
+                  <Select
+                    id="source"
+                    options={SOURCES}
+                    value={editingSpell.source}
+                    placeholder="Выберите источник"
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        source: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label htmlFor="description">Описание *</Label>
+                  <Textarea
+                    id="description"
+                    value={editingSpell.description}
+                    onChange={(e) =>
+                      setEditingSpell({
+                        ...editingSpell,
+                        description: e.target.value,
+                      })
+                    }
+                    placeholder="Описание заклинания..."
+                    rows={4}
+                  />
+                </div>
+
+                {/* Classes */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-medium">
+                      Доступно классам *
+                    </Label>
+                    <span className="text-sm text-muted-foreground">
+                      {editingSpell.classes.length}{" "}
+                      {editingSpell.classes.length === 1 ? "класс" : "классов"}
+                    </span>
+                  </div>
+
+                  {/* Classes Grid with Checkboxes */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {AVAILABLE_CLASSES.map((classOption) => {
+                      const isSelected = editingSpell.classes.includes(
+                        classOption.id
+                      );
+                      return (
+                        <label
+                          key={classOption.id}
+                          className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                            isSelected
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50 hover:bg-muted/50"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleClass(classOption.id)}
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
+                          />
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-foreground">
+                              {classOption.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {classOption.nameEn}
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4 border-t border-border/50">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsCreateModalOpen(false);
+                      setIsEditModalOpen(false);
+                      resetCreateForm();
+                    }}
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    onClick={handleSaveSpell}
+                    disabled={
+                      createSpellMutation.isPending ||
+                      updateSpellMutation.isPending
+                    }
+                    className="gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isCreateModalOpen ? "Создать" : "Сохранить"}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </PageLayout>
   );
 }
