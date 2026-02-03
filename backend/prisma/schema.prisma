@@ -226,3 +226,25 @@ model Background {
   @@index([externalId])
   @@index([source])
 }
+
+model Spell {
+  id          String   @id @default(uuid())
+  externalId  String   @unique // ID from the frontend (e.g., "fire-bolt", "magic-missile")
+  name        String
+  nameRu      String
+  level       Int      // 0 for cantrips, 1-9 for spell levels
+  school      String   // School of magic (e.g., "Воплощение", "Вызов")
+  castingTime String
+  range       String
+  components  String
+  duration    String
+  description String   @db.Text
+  classes     String[] // Array of class IDs that can use this spell
+  source      String   @default("phb2024")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([externalId])
+  @@index([level])
+  @@index([source])
+}

@@ -16,6 +16,7 @@
     "seed:races": "ts-node seed-races.ts",
     "seed:classes": "ts-node seed-classes.ts",
     "seed:backgrounds": "ts-node seed-backgrounds.ts",
+    "seed:spells": "ts-node seed-spells.ts",
     "generate:classes:csv": "ts-node generate-classes-csv.ts"
   },
   "keywords": [

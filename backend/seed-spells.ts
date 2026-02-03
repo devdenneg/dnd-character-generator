@@ -1,6 +1,11 @@
-export const level1Spells = [
+// Seed script for Spells data
+
+import { seedSpells } from "./src/services/spellService";
+
+// Data from spells
+const spellsData = [
   {
-    id: "fire-bolt",
+    externalId: "fire-bolt",
     name: "Fire Bolt",
     nameRu: "Огненный снаряд",
     level: 0,
@@ -14,7 +19,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "ray-of-frost",
+    externalId: "ray-of-frost",
     name: "Ray of Frost",
     nameRu: "Луч холода",
     level: 0,
@@ -28,7 +33,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "shocking-grasp",
+    externalId: "shocking-grasp",
     name: "Shocking Grasp",
     nameRu: "Электрошок",
     level: 0,
@@ -42,7 +47,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "light",
+    externalId: "light",
     name: "Light",
     nameRu: "Свет",
     level: 0,
@@ -56,7 +61,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "cleric"],
   },
   {
-    id: "dancing-lights",
+    externalId: "dancing-lights",
     name: "Dancing Lights",
     nameRu: "Пляшущие огоньки",
     level: 0,
@@ -70,7 +75,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard"],
   },
   {
-    id: "sacred-flame",
+    externalId: "sacred-flame",
     name: "Sacred Flame",
     nameRu: "Священное пламя",
     level: 0,
@@ -84,7 +89,7 @@ export const level1Spells = [
     classes: ["cleric"],
   },
   {
-    id: "word-of-radiance",
+    externalId: "word-of-radiance",
     name: "Word of Radiance",
     nameRu: "Слово сияния",
     level: 0,
@@ -98,7 +103,7 @@ export const level1Spells = [
     classes: ["cleric"],
   },
   {
-    id: "thunderclap",
+    externalId: "thunderclap",
     name: "Thunderclap",
     nameRu: "Раскат грома",
     level: 0,
@@ -112,7 +117,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "druid", "warlock"],
   },
   {
-    id: "eldritch-blast",
+    externalId: "eldritch-blast",
     name: "Eldritch Blast",
     nameRu: "Мистический заряд",
     level: 0,
@@ -126,7 +131,7 @@ export const level1Spells = [
     classes: ["warlock"],
   },
   {
-    id: "acid-splash",
+    externalId: "acid-splash",
     name: "Acid Splash",
     nameRu: "Кислотный всплеск",
     level: 0,
@@ -140,7 +145,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "sword-burst",
+    externalId: "sword-burst",
     name: "Sword Burst",
     nameRu: "Взрыв клинков",
     level: 0,
@@ -156,7 +161,7 @@ export const level1Spells = [
 
   // --- Вызов (Conjuration) ---
   {
-    id: "mage-hand",
+    externalId: "mage-hand",
     name: "Mage Hand",
     nameRu: "Волшебная рука",
     level: 0,
@@ -170,7 +175,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "warlock"],
   },
   {
-    id: "produce-flame",
+    externalId: "produce-flame",
     name: "Produce Flame",
     nameRu: "Создание пламени",
     level: 0,
@@ -184,7 +189,7 @@ export const level1Spells = [
     classes: ["druid"],
   },
   {
-    id: "create-bonfire",
+    externalId: "create-bonfire",
     name: "Create Bonfire",
     nameRu: "Создание костра",
     level: 0,
@@ -198,7 +203,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid", "warlock"],
   },
   {
-    id: "infestation",
+    externalId: "infestation",
     name: "Infestation",
     nameRu: "Заражение",
     level: 0,
@@ -214,7 +219,7 @@ export const level1Spells = [
 
   // --- Прорицание (Divination) ---
   {
-    id: "guidance",
+    externalId: "guidance",
     name: "Guidance",
     nameRu: "Указание",
     level: 0,
@@ -228,7 +233,7 @@ export const level1Spells = [
     classes: ["cleric", "druid"],
   },
   {
-    id: "true-strike",
+    externalId: "true-strike",
     name: "True Strike",
     nameRu: "Верный удар",
     level: 0,
@@ -244,7 +249,7 @@ export const level1Spells = [
 
   // --- Очарование (Enchantment) ---
   {
-    id: "friends",
+    externalId: "friends",
     name: "Friends",
     nameRu: "Друзья",
     level: 0,
@@ -258,7 +263,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "warlock"],
   },
   {
-    id: "vicious-mockery",
+    externalId: "vicious-mockery",
     name: "Vicious Mockery",
     nameRu: "Злая насмешка",
     level: 0,
@@ -272,7 +277,7 @@ export const level1Spells = [
     classes: ["bard"],
   },
   {
-    id: "mind-sliver",
+    externalId: "mind-sliver",
     name: "Mind Sliver",
     nameRu: "Осколок разума",
     level: 0,
@@ -288,7 +293,7 @@ export const level1Spells = [
 
   // --- Иллюзия (Illusion) ---
   {
-    id: "minor-illusion",
+    externalId: "minor-illusion",
     name: "Minor Illusion",
     nameRu: "Малая иллюзия",
     level: 0,
@@ -304,7 +309,7 @@ export const level1Spells = [
 
   // --- Некромантия (Necromancy) ---
   {
-    id: "chill-touch",
+    externalId: "chill-touch",
     name: "Chill Touch",
     nameRu: "Леденящее прикосновение",
     level: 0,
@@ -318,7 +323,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "warlock"],
   },
   {
-    id: "spare-the-dying",
+    externalId: "spare-the-dying",
     name: "Spare the Dying",
     nameRu: "Уход за умирающим",
     level: 0,
@@ -332,7 +337,7 @@ export const level1Spells = [
     classes: ["cleric"],
   },
   {
-    id: "toll-the-dead",
+    externalId: "toll-the-dead",
     name: "Toll the Dead",
     nameRu: "Погребальный звон",
     level: 0,
@@ -348,7 +353,7 @@ export const level1Spells = [
 
   // --- Преобразование (Transmutation) ---
   {
-    id: "prestidigitation",
+    externalId: "prestidigitation",
     name: "Prestidigitation",
     nameRu: "Фокусы",
     level: 0,
@@ -362,7 +367,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "warlock"],
   },
   {
-    id: "message",
+    externalId: "message",
     name: "Message",
     nameRu: "Сообщение",
     level: 0,
@@ -376,7 +381,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard"],
   },
   {
-    id: "mending",
+    externalId: "mending",
     name: "Mending",
     nameRu: "Починка",
     level: 0,
@@ -390,7 +395,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "cleric", "druid"],
   },
   {
-    id: "druidcraft",
+    externalId: "druidcraft",
     name: "Druidcraft",
     nameRu: "Искусство друидов",
     level: 0,
@@ -404,7 +409,7 @@ export const level1Spells = [
     classes: ["druid"],
   },
   {
-    id: "thaumaturgy",
+    externalId: "thaumaturgy",
     name: "Thaumaturgy",
     nameRu: "Чудотворство",
     level: 0,
@@ -418,7 +423,7 @@ export const level1Spells = [
     classes: ["cleric"],
   },
   {
-    id: "shillelagh",
+    externalId: "shillelagh",
     name: "Shillelagh",
     nameRu: "Дубинка",
     level: 0,
@@ -432,7 +437,7 @@ export const level1Spells = [
     classes: ["druid"],
   },
   {
-    id: "thorn-whip",
+    externalId: "thorn-whip",
     name: "Thorn Whip",
     nameRu: "Терновый кнут",
     level: 0,
@@ -446,7 +451,7 @@ export const level1Spells = [
     classes: ["druid"],
   },
   {
-    id: "poison-spray",
+    externalId: "poison-spray",
     name: "Poison Spray",
     nameRu: "Ядовитые брызги",
     level: 0,
@@ -460,7 +465,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid", "warlock"],
   },
   {
-    id: "resistance",
+    externalId: "resistance",
     name: "Resistance",
     nameRu: "Сопротивление",
     level: 0,
@@ -474,7 +479,7 @@ export const level1Spells = [
     classes: ["cleric", "druid"],
   },
   {
-    id: "blade-ward",
+    externalId: "blade-ward",
     name: "Blade Ward",
     nameRu: "Защита от оружия",
     level: 0,
@@ -488,7 +493,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "warlock"],
   },
   {
-    id: "gust",
+    externalId: "gust",
     name: "Gust",
     nameRu: "Порыв",
     level: 0,
@@ -502,7 +507,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid"],
   },
   {
-    id: "mold-earth",
+    externalId: "mold-earth",
     name: "Mold Earth",
     nameRu: "Формование земли",
     level: 0,
@@ -516,7 +521,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid"],
   },
   {
-    id: "shape-water",
+    externalId: "shape-water",
     name: "Shape Water",
     nameRu: "Формование воды",
     level: 0,
@@ -530,7 +535,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid"],
   },
   {
-    id: "primal-savagery",
+    externalId: "primal-savagery",
     name: "Primal Savagery",
     nameRu: "Первобытная свирепость",
     level: 0,
@@ -545,7 +550,7 @@ export const level1Spells = [
   },
   // --- Ограждение (Abjuration) ---
   {
-    id: "shield",
+    externalId: "shield",
     name: "Shield",
     nameRu: "Щит",
     level: 1,
@@ -560,7 +565,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "mage-armor",
+    externalId: "mage-armor",
     name: "Mage Armor",
     nameRu: "Доспехи мага",
     level: 1,
@@ -574,7 +579,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "absorb-elements",
+    externalId: "absorb-elements",
     name: "Absorb Elements",
     nameRu: "Поглощение стихий",
     level: 1,
@@ -589,7 +594,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid", "ranger"],
   },
   {
-    id: "protection-from-evil-and-good",
+    externalId: "protection-from-evil-and-good",
     name: "Protection from Evil and Good",
     nameRu: "Защита от добра и зла",
     level: 1,
@@ -604,7 +609,7 @@ export const level1Spells = [
     classes: ["wizard", "cleric", "paladin", "warlock"],
   },
   {
-    id: "sanctuary",
+    externalId: "sanctuary",
     name: "Sanctuary",
     nameRu: "Убежище",
     level: 1,
@@ -618,7 +623,7 @@ export const level1Spells = [
     classes: ["cleric"],
   },
   {
-    id: "alarm",
+    externalId: "alarm",
     name: "Alarm",
     nameRu: "Сигнал тревоги",
     level: 1,
@@ -634,7 +639,7 @@ export const level1Spells = [
 
   // --- Вызов (Conjuration) ---
   {
-    id: "find-familiar",
+    externalId: "find-familiar",
     name: "Find Familiar",
     nameRu: "Поиск фамильяра",
     level: 1,
@@ -649,7 +654,7 @@ export const level1Spells = [
     classes: ["wizard"],
   },
   {
-    id: "unseen-servant",
+    externalId: "unseen-servant",
     name: "Unseen Servant",
     nameRu: "Невидимый слуга",
     level: 1,
@@ -663,7 +668,7 @@ export const level1Spells = [
     classes: ["wizard", "bard", "warlock"],
   },
   {
-    id: "grease",
+    externalId: "grease",
     name: "Grease",
     nameRu: "Скольжение",
     level: 1,
@@ -677,7 +682,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "fog-cloud",
+    externalId: "fog-cloud",
     name: "Fog Cloud",
     nameRu: "Туманное облако",
     level: 1,
@@ -691,7 +696,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid", "ranger"],
   },
   {
-    id: "ice-knife",
+    externalId: "ice-knife",
     name: "Ice Knife",
     nameRu: "Ледяной нож",
     level: 1,
@@ -705,7 +710,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid"],
   },
   {
-    id: "arms-of-hadar",
+    externalId: "arms-of-hadar",
     name: "Arms of Hadar",
     nameRu: "Руки Хадара",
     level: 1,
@@ -719,7 +724,7 @@ export const level1Spells = [
     classes: ["warlock"],
   },
   {
-    id: "entangle",
+    externalId: "entangle",
     name: "Entangle",
     nameRu: "Опутывание",
     level: 1,
@@ -735,7 +740,7 @@ export const level1Spells = [
 
   // --- Прорицание (Divination) ---
   {
-    id: "detect-magic",
+    externalId: "detect-magic",
     name: "Detect Magic",
     nameRu: "Обнаружение магии",
     level: 1,
@@ -757,7 +762,7 @@ export const level1Spells = [
     ],
   },
   {
-    id: "identify",
+    externalId: "identify",
     name: "Identify",
     nameRu: "Опознание",
     level: 1,
@@ -772,7 +777,7 @@ export const level1Spells = [
     classes: ["wizard", "bard"],
   },
   {
-    id: "comprehend-languages",
+    externalId: "comprehend-languages",
     name: "Comprehend Languages",
     nameRu: "Понимание языков",
     level: 1,
@@ -786,7 +791,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "warlock"],
   },
   {
-    id: "detect-evil-and-good",
+    externalId: "detect-evil-and-good",
     name: "Detect Evil and Good",
     nameRu: "Обнаружение добра и зла",
     level: 1,
@@ -800,7 +805,7 @@ export const level1Spells = [
     classes: ["cleric", "paladin"],
   },
   {
-    id: "detect-poison-and-disease",
+    externalId: "detect-poison-and-disease",
     name: "Detect Poison and Disease",
     nameRu: "Обнаружение яда и болезней",
     level: 1,
@@ -814,7 +819,7 @@ export const level1Spells = [
     classes: ["cleric", "druid", "paladin", "ranger"],
   },
   {
-    id: "speak-with-animals",
+    externalId: "speak-with-animals",
     name: "Speak with Animals",
     nameRu: "Разговор с животными",
     level: 1,
@@ -828,7 +833,7 @@ export const level1Spells = [
     classes: ["bard", "druid", "ranger"],
   },
   {
-    id: "hunters-mark",
+    externalId: "hunters-mark",
     name: "Hunter's Mark",
     nameRu: "Метка охотника",
     level: 1,
@@ -844,7 +849,7 @@ export const level1Spells = [
 
   // --- Очарование (Enchantment) ---
   {
-    id: "charm-person",
+    externalId: "charm-person",
     name: "Charm Person",
     nameRu: "Очарование личности",
     level: 1,
@@ -858,7 +863,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "druid", "warlock"],
   },
   {
-    id: "sleep",
+    externalId: "sleep",
     name: "Sleep",
     nameRu: "Усыпление",
     level: 1,
@@ -872,7 +877,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard"],
   },
   {
-    id: "command",
+    externalId: "command",
     name: "Command",
     nameRu: "Приказ",
     level: 1,
@@ -886,7 +891,7 @@ export const level1Spells = [
     classes: ["cleric", "paladin"],
   },
   {
-    id: "bane",
+    externalId: "bane",
     name: "Bane",
     nameRu: "Порча",
     level: 1,
@@ -900,7 +905,7 @@ export const level1Spells = [
     classes: ["bard", "cleric"],
   },
   {
-    id: "bless",
+    externalId: "bless",
     name: "Bless",
     nameRu: "Благословение",
     level: 1,
@@ -914,7 +919,7 @@ export const level1Spells = [
     classes: ["cleric", "paladin"],
   },
   {
-    id: "dissonant-whispers",
+    externalId: "dissonant-whispers",
     name: "Dissonant Whispers",
     nameRu: "Диссонирующий шёпот",
     level: 1,
@@ -928,7 +933,7 @@ export const level1Spells = [
     classes: ["bard"],
   },
   {
-    id: "heroism",
+    externalId: "heroism",
     name: "Heroism",
     nameRu: "Героизм",
     level: 1,
@@ -942,7 +947,7 @@ export const level1Spells = [
     classes: ["bard", "paladin"],
   },
   {
-    id: "tashas-hideous-laughter",
+    externalId: "tashas-hideous-laughter",
     name: "Tasha's Hideous Laughter",
     nameRu: "Ужасный смех Таши",
     level: 1,
@@ -957,7 +962,7 @@ export const level1Spells = [
     classes: ["wizard", "bard"],
   },
   {
-    id: "animal-friendship",
+    externalId: "animal-friendship",
     name: "Animal Friendship",
     nameRu: "Дружба с животными",
     level: 1,
@@ -971,7 +976,7 @@ export const level1Spells = [
     classes: ["bard", "druid", "ranger"],
   },
   {
-    id: "hex",
+    externalId: "hex",
     name: "Hex",
     nameRu: "Сглаз",
     level: 1,
@@ -985,7 +990,7 @@ export const level1Spells = [
     classes: ["warlock"],
   },
   {
-    id: "compelled-duel",
+    externalId: "compelled-duel",
     name: "Compelled Duel",
     nameRu: "Принудительная дуэль",
     level: 1,
@@ -999,7 +1004,7 @@ export const level1Spells = [
     classes: ["paladin"],
   },
   {
-    id: "cause-fear",
+    externalId: "cause-fear",
     name: "Cause Fear",
     nameRu: "Устрашение",
     level: 1,
@@ -1015,7 +1020,7 @@ export const level1Spells = [
 
   // --- Воплощение (Evocation) ---
   {
-    id: "magic-missile",
+    externalId: "magic-missile",
     name: "Magic Missile",
     nameRu: "Волшебная стрела",
     level: 1,
@@ -1029,7 +1034,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "burning-hands",
+    externalId: "burning-hands",
     name: "Burning Hands",
     nameRu: "Огненные ладони",
     level: 1,
@@ -1043,7 +1048,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "thunderwave",
+    externalId: "thunderwave",
     name: "Thunderwave",
     nameRu: "Волна грома",
     level: 1,
@@ -1057,7 +1062,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "druid"],
   },
   {
-    id: "chromatic-orb",
+    externalId: "chromatic-orb",
     name: "Chromatic Orb",
     nameRu: "Цветной шарик",
     level: 1,
@@ -1071,7 +1076,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "witch-bolt",
+    externalId: "witch-bolt",
     name: "Witch Bolt",
     nameRu: "Ведьмин снаряд",
     level: 1,
@@ -1085,7 +1090,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "warlock"],
   },
   {
-    id: "guiding-bolt",
+    externalId: "guiding-bolt",
     name: "Guiding Bolt",
     nameRu: "Направляющий снаряд",
     level: 1,
@@ -1099,7 +1104,7 @@ export const level1Spells = [
     classes: ["cleric"],
   },
   {
-    id: "healing-word",
+    externalId: "healing-word",
     name: "Healing Word",
     nameRu: "Лечащее слово",
     level: 1,
@@ -1113,7 +1118,7 @@ export const level1Spells = [
     classes: ["bard", "cleric", "druid"],
   },
   {
-    id: "cure-wounds",
+    externalId: "cure-wounds",
     name: "Cure Wounds",
     nameRu: "Лечение ран",
     level: 1,
@@ -1127,7 +1132,7 @@ export const level1Spells = [
     classes: ["bard", "cleric", "druid", "paladin", "ranger"],
   },
   {
-    id: "hellish-rebuke",
+    externalId: "hellish-rebuke",
     name: "Hellish Rebuke",
     nameRu: "Адское возмездие",
     level: 1,
@@ -1142,7 +1147,7 @@ export const level1Spells = [
     classes: ["warlock"],
   },
   {
-    id: "color-spray",
+    externalId: "color-spray",
     name: "Color Spray",
     nameRu: "Цветные брызги",
     level: 1,
@@ -1157,7 +1162,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "faerie-fire",
+    externalId: "faerie-fire",
     name: "Faerie Fire",
     nameRu: "Огонь фей",
     level: 1,
@@ -1171,7 +1176,7 @@ export const level1Spells = [
     classes: ["bard", "druid"],
   },
   {
-    id: "inflict-wounds",
+    externalId: "inflict-wounds",
     name: "Inflict Wounds",
     nameRu: "Нанесение ран",
     level: 1,
@@ -1187,7 +1192,7 @@ export const level1Spells = [
 
   // --- Иллюзия (Illusion) ---
   {
-    id: "silent-image",
+    externalId: "silent-image",
     name: "Silent Image",
     nameRu: "Безмолвный образ",
     level: 1,
@@ -1201,7 +1206,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard"],
   },
   {
-    id: "disguise-self",
+    externalId: "disguise-self",
     name: "Disguise Self",
     nameRu: "Маскировка",
     level: 1,
@@ -1215,7 +1220,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard"],
   },
   {
-    id: "illusory-script",
+    externalId: "illusory-script",
     name: "Illusory Script",
     nameRu: "Иллюзорный текст",
     level: 1,
@@ -1232,7 +1237,7 @@ export const level1Spells = [
 
   // --- Некромантия (Necromancy) ---
   {
-    id: "false-life",
+    externalId: "false-life",
     name: "False Life",
     nameRu: "Ложная жизнь",
     level: 1,
@@ -1247,7 +1252,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "ray-of-sickness",
+    externalId: "ray-of-sickness",
     name: "Ray of Sickness",
     nameRu: "Луч болезни",
     level: 1,
@@ -1261,7 +1266,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "armor-of-agathys",
+    externalId: "armor-of-agathys",
     name: "Armor of Agathys",
     nameRu: "Доспехи Агатиса",
     level: 1,
@@ -1277,7 +1282,7 @@ export const level1Spells = [
 
   // --- Преобразование (Transmutation) ---
   {
-    id: "feather-fall",
+    externalId: "feather-fall",
     name: "Feather Fall",
     nameRu: "Падение пёрышком",
     level: 1,
@@ -1291,7 +1296,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard"],
   },
   {
-    id: "expeditious-retreat",
+    externalId: "expeditious-retreat",
     name: "Expeditious Retreat",
     nameRu: "Поспешное отступление",
     level: 1,
@@ -1305,7 +1310,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "warlock"],
   },
   {
-    id: "jump",
+    externalId: "jump",
     name: "Jump",
     nameRu: "Прыжок",
     level: 1,
@@ -1319,7 +1324,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "druid", "ranger"],
   },
   {
-    id: "longstrider",
+    externalId: "longstrider",
     name: "Longstrider",
     nameRu: "Скороход",
     level: 1,
@@ -1333,7 +1338,7 @@ export const level1Spells = [
     classes: ["wizard", "bard", "druid", "ranger"],
   },
   {
-    id: "tensers-floating-disk",
+    externalId: "tensers-floating-disk",
     name: "Tenser's Floating Disk",
     nameRu: "Парящий диск Тензера",
     level: 1,
@@ -1347,7 +1352,7 @@ export const level1Spells = [
     classes: ["wizard"],
   },
   {
-    id: "goodberry",
+    externalId: "goodberry",
     name: "Goodberry",
     nameRu: "Чудо-ягоды",
     level: 1,
@@ -1361,7 +1366,7 @@ export const level1Spells = [
     classes: ["druid", "ranger"],
   },
   {
-    id: "purify-food-and-drink",
+    externalId: "purify-food-and-drink",
     name: "Purify Food and Drink",
     nameRu: "Очищение пищи и воды",
     level: 1,
@@ -1375,7 +1380,7 @@ export const level1Spells = [
     classes: ["cleric", "druid", "paladin"],
   },
   {
-    id: "create-or-destroy-water",
+    externalId: "create-or-destroy-water",
     name: "Create or Destroy Water",
     nameRu: "Сотворение или уничтожение воды",
     level: 1,
@@ -1390,7 +1395,7 @@ export const level1Spells = [
     classes: ["cleric", "druid"],
   },
   {
-    id: "divine-favor",
+    externalId: "divine-favor",
     name: "Divine Favor",
     nameRu: "Божественное благоволение",
     level: 1,
@@ -1404,7 +1409,7 @@ export const level1Spells = [
     classes: ["paladin"],
   },
   {
-    id: "shield-of-faith",
+    externalId: "shield-of-faith",
     name: "Shield of Faith",
     nameRu: "Щит веры",
     level: 1,
@@ -1418,7 +1423,7 @@ export const level1Spells = [
     classes: ["cleric", "paladin"],
   },
   {
-    id: "searing-smite",
+    externalId: "searing-smite",
     name: "Searing Smite",
     nameRu: "Палящая кара",
     level: 1,
@@ -1432,7 +1437,7 @@ export const level1Spells = [
     classes: ["paladin"],
   },
   {
-    id: "thunderous-smite",
+    externalId: "thunderous-smite",
     name: "Thunderous Smite",
     nameRu: "Громовая кара",
     level: 1,
@@ -1446,7 +1451,7 @@ export const level1Spells = [
     classes: ["paladin"],
   },
   {
-    id: "wrathful-smite",
+    externalId: "wrathful-smite",
     name: "Wrathful Smite",
     nameRu: "Гневная кара",
     level: 1,
@@ -1460,7 +1465,7 @@ export const level1Spells = [
     classes: ["paladin"],
   },
   {
-    id: "ensnaring-strike",
+    externalId: "ensnaring-strike",
     name: "Ensnaring Strike",
     nameRu: "Опутывающий удар",
     level: 1,
@@ -1474,7 +1479,7 @@ export const level1Spells = [
     classes: ["ranger"],
   },
   {
-    id: "hail-of-thorns",
+    externalId: "hail-of-thorns",
     name: "Hail of Thorns",
     nameRu: "Град шипов",
     level: 1,
@@ -1488,7 +1493,7 @@ export const level1Spells = [
     classes: ["ranger"],
   },
   {
-    id: "earth-tremor",
+    externalId: "earth-tremor",
     name: "Earth Tremor",
     nameRu: "Дрожь земли",
     level: 1,
@@ -1502,7 +1507,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "druid"],
   },
   {
-    id: "misty-step",
+    externalId: "misty-step",
     name: "Misty Step",
     nameRu: "Туманный шаг",
     level: 2,
@@ -1516,7 +1521,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "warlock"],
   },
   {
-    id: "invisibility",
+    externalId: "invisibility",
     name: "Invisibility",
     nameRu: "Невидимость",
     level: 2,
@@ -1530,7 +1535,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "warlock"],
   },
   {
-    id: "scorching-ray",
+    externalId: "scorching-ray",
     name: "Scorching Ray",
     nameRu: "Палящий луч",
     level: 2,
@@ -1544,7 +1549,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
   {
-    id: "hold-person",
+    externalId: "hold-person",
     name: "Hold Person",
     nameRu: "Удержание личности",
     level: 2,
@@ -1558,7 +1563,7 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer", "bard", "cleric", "druid", "warlock"],
   },
   {
-    id: "web",
+    externalId: "web",
     name: "Web",
     nameRu: "Паутина",
     level: 2,
@@ -1572,3 +1577,23 @@ export const level1Spells = [
     classes: ["wizard", "sorcerer"],
   },
 ];
+
+// Main seeding function
+async function main() {
+  try {
+    console.log("Starting to seed spells...");
+
+    const seededSpells = await seedSpells(spellsData);
+
+    console.log(`Successfully seeded ${seededSpells.length} spells`);
+
+    console.log("\nDone!");
+    process.exit(0);
+  } catch (error) {
+    console.error("Error seeding spells:", error);
+    process.exit(1);
+  }
+}
+
+// Run the seed
+main();
