@@ -92,6 +92,7 @@ export interface Background {
 
 export interface Equipment {
   id: string;
+  externalId: string;
   name: string;
   nameRu: string;
   category: "weapon" | "armor" | "gear" | "tool" | "pack";

@@ -1,11 +1,6 @@
 import { useEffect } from "react";
 import { Package, Info, Coins, Swords } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCharacterStore } from "@/store/characterStore";
 import type { Equipment } from "@/types/character";
@@ -22,7 +17,8 @@ export function EquipmentStep() {
     if (character.background) {
       character.background.equipment.forEach((itemName) => {
         const bgEquipment: Equipment = {
-          id: `bg-${itemName.toLowerCase().replace(/\s+/g, '-')}`,
+          id: `bg-${itemName.toLowerCase().replace(/\s+/g, "-")}`,
+          externalId: `bg-${itemName.toLowerCase().replace(/\s+/g, "-")}`,
           name: itemName,
           nameRu: itemName,
           category: "gear" as const,
@@ -39,6 +35,10 @@ export function EquipmentStep() {
       character.class.startingEquipment.equipment.forEach((item) => {
         allEquipment.push({
           ...item,
+          id:
+            item.externalId ||
+            item.id ||
+            `class-${item.name?.toLowerCase().replace(/\s+/g, "-")}`,
           source: "class",
         });
       });
@@ -51,7 +51,6 @@ export function EquipmentStep() {
     const classGold = character.class?.startingEquipment?.gold || 0;
     const backgroundGold = character.background?.startingGold || 0;
     const totalGold = classGold + backgroundGold;
-
 
     // Устанавливаем кошелек только если у нас есть золото для установки И мы не на шаге снаряжения
     // чтобы избежать циклических обновлений
@@ -67,10 +66,17 @@ export function EquipmentStep() {
   }, [character.class, character.background, setEquipment, setWallet]);
 
   // Разделяем снаряжение по источникам
-  const backgroundEquipment = character.equipment.filter((e) => e.source === "background");
-  const classEquipment = character.equipment.filter((e) => e.source === "class");
+  const backgroundEquipment = character.equipment.filter(
+    (e) => e.source === "background"
+  );
+  const classEquipment = character.equipment.filter(
+    (e) => e.source === "class"
+  );
 
-  const totalWeight = character.equipment.reduce((sum, item) => sum + item.weight, 0);
+  const totalWeight = character.equipment.reduce(
+    (sum, item) => sum + item.weight,
+    0
+  );
 
   // Получаем золото от каждого источника
   const classGold = character.class?.startingEquipment?.gold || 0;
@@ -87,8 +93,8 @@ export function EquipmentStep() {
             <div>
               <p className="font-medium">Снаряжение персонажа (PHB 2024)</p>
               <p className="text-sm text-muted-foreground">
-                Снаряжение автоматически предоставляется вашим классом и предысторией.
-                Каждая вещь отмечена своим источником.
+                Снаряжение автоматически предоставляется вашим классом и
+                предысторией. Каждая вещь отмечена своим источником.
               </p>
             </div>
           </div>
@@ -115,7 +121,10 @@ export function EquipmentStep() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {backgroundEquipment.map((item, index) => (
-                <div key={index} className="flex flex-col gap-1 p-2 bg-background/50 rounded">
+                <div
+                  key={index}
+                  className="flex flex-col gap-1 p-2 bg-background/50 rounded"
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{item.nameRu}</span>
                     <Badge variant="outline" className="text-xs">
@@ -154,7 +163,10 @@ export function EquipmentStep() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {classEquipment.map((item, index) => (
-                <div key={index} className="flex flex-col gap-1 p-2 bg-background/50 rounded">
+                <div
+                  key={index}
+                  className="flex flex-col gap-1 p-2 bg-background/50 rounded"
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{item.nameRu}</span>
                     <Badge variant="default" className="text-xs">
@@ -163,7 +175,9 @@ export function EquipmentStep() {
                   </div>
                   {item.category === "weapon" && item.damage && (
                     <div className="text-xs text-muted-foreground flex gap-2">
-                      <span>Урон: {item.damage.dice} {item.damage.type}</span>
+                      <span>
+                        Урон: {item.damage.dice} {item.damage.type}
+                      </span>
                       {item.properties && item.properties.length > 0 && (
                         <span className="text-blue-400">
                           {item.properties.join(", ")}
@@ -177,7 +191,9 @@ export function EquipmentStep() {
                       {item.armorType === "shield" ? (
                         <span className="text-amber-400">Бонус +2</span>
                       ) : item.armorType === "light" ? (
-                        <span className="text-green-400">+ ЛОВ (не ограничен)</span>
+                        <span className="text-green-400">
+                          + ЛОВ (не ограничен)
+                        </span>
                       ) : item.armorType === "medium" ? (
                         <span className="text-yellow-400">+ ЛОВ (макс +2)</span>
                       ) : item.armorType === "heavy" ? (

@@ -14,6 +14,7 @@ import { CharacterSheet } from "@/components/CharacterSheet";
 import { generateCharacterPDF } from "@/utils/pdfGenerator";
 import { useAuth } from "@/contexts/AuthContext";
 import { charactersApi } from "@/api/client";
+import type { EquipmentItem } from "@/types/equipment";
 
 export function SummaryStep() {
   const {
@@ -82,9 +83,51 @@ export function SummaryStep() {
 
       const characterData = getCharacterData();
 
+      // Transform data for backend validation
+      const transformedData = {
+        ...characterData,
+        class: characterData.class
+          ? {
+              ...characterData.class,
+              startingEquipment: characterData.class.startingEquipment
+                ? {
+                    ...characterData.class.startingEquipment,
+                    equipment:
+                      characterData.class.startingEquipment.equipment.map(
+                        (item: EquipmentItem) => ({
+                          ...item,
+                          id:
+                            (item as EquipmentItem).externalId ||
+                            (item as EquipmentItem).name ||
+                            `class-${(item as EquipmentItem).name
+                              ?.toLowerCase()
+                              .replace(/\s+/g, "-")}`,
+                        })
+                      ),
+                  }
+                : undefined,
+              spellcasting: characterData.class.spellcasting || undefined,
+            }
+          : null,
+        background: characterData.background
+          ? {
+              ...characterData.background,
+              externalId:
+                characterData.background.externalId ||
+                characterData.background.id,
+            }
+          : null,
+        equipment: characterData.equipment.map((item) => ({
+          ...item,
+          id:
+            (item as EquipmentItem).id ||
+            `equip-${Math.random().toString(36).substr(2, 9)}`,
+        })),
+      };
+
       await charactersApi.create({
         name: character.name || "Безымянный герой",
-        data: characterData,
+        data: transformedData,
       });
 
       setSaveSuccess(true);
@@ -115,8 +158,8 @@ export function SummaryStep() {
           {saveSuccess
             ? "Сохранено!"
             : loadedCharacterId
-              ? "Уже сохранён"
-              : "Сохранить в облако"}
+            ? "Уже сохранён"
+            : "Сохранить в облако"}
         </Button>
         <Button onClick={handleExportPdf} className="gap-2">
           <FileText className="w-4 h-4" />

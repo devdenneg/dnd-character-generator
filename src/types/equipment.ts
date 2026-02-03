@@ -4,10 +4,11 @@
  * Base equipment item properties
  */
 export interface EquipmentItemBase {
+  id?: string;
   externalId: string;
   name: string;
   nameRu: string;
-  category: 'weapon' | 'armor' | 'gear' | 'tool' | 'pack';
+  category: "weapon" | "armor" | "gear" | "tool" | "pack";
   cost: {
     quantity: number;
     unit: string;
@@ -20,7 +21,7 @@ export interface EquipmentItemBase {
  * Weapon item with combat properties
  */
 export interface WeaponItem extends EquipmentItemBase {
-  category: 'weapon';
+  category: "weapon";
   damage: {
     dice: string;
     type: string;
@@ -32,9 +33,9 @@ export interface WeaponItem extends EquipmentItemBase {
  * Armor item with AC properties
  */
 export interface ArmorItem extends EquipmentItemBase {
-  category: 'armor';
+  category: "armor";
   armorClass: number;
-  armorType: 'light' | 'medium' | 'heavy' | 'shield';
+  armorType: "light" | "medium" | "heavy" | "shield";
   maxDexBonus?: number;
 }
 
@@ -42,7 +43,7 @@ export interface ArmorItem extends EquipmentItemBase {
  * Gear, tools, and packs
  */
 export interface GearItem extends EquipmentItemBase {
-  category: 'gear' | 'tool' | 'pack';
+  category: "gear" | "tool" | "pack";
 }
 
 /**
@@ -62,13 +63,17 @@ export interface StartingEquipment {
  * Type guards for equipment
  */
 export function isWeapon(item: EquipmentItem): item is WeaponItem {
-  return item.category === 'weapon';
+  return item.category === "weapon";
 }
 
 export function isArmor(item: EquipmentItem): item is ArmorItem {
-  return item.category === 'armor';
+  return item.category === "armor";
 }
 
 export function isGear(item: EquipmentItem): item is GearItem {
-  return item.category === 'gear' || item.category === 'tool' || item.category === 'pack';
+  return (
+    item.category === "gear" ||
+    item.category === "tool" ||
+    item.category === "pack"
+  );
 }

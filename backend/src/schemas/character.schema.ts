@@ -1,6 +1,6 @@
 // Zod validation schemas for character data
 
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Ability scores schema
@@ -29,25 +29,28 @@ export const walletSchema = z.object({
  * Equipment item schema
  */
 export const equipmentSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
   name: z.string(),
   nameRu: z.string(),
-  category: z.enum(['weapon', 'armor', 'gear', 'tool', 'pack']),
+  category: z.enum(["weapon", "armor", "gear", "tool", "pack"]),
   cost: z.object({
     quantity: z.number(),
     unit: z.string(),
   }),
   weight: z.number(),
   description: z.string().optional(),
-  damage: z.object({
-    dice: z.string(),
-    type: z.string(),
-  }).optional(),
+  damage: z
+    .object({
+      dice: z.string(),
+      type: z.string(),
+    })
+    .optional(),
   armorClass: z.number().optional(),
-  armorType: z.enum(['light', 'medium', 'heavy', 'shield']).optional(),
+  armorType: z.enum(["light", "medium", "heavy", "shield"]).optional(),
   maxDexBonus: z.number().optional(),
   properties: z.array(z.string()).optional(),
-  source: z.enum(['class', 'background']).optional(),
+  source: z.enum(["class", "background"]).optional(),
+  externalId: z.string().optional(),
 });
 
 /**
@@ -79,17 +82,19 @@ export const raceTraitSchema = z.object({
 /**
  * Race schema
  */
-export const raceSchema = z.object({
-  id: z.string(),
-  externalId: z.string(),
-  name: z.string(),
-  nameRu: z.string(),
-  description: z.string(),
-  speed: z.number(),
-  size: z.enum(['Small', 'Medium', 'Large']),
-  traits: z.array(raceTraitSchema),
-  source: z.enum(['srd', 'phb2024']),
-}).nullable();
+export const raceSchema = z
+  .object({
+    id: z.string(),
+    externalId: z.string(),
+    name: z.string(),
+    nameRu: z.string(),
+    description: z.string(),
+    speed: z.number(),
+    size: z.enum(["Small", "Medium", "Large"]),
+    traits: z.array(raceTraitSchema),
+    source: z.enum(["srd", "phb2024"]),
+  })
+  .nullable();
 
 /**
  * Class feature schema
@@ -104,19 +109,28 @@ export const classFeatureSchema = z.object({
 /**
  * Subclass schema
  */
-export const subclassSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  nameRu: z.string(),
-  description: z.string(),
-  features: z.array(classFeatureSchema),
-}).nullable();
+export const subclassSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    nameRu: z.string(),
+    description: z.string(),
+    features: z.array(classFeatureSchema),
+  })
+  .nullable();
 
 /**
  * Spellcasting config schema
  */
 export const spellcastingConfigSchema = z.object({
-  ability: z.enum(['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma']),
+  ability: z.enum([
+    "strength",
+    "dexterity",
+    "constitution",
+    "intelligence",
+    "wisdom",
+    "charisma",
+  ]),
   cantripsKnown: z.array(z.number()),
   spellsKnown: z.array(z.number()).optional(),
   spellSlots: z.array(z.array(z.number())),
@@ -133,48 +147,79 @@ export const startingEquipmentSchema = z.object({
 /**
  * Character class schema
  */
-export const characterClassSchema = z.object({
-  id: z.string(),
-  externalId: z.string(),
-  name: z.string(),
-  nameRu: z.string(),
-  description: z.string(),
-  hitDie: z.number(),
-  primaryAbility: z.array(z.enum(['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'])),
-  savingThrows: z.array(z.enum(['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'])),
-  armorProficiencies: z.array(z.string()),
-  weaponProficiencies: z.array(z.string()),
-  skillChoices: z.array(z.string()),
-  skillCount: z.number(),
-  features: z.array(classFeatureSchema),
-  subclasses: z.array(subclassSchema),
-  subclassLevel: z.number(),
-  startingEquipment: startingEquipmentSchema.optional(),
-  spellcasting: spellcastingConfigSchema.optional(),
-  source: z.enum(['srd', 'phb2024']),
-}).nullable();
+export const characterClassSchema = z
+  .object({
+    id: z.string(),
+    externalId: z.string(),
+    name: z.string(),
+    nameRu: z.string(),
+    description: z.string(),
+    hitDie: z.number(),
+    primaryAbility: z.array(
+      z.enum([
+        "strength",
+        "dexterity",
+        "constitution",
+        "intelligence",
+        "wisdom",
+        "charisma",
+      ])
+    ),
+    savingThrows: z.array(
+      z.enum([
+        "strength",
+        "dexterity",
+        "constitution",
+        "intelligence",
+        "wisdom",
+        "charisma",
+      ])
+    ),
+    armorProficiencies: z.array(z.string()),
+    weaponProficiencies: z.array(z.string()),
+    skillChoices: z.array(z.string()),
+    skillCount: z.number(),
+    features: z.array(classFeatureSchema),
+    subclasses: z.array(subclassSchema),
+    subclassLevel: z.number(),
+    startingEquipment: startingEquipmentSchema.optional(),
+    spellcasting: spellcastingConfigSchema.optional().nullable(),
+    source: z.enum(["srd", "phb2024"]),
+  })
+  .nullable();
 
 /**
  * Background schema
  */
-export const backgroundSchema = z.object({
-  id: z.string(),
-  externalId: z.string(),
-  name: z.string(),
-  nameRu: z.string(),
-  description: z.string(),
-  skillProficiencies: z.array(z.string()),
-  toolProficiencies: z.array(z.string()),
-  languages: z.number(),
-  equipment: z.array(z.string()),
-  startingGold: z.number().optional(),
-  originFeat: z.string().optional(),
-  abilityScoreIncrease: z.object({
-    options: z.array(z.enum(['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'])),
-    amount: z.tuple([z.number(), z.number(), z.number()]),
-  }),
-  source: z.enum(['srd', 'phb2024']),
-}).nullable();
+export const backgroundSchema = z
+  .object({
+    id: z.string(),
+    externalId: z.string(),
+    name: z.string(),
+    nameRu: z.string(),
+    description: z.string(),
+    skillProficiencies: z.array(z.string()),
+    toolProficiencies: z.array(z.string()),
+    languages: z.number(),
+    equipment: z.array(z.string()),
+    startingGold: z.number().optional(),
+    originFeat: z.string().optional(),
+    abilityScoreIncrease: z.object({
+      options: z.array(
+        z.enum([
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma",
+        ])
+      ),
+      amount: z.tuple([z.number(), z.number(), z.number()]),
+    }),
+    source: z.enum(["srd", "phb2024"]),
+  })
+  .nullable();
 
 /**
  * Complete character data schema
@@ -188,7 +233,7 @@ export const characterDataSchema = z.object({
 
   // Ability Scores
   abilityScores: abilityScoresSchema,
-  abilityScoreMethod: z.enum(['standard', 'pointbuy', 'roll']),
+  abilityScoreMethod: z.enum(["standard", "pointbuy", "roll"]),
   abilityScoreIncreases: abilityScoresSchema.partial(),
 
   // Skills & Proficiencies

@@ -135,6 +135,7 @@ export function BackgroundStep() {
     if (!data?.data?.backgrounds) return [];
     return data.data.backgrounds.map((bg: Background) => ({
       id: bg.externalId,
+      externalId: bg.externalId,
       name: bg.name,
       nameRu: bg.nameRu,
       description: bg.description,
@@ -160,13 +161,15 @@ export function BackgroundStep() {
   const filteredBackgrounds = backgrounds.filter(
     (bg: Background) =>
       bg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bg.nameRu.toLowerCase().includes(searchTerm.toLowerCase()),
+      bg.nameRu.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-pulse text-muted-foreground">Загрузка предысторий...</div>
+        <div className="animate-pulse text-muted-foreground">
+          Загрузка предысторий...
+        </div>
       </div>
     );
   }
@@ -382,7 +385,7 @@ export function BackgroundStep() {
 
                 {(() => {
                   const feat = getFeatByName(
-                    character.background.originFeat || "",
+                    character.background.originFeat || ""
                   );
                   if (!feat) return null;
                   return (

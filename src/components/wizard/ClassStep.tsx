@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Search,
   Check,
@@ -17,6 +17,7 @@ import { Modal, ModalContent, ModalFooter } from "@/components/ui/modal";
 import { useCharacterStore } from "@/store/characterStore";
 import { useBackendClasses } from "@/api/hooks";
 import type { CharacterClass, Subclass } from "@/types/character";
+import type { EquipmentItem } from "@/types/equipment";
 import { t, getAbilityNameRu } from "@/data/translations/ru";
 
 // Визуальные данные классов - акцентные цвета
@@ -44,7 +45,37 @@ export function ClassStep() {
   const { character, setClass, setSubclass, resetCharacter, completedSteps } =
     useCharacterStore();
   const { data: classesData } = useBackendClasses();
-  const classes = classesData?.data?.classes || [];
+
+  // Transform backend data to add id to equipment
+  const classes = useMemo(() => {
+    if (!classesData?.data?.classes) return [];
+    return classesData.data.classes.map((cls: CharacterClass) => {
+      // Transform startingEquipment equipment to have id
+      const transformedClass: CharacterClass = { ...cls };
+
+      if (cls.startingEquipment?.equipment) {
+        transformedClass.startingEquipment = {
+          ...cls.startingEquipment,
+          equipment: cls.startingEquipment.equipment.map((item) => ({
+            ...item,
+            id:
+              (item as EquipmentItem).externalId ||
+              (item as EquipmentItem).name ||
+              `class-${(item as EquipmentItem).name
+                ?.toLowerCase()
+                .replace(/\s+/g, "-")}`,
+          })),
+        };
+      }
+
+      // Transform spellcasting null to undefined
+      if (cls.spellcasting === null) {
+        transformedClass.spellcasting = undefined;
+      }
+
+      return transformedClass;
+    });
+  }, [classesData]);
 
   const filteredClasses = classes.filter(
     (cls: CharacterClass) =>
