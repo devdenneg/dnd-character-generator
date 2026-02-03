@@ -3,42 +3,47 @@ import { useTheme, Theme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
 
-const themes: { value: Theme; label: string; description: string; color: string }[] = [
+const themes: {
+  value: Theme;
+  label: string;
+  description: string;
+  color: string;
+}[] = [
   {
     value: "default",
     label: "Midnight Slate",
     description: "Классическая тёмная тема",
-    color: "from-primary to-accent"
+    color: "from-slate-600 to-slate-800",
   },
   {
     value: "purple",
     label: "Deep Purple",
     description: "Глубокий фиолетовый",
-    color: "from-purple-500 to-pink-500"
+    color: "from-purple-500 to-pink-500",
   },
   {
     value: "blue",
     label: "Ocean Blue",
     description: "Океанская синева",
-    color: "from-blue-500 to-cyan-500"
+    color: "from-blue-500 to-cyan-500",
   },
   {
     value: "green",
     label: "Forest Green",
     description: "Лесная зелень",
-    color: "from-green-500 to-emerald-500"
+    color: "from-green-500 to-emerald-500",
   },
   {
     value: "red",
     label: "Crimson Red",
     description: "Багровый красный",
-    color: "from-red-500 to-rose-500"
+    color: "from-red-500 to-rose-500",
   },
   {
     value: "orange",
     label: "Sunset Orange",
     description: "Закатный оранжевый",
-    color: "from-orange-500 to-amber-500"
+    color: "from-orange-500 to-amber-500",
   },
 ];
 
@@ -49,7 +54,10 @@ export function ThemeSelector() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -99,9 +107,11 @@ export function ThemeSelector() {
                     className={`w-8 h-8 rounded-lg bg-gradient-to-br ${t.color} flex-shrink-0 shadow-md`}
                   />
                   <div className="flex-1 text-left">
-                    <div className={`text-sm font-semibold ${
-                      theme === t.value ? "text-primary" : "text-foreground"
-                    }`}>
+                    <div
+                      className={`text-sm font-semibold ${
+                        theme === t.value ? "text-primary" : "text-foreground"
+                      }`}
+                    >
                       {t.label}
                     </div>
                     <div className="text-xs text-muted-foreground">
