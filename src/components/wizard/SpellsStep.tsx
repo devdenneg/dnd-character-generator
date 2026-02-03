@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Search, Check, Sparkles, BookOpen } from "lucide-react";
 import {
   Card,
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
-import { getSpellsByClass } from "@/data/phb2024/spells";
+import { useBackendSpells } from "@/api/hooks";
 import type { Spell } from "@/types/character";
 
 export function SpellsStep() {
@@ -19,14 +19,37 @@ export function SpellsStep() {
   const [selectedLevel, setSelectedLevel] = useState<number>(0);
   const { character, addSpell, removeSpell } = useCharacterStore();
 
+  // Загружаем заклинания с сервера
+  const { data: spellsData, isLoading } = useBackendSpells();
+
   // Проверяем, является ли класс заклинателем
   const isSpellcaster = character.class?.spellcasting !== undefined;
   const classId = character.class?.id || "";
 
-  // Получаем заклинания для класса
-  const availableSpells = getSpellsByClass(classId);
-  const classCantrips = availableSpells.filter((s) => s.level === 0);
-  const classLevel1Spells = availableSpells.filter((s) => s.level === 1);
+  // Получаем заклинания для класса из данных сервера
+  const availableSpells = useMemo(() => {
+    if (!spellsData?.data?.spells) return [];
+
+    // Фильтруем заклинания по классу и преобразуем в формат Spell
+    return spellsData.data.spells
+      .filter((spell: Spell) => spell.classes.includes(classId))
+      .map((spell: Spell) => ({
+        id: spell.externalId,
+        name: spell.name,
+        nameRu: spell.nameRu,
+        level: spell.level,
+        school: spell.school,
+        castingTime: spell.castingTime,
+        range: spell.range,
+        components: spell.components,
+        duration: spell.duration,
+        description: spell.description,
+        classes: spell.classes,
+      }));
+  }, [spellsData, classId]);
+
+  const classCantrips = availableSpells.filter((s: Spell) => s.level === 0);
+  const classLevel1Spells = availableSpells.filter((s: Spell) => s.level === 1);
 
   // Количество известных заговоров и заклинаний
   const cantripsKnown =
@@ -42,9 +65,9 @@ export function SpellsStep() {
   const filteredSpells = (
     selectedLevel === 0 ? classCantrips : classLevel1Spells
   ).filter(
-    (spell) =>
+    (spell: Spell) =>
       spell.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      spell.nameRu.toLowerCase().includes(searchTerm.toLowerCase()),
+      spell.nameRu.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleToggleSpell = (spell: Spell) => {
@@ -82,6 +105,22 @@ export function SpellsStep() {
             <p className="text-sm text-muted-foreground">
               {character.class?.nameRu || "Выбранный класс"} не является
               заклинателем. Вы можете пропустить этот шаг.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card className="bg-muted/30">
+          <CardContent className="py-8 text-center">
+            <Sparkles className="w-12 h-12 mx-auto mb-4 text-muted-foreground animate-pulse" />
+            <h3 className="text-lg font-medium mb-2">Загрузка заклинаний...</h3>
+            <p className="text-sm text-muted-foreground">
+              Пожалуйста, подождите
             </p>
           </CardContent>
         </Card>
@@ -171,7 +210,7 @@ export function SpellsStep() {
 
       {/* Список заклинаний */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredSpells.map((spell) => {
+        {filteredSpells.map((spell: Spell) => {
           const isSelected = isSpellSelected(spell);
           const isDisabled =
             !isSelected &&
@@ -185,8 +224,8 @@ export function SpellsStep() {
                 isSelected
                   ? "border-primary ring-2 ring-primary/20"
                   : isDisabled
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:border-primary/50"
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:border-primary/50"
               }`}
               onClick={() => !isDisabled && handleToggleSpell(spell)}
             >

@@ -114,6 +114,7 @@ export interface StartingEquipment {
 
 export interface Spell {
   id: string;
+  externalId: string;
   name: string;
   nameRu: string;
   level: number;

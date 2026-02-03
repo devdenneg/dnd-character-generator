@@ -1,9 +1,7 @@
 // PHB 2024 Spells Data - Полный список заговоров и заклинаний 1 уровня
 
-import type { Spell } from "@/types/character";
-
 // ======================= ЗАГОВОРЫ (0 уровень) =======================
-export const cantrips: Spell[] = [
+export const cantrips = [
   // --- Воплощение (Evocation) ---
   {
     id: "fire-bolt",
@@ -552,7 +550,7 @@ export const cantrips: Spell[] = [
 ];
 
 // ======================= ЗАКЛИНАНИЯ 1 УРОВНЯ =======================
-export const level1Spells: Spell[] = [
+export const level1Spells = [
   // --- Ограждение (Abjuration) ---
   {
     id: "shield",
@@ -1514,7 +1512,7 @@ export const level1Spells: Spell[] = [
 ];
 
 // Заклинания 2 уровня (базовые)
-export const level2Spells: Spell[] = [
+export const level2Spells = [
   {
     id: "misty-step",
     name: "Misty Step",
@@ -1590,30 +1588,30 @@ export const level2Spells: Spell[] = [
 // Все заклинания
 export const allSpells = [...cantrips, ...level1Spells, ...level2Spells];
 
-export function getSpellsByClass(classId: string): Spell[] {
+export function getSpellsByClass(classId: string) {
   return allSpells.filter((spell) => spell.classes.includes(classId));
 }
 
-export function getSpellsByLevel(level: number): Spell[] {
+export function getSpellsByLevel(level: number) {
   return allSpells.filter((spell) => spell.level === level);
 }
 
-export function getCantrips(): Spell[] {
+export function getCantrips() {
   return cantrips;
 }
 
-export function getLevel1Spells(): Spell[] {
+export function getLevel1Spells() {
   return level1Spells;
 }
 
-export function getSpellById(id: string): Spell | undefined {
+export function getSpellById(id: string) {
   return allSpells.find((spell) => spell.id === id);
 }
 
-export function getCantripsByClass(classId: string): Spell[] {
+export function getCantripsByClass(classId: string) {
   return cantrips.filter((spell) => spell.classes.includes(classId));
 }
 
-export function getLevel1SpellsByClass(classId: string): Spell[] {
+export function getLevel1SpellsByClass(classId: string) {
   return level1Spells.filter((spell) => spell.classes.includes(classId));
 }
