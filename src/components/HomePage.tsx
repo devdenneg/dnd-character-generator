@@ -61,6 +61,15 @@ const MENU_ITEMS = [
     inDevelopment: false,
   },
   {
+    id: "backgrounds",
+    title: "Предыстории PHB 2024",
+    description: "Все предыстории из Книги игрока 2024 года",
+    icon: BookOpen,
+    gradient: "from-purple-500 to-indigo-500",
+    roles: ["player", "master"],
+    inDevelopment: false,
+  },
+  {
     id: "my-achievements",
     title: "Мои достижения",
     description: "Находится в разработке",

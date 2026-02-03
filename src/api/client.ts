@@ -342,3 +342,72 @@ export const classesApi = {
     return response.data;
   },
 };
+
+// Backgrounds API
+export const backgroundsApi = {
+  list: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/backgrounds", { params });
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get(`/backgrounds/${id}`);
+    return response.data;
+  },
+
+  getByExternalId: async (externalId: string) => {
+    const response = await apiClient.get(`/backgrounds/external/${externalId}`);
+    return response.data;
+  },
+
+  create: async (data: {
+    externalId: string;
+    name: string;
+    nameRu: string;
+    description: string;
+    skillProficiencies: string[];
+    toolProficiencies: string[];
+    languages: number;
+    equipment: string[];
+    startingGold: number;
+    originFeat: string;
+    abilityScoreIncrease: {
+      options: string[];
+      amount: number[];
+    };
+    source: string;
+  }) => {
+    const response = await apiClient.post("/backgrounds", data);
+    return response.data;
+  },
+
+  update: async (
+    id: string,
+    data: {
+      externalId?: string;
+      name?: string;
+      nameRu?: string;
+      description?: string;
+      skillProficiencies?: string[];
+      toolProficiencies?: string[];
+      languages?: number;
+      equipment?: string[];
+      startingGold?: number;
+      originFeat?: string;
+      abilityScoreIncrease?: {
+        options: string[];
+        amount: number[];
+      };
+      source?: string;
+    },
+  ) => {
+    const response = await apiClient.put(`/backgrounds/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/backgrounds/${id}`);
+    return response.data;
+  },
+};

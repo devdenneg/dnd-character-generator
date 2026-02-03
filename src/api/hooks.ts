@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { dnd5eApi } from "./dnd5e";
-import { racesApi, classesApi } from "./client";
+import { racesApi, classesApi, backgroundsApi } from "./client";
 
 // Query keys
 export const queryKeys = {
@@ -232,6 +232,10 @@ export const backendQueryKeys = {
   classesBySource: (source: string) => ["backend", "classes", "source", source] as const,
   class: (id: string) => ["backend", "class", id] as const,
   classByExternalId: (externalId: string) => ["backend", "class", "external", externalId] as const,
+  backgrounds: ["backend", "backgrounds"] as const,
+  backgroundsBySource: (source: string) => ["backend", "backgrounds", "source", source] as const,
+  background: (id: string) => ["backend", "background", id] as const,
+  backgroundByExternalId: (externalId: string) => ["backend", "background", "external", externalId] as const,
 };
 
 // Races (from backend - PHB 2024 data)
@@ -285,6 +289,34 @@ export function useBackendClassByExternalId(externalId: string) {
   return useQuery({
     queryKey: backendQueryKeys.classByExternalId(externalId),
     queryFn: () => classesApi.getByExternalId(externalId),
+    enabled: !!externalId,
+    staleTime: Infinity,
+  });
+}
+
+// Backgrounds (from backend - PHB 2024 data)
+export function useBackendBackgrounds(source?: string) {
+  return useQuery({
+    queryKey: source ? backendQueryKeys.backgroundsBySource(source) : backendQueryKeys.backgrounds,
+    queryFn: () => backgroundsApi.list(source),
+    staleTime: 0, // Always refetch to get latest data
+    refetchOnMount: 'always', // Always fetch on component mount
+  });
+}
+
+export function useBackendBackground(id: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.background(id),
+    queryFn: () => backgroundsApi.get(id),
+    enabled: !!id,
+    staleTime: Infinity,
+  });
+}
+
+export function useBackendBackgroundByExternalId(externalId: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.backgroundByExternalId(externalId),
+    queryFn: () => backgroundsApi.getByExternalId(externalId),
     enabled: !!externalId,
     staleTime: Infinity,
   });

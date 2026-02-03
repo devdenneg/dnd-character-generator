@@ -29,6 +29,7 @@ import { MasterAchievementsPage } from "@/components/MasterAchievementsPage";
 import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
 import { RacesPage } from "@/components/RacesPage";
 import { ClassesPage } from "@/components/ClassesPage";
+import { BackgroundsPage } from "@/components/BackgroundsPage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -311,6 +312,16 @@ function ClassesPageWrapper() {
   return <ClassesPage onBack={handleBack} />;
 }
 
+function BackgroundsPageWrapper() {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate("/");
+  };
+
+  return <BackgroundsPage onBack={handleBack} />;
+}
+
 function AppRoutes() {
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -334,6 +345,7 @@ function AppRoutes() {
       <Route path="/my-characters" element={<MyCharactersPage />} />
       <Route path="/races" element={<RacesPageWrapper />} />
       <Route path="/classes" element={<ClassesPageWrapper />} />
+      <Route path="/backgrounds" element={<BackgroundsPageWrapper />} />
       <Route path="/join-room" element={<BrowseRoomsPage />} />
       <Route path="/join-room/:id" element={<JoinRoomPage />} />
       <Route path="/my-rooms" element={<MyRoomsPage />} />
