@@ -40,6 +40,20 @@ export async function getSpellByExternalId(externalId: string) {
   return spell;
 }
 
+export async function getSpellsByClass(classId: string, source?: string) {
+  const spells = await prisma.spell.findMany({
+    where: {
+      classes: {
+        has: classId,
+      },
+      ...(source && { source }),
+    },
+    orderBy: [{ level: "asc" }, { name: "asc" }],
+  });
+
+  return spells;
+}
+
 export async function createSpell(input: SpellInput) {
   const spell = await prisma.spell.create({
     data: {

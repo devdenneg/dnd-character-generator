@@ -5,6 +5,7 @@ import {
   getAllSpells,
   getSpellById,
   getSpellByExternalId,
+  getSpellsByClass,
   createSpell,
   updateSpell,
   deleteSpell,
@@ -107,6 +108,26 @@ export async function getByExternalId(req: AuthenticatedRequest, res: Response) 
     });
   } catch (error) {
     console.error("Get spell by external ID error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function getByClass(req: AuthenticatedRequest, res: Response) {
+  try {
+    const classId = req.params.classId as string;
+    const source = req.query.source as string | undefined;
+
+    const spells = await getSpellsByClass(classId, source);
+
+    res.status(200).json({
+      success: true,
+      data: { spells },
+    });
+  } catch (error) {
+    console.error("Get spells by class error:", error);
     res.status(500).json({
       success: false,
       error: "Internal server error",

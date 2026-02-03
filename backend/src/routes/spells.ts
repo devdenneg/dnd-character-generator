@@ -4,6 +4,7 @@ import {
   list,
   getOne,
   getByExternalId,
+  getByClass,
   create,
   update,
   remove,
@@ -13,6 +14,7 @@ const router = Router();
 
 // Public endpoints - no authentication required for reading
 router.get("/", list);
+router.get("/class/:classId", getByClass);
 router.get("/external/:externalId", getByExternalId);
 router.get("/:id", getOne);
 

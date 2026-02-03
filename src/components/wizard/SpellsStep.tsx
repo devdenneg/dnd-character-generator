@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
-import { useBackendSpells } from "@/api/hooks";
+import { useBackendSpellsByClass } from "@/api/hooks";
 import type { Spell } from "@/types/character";
 
 export function SpellsStep() {
@@ -19,17 +19,16 @@ export function SpellsStep() {
   const [selectedLevel, setSelectedLevel] = useState<number>(0);
   const { character, addSpell, removeSpell, getStats } = useCharacterStore();
 
-  // Загружаем заклинания с сервера
-  const { data: spellsData, isLoading, error } = useBackendSpells();
-
-  console.log('SpellsStep: Loading state:', isLoading);
-  console.log('SpellsStep: Error:', error);
-  console.log('SpellsStep: Spells data:', spellsData);
-
   // Проверяем, является ли класс заклинателем
   const isSpellcaster = character.class?.spellcasting !== undefined;
   const classId = character.class?.id || "";
 
+  // Загружаем заклинания для конкретного класса с сервера
+  const { data: spellsData, isLoading, error } = useBackendSpellsByClass(classId);
+
+  console.log('SpellsStep: Loading state:', isLoading);
+  console.log('SpellsStep: Error:', error);
+  console.log('SpellsStep: Spells data:', spellsData);
   console.log('SpellsStep: Is spellcaster:', isSpellcaster);
   console.log('SpellsStep: Class ID:', classId);
   console.log('SpellsStep: Character class:', character.class);
@@ -37,7 +36,7 @@ export function SpellsStep() {
   // Получаем статистику персонажа
   const stats = getStats();
 
-  // Получаем заклинания для класса из данных сервера
+  // Получаем заклинания для класса из данных сервера (уже отфильтрованы по классу)
   const availableSpells = useMemo(() => {
     if (!spellsData?.data?.spells) {
       console.log('SpellsStep: No spells data', spellsData);
@@ -45,23 +44,10 @@ export function SpellsStep() {
     }
 
     const allSpells = spellsData.data.spells;
-    console.log('SpellsStep: All spells count:', allSpells.length);
-    console.log('SpellsStep: Current class ID:', classId);
-
-    // Фильтруем заклинания по классу
-    const filtered = allSpells.filter((spell: any) => {
-      const spellClasses = spell.classes || [];
-      const hasClass = spellClasses.includes(classId);
-      if (hasClass) {
-        console.log('SpellsStep: Spell matches class:', spell.nameRu, spell.classes);
-      }
-      return hasClass;
-    });
-
-    console.log('SpellsStep: Filtered spells count:', filtered.length);
+    console.log('SpellsStep: Spells for class count:', allSpells.length);
 
     // Преобразуем в формат Spell
-    return filtered.map((spell: any) => ({
+    return allSpells.map((spell: any) => ({
       id: spell.id || spell.externalId,
       name: spell.name,
       nameRu: spell.nameRu,
@@ -74,7 +60,7 @@ export function SpellsStep() {
       description: spell.description,
       classes: spell.classes,
     }));
-  }, [spellsData, classId]);
+  }, [spellsData]);
 
   const classCantrips = availableSpells.filter((s: Spell) => s.level === 0);
   const classLevel1Spells = availableSpells.filter((s: Spell) => s.level === 1);

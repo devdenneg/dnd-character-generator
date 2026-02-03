@@ -238,6 +238,8 @@ export const backendQueryKeys = {
   backgroundByExternalId: (externalId: string) => ["backend", "background", "external", externalId] as const,
   spells: ["backend", "spells"] as const,
   spellsBySource: (source: string) => ["backend", "spells", "source", source] as const,
+  spellsByClass: (classId: string, source?: string) =>
+    source ? ["backend", "spells", "class", classId, "source", source] as const : ["backend", "spells", "class", classId] as const,
   spell: (id: string) => ["backend", "spell", id] as const,
   spellByExternalId: (externalId: string) => ["backend", "spell", "external", externalId] as const,
 };
@@ -351,5 +353,16 @@ export function useBackendSpellByExternalId(externalId: string) {
     queryFn: () => spellsApi.getByExternalId(externalId),
     enabled: !!externalId,
     staleTime: Infinity,
+  });
+}
+
+// Spells by class (from backend - PHB 2024 data)
+export function useBackendSpellsByClass(classId: string, source?: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.spellsByClass(classId, source),
+    queryFn: () => spellsApi.getByClass(classId, source),
+    enabled: !!classId,
+    staleTime: 0, // Always refetch to get latest data
+    refetchOnMount: 'always', // Always fetch on component mount
   });
 }

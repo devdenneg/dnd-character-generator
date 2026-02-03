@@ -428,6 +428,12 @@ export const spellsApi = {
     return response.data;
   },
 
+  getByClass: async (classId: string, source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get(`/spells/class/${classId}`, { params });
+    return response.data;
+  },
+
   create: async (data: {
     externalId: string;
     name: string;
