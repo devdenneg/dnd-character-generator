@@ -15,6 +15,39 @@ import { generateCharacterPDF } from "@/utils/pdfGenerator";
 import { useAuth } from "@/contexts/AuthContext";
 import { charactersApi } from "@/api/client";
 import type { EquipmentItem } from "@/types/equipment";
+import { isWeapon, isArmor } from "@/types/equipment";
+import type { Equipment } from "@/types/character";
+
+// Функция для преобразования EquipmentItem в Equipment
+function transformEquipmentItem(item: EquipmentItem): Equipment {
+  const base: Equipment = {
+    id: item.externalId || item.name,
+    externalId: item.externalId,
+    name: item.name,
+    nameRu: item.nameRu,
+    category: item.category,
+    cost: item.cost,
+    weight: item.weight ?? 0,
+    source: "class",
+  };
+
+  if (isWeapon(item)) {
+    return {
+      ...base,
+      damage: item.damage,
+      properties: item.properties,
+    } as Equipment;
+  } else if (isArmor(item)) {
+    return {
+      ...base,
+      armorClass: item.armorClass,
+      armorType: item.armorType,
+      maxDexBonus: item.maxDexBonus,
+    } as Equipment;
+  }
+
+  return base;
+}
 
 export function SummaryStep() {
   const {
@@ -92,18 +125,12 @@ export function SummaryStep() {
               startingEquipment: characterData.class.startingEquipment
                 ? {
                     ...characterData.class.startingEquipment,
-                    equipment:
-                      characterData.class.startingEquipment.equipment.map(
-                        (item: EquipmentItem) => ({
-                          ...item,
-                          id:
-                            (item as EquipmentItem).externalId ||
-                            (item as EquipmentItem).name ||
-                            `class-${(item as EquipmentItem).name
-                              ?.toLowerCase()
-                              .replace(/\s+/g, "-")}`,
-                        })
-                      ),
+                    equipment: (
+                      characterData.class.startingEquipment
+                        .equipment as EquipmentItem[]
+                    ).map((item: EquipmentItem) =>
+                      transformEquipmentItem(item)
+                    ),
                   }
                 : undefined,
               spellcasting: characterData.class.spellcasting || undefined,
@@ -117,12 +144,9 @@ export function SummaryStep() {
                 characterData.background.id,
             }
           : null,
-        equipment: characterData.equipment.map((item) => ({
-          ...item,
-          id:
-            (item as EquipmentItem).id ||
-            `equip-${Math.random().toString(36).substr(2, 9)}`,
-        })),
+        equipment: (characterData.equipment as EquipmentItem[]).map((item) =>
+          transformEquipmentItem(item)
+        ),
       };
 
       await charactersApi.create({

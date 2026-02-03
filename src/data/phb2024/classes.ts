@@ -1,8 +1,8 @@
 // PHB 2024 Classes Data - Полные переводы
 
-import type { CharacterClass, AbilityName } from "@/types/character";
+import type { AbilityName } from "@/types/character";
 
-export const phb2024Classes: CharacterClass[] = [
+export const phb2024Classes = [
   {
     id: "barbarian",
     externalId: "barbarian",
@@ -2863,10 +2863,10 @@ export const phb2024Classes: CharacterClass[] = [
   },
 ];
 
-export function getClassById(id: string): CharacterClass | undefined {
+export function getClassById(id: string) {
   return phb2024Classes.find((cls) => cls.id === id);
 }
 
-export function getAllClasses(): CharacterClass[] {
+export function getAllClasses() {
   return phb2024Classes;
 }
