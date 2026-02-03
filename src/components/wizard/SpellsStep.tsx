@@ -20,39 +20,68 @@ export function SpellsStep() {
   const { character, addSpell, removeSpell, getStats } = useCharacterStore();
 
   // Загружаем заклинания с сервера
-  const { data: spellsData, isLoading } = useBackendSpells();
+  const { data: spellsData, isLoading, error } = useBackendSpells();
+
+  console.log('SpellsStep: Loading state:', isLoading);
+  console.log('SpellsStep: Error:', error);
+  console.log('SpellsStep: Spells data:', spellsData);
 
   // Проверяем, является ли класс заклинателем
   const isSpellcaster = character.class?.spellcasting !== undefined;
   const classId = character.class?.id || "";
+
+  console.log('SpellsStep: Is spellcaster:', isSpellcaster);
+  console.log('SpellsStep: Class ID:', classId);
+  console.log('SpellsStep: Character class:', character.class);
 
   // Получаем статистику персонажа
   const stats = getStats();
 
   // Получаем заклинания для класса из данных сервера
   const availableSpells = useMemo(() => {
-    if (!spellsData?.data?.spells) return [];
+    if (!spellsData?.data?.spells) {
+      console.log('SpellsStep: No spells data', spellsData);
+      return [];
+    }
 
-    // Фильтруем заклинания по классу и преобразуем в формат Spell
-    return spellsData.data.spells
-      .filter((spell: Spell) => spell.classes.includes(classId))
-      .map((spell: Spell) => ({
-        id: spell.externalId,
-        name: spell.name,
-        nameRu: spell.nameRu,
-        level: spell.level,
-        school: spell.school,
-        castingTime: spell.castingTime,
-        range: spell.range,
-        components: spell.components,
-        duration: spell.duration,
-        description: spell.description,
-        classes: spell.classes,
-      }));
+    const allSpells = spellsData.data.spells;
+    console.log('SpellsStep: All spells count:', allSpells.length);
+    console.log('SpellsStep: Current class ID:', classId);
+
+    // Фильтруем заклинания по классу
+    const filtered = allSpells.filter((spell: any) => {
+      const spellClasses = spell.classes || [];
+      const hasClass = spellClasses.includes(classId);
+      if (hasClass) {
+        console.log('SpellsStep: Spell matches class:', spell.nameRu, spell.classes);
+      }
+      return hasClass;
+    });
+
+    console.log('SpellsStep: Filtered spells count:', filtered.length);
+
+    // Преобразуем в формат Spell
+    return filtered.map((spell: any) => ({
+      id: spell.id || spell.externalId,
+      name: spell.name,
+      nameRu: spell.nameRu,
+      level: spell.level,
+      school: spell.school,
+      castingTime: spell.castingTime,
+      range: spell.range,
+      components: spell.components,
+      duration: spell.duration,
+      description: spell.description,
+      classes: spell.classes,
+    }));
   }, [spellsData, classId]);
 
   const classCantrips = availableSpells.filter((s: Spell) => s.level === 0);
   const classLevel1Spells = availableSpells.filter((s: Spell) => s.level === 1);
+
+  console.log('SpellsStep: Available spells:', availableSpells.length);
+  console.log('SpellsStep: Cantrips:', classCantrips.length);
+  console.log('SpellsStep: Level 1 spells:', classLevel1Spells.length);
 
   // Количество известных заговоров и заклинаний из stats
   const cantripsKnown = stats.spellcasting?.cantripsKnown || 0;
@@ -131,6 +160,44 @@ export function SpellsStep() {
             <h3 className="text-lg font-medium mb-2">Загрузка заклинаний...</h3>
             <p className="text-sm text-muted-foreground">
               Пожалуйста, подождите
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card className="bg-destructive/10 border-destructive/30">
+          <CardContent className="py-8 text-center">
+            <h3 className="text-lg font-medium mb-2 text-destructive">
+              Ошибка загрузки заклинаний
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Не удалось загрузить заклинания с сервера. Убедитесь, что бэкенд запущен.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {error instanceof Error ? error.message : 'Неизвестная ошибка'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!spellsData?.data?.spells || spellsData.data.spells.length === 0) {
+    return (
+      <div className="space-y-6">
+        <Card className="bg-muted/30">
+          <CardContent className="py-8 text-center">
+            <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-medium mb-2">
+              Заклинания не найдены
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              В базе данных нет заклинаний. Запустите seed для загрузки данных.
             </p>
           </CardContent>
         </Card>
