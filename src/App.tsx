@@ -263,6 +263,9 @@ function HomePageWrapper() {
       case "classes":
         navigate("/classes");
         break;
+      case "backgrounds":
+        navigate("/backgrounds");
+        break;
       case "my-achievements":
         navigate("/achievements");
         break;
