@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
 import {
   BookOpen,
   Briefcase,
@@ -21,7 +22,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { ElementType } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Types
@@ -123,36 +124,31 @@ interface BackgroundsPageProps {
 export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   const { data, isLoading, error, refetch } = useBackendBackgrounds();
   const { user } = useAuth();
-  const [selectedBackground, setSelectedBackground] = useState<string | null>(null);
-  const [editingBackground, setEditingBackground] = useState<BackgroundFormData>({
-    externalId: "",
-    name: "",
-    nameRu: "",
-    description: "",
-    skillProficiencies: [],
-    toolProficiencies: [],
-    languages: 0,
-    equipment: [],
-    startingGold: 0,
-    originFeat: "",
-    abilityScoreIncrease: {
-      options: [],
-      amount: [],
-    },
-    source: "phb2024",
-  });
+  const [selectedBackground, setSelectedBackground] = useState<string | null>(
+    null
+  );
+  const [editingBackground, setEditingBackground] =
+    useState<BackgroundFormData>({
+      externalId: "",
+      name: "",
+      nameRu: "",
+      description: "",
+      skillProficiencies: [],
+      toolProficiencies: [],
+      languages: 0,
+      equipment: [],
+      startingGold: 0,
+      originFeat: "",
+      abilityScoreIncrease: {
+        options: [],
+        amount: [],
+      },
+      source: "phb2024",
+    });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newEquipment, setNewEquipment] = useState("");
   const [newTool, setNewTool] = useState("");
-
-  // Selected background data query
-  const selectedBackgroundData = useQuery({
-    queryKey: ["background", selectedBackground],
-    queryFn: () => backgroundsApi.get(selectedBackground!),
-    enabled: !!selectedBackground,
-    staleTime: Infinity,
-  });
 
   // Create background mutation
   const createBackgroundMutation = useMutation({
@@ -231,7 +227,12 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   };
 
   const handleSaveBackground = () => {
-    if (!editingBackground.externalId || !editingBackground.name || !editingBackground.nameRu || !editingBackground.description) {
+    if (
+      !editingBackground.externalId ||
+      !editingBackground.name ||
+      !editingBackground.nameRu ||
+      !editingBackground.description
+    ) {
       alert("Пожалуйста, заполните все обязательные поля");
       return;
     }
@@ -266,7 +267,10 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
     if (!newTool.trim()) return;
     setEditingBackground({
       ...editingBackground,
-      toolProficiencies: [...editingBackground.toolProficiencies, newTool.trim()],
+      toolProficiencies: [
+        ...editingBackground.toolProficiencies,
+        newTool.trim(),
+      ],
     });
     setNewTool("");
   };
@@ -274,7 +278,9 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   const handleRemoveTool = (index: number) => {
     setEditingBackground({
       ...editingBackground,
-      toolProficiencies: editingBackground.toolProficiencies.filter((_, i) => i !== index),
+      toolProficiencies: editingBackground.toolProficiencies.filter(
+        (_, i) => i !== index
+      ),
     });
   };
 
@@ -350,8 +356,8 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
               Ошибка загрузки предысторий
             </h2>
             <p className="text-sm text-destructive/80">
-              Не удалось загрузить данные о предысториях с сервера. Пожалуйста, попробуйте
-              позже.
+              Не удалось загрузить данные о предысториях с сервера. Пожалуйста,
+              попробуйте позже.
             </p>
             {onBack && (
               <Button variant="outline" className="mt-4" onClick={onBack}>
@@ -379,7 +385,9 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 </Button>
               )}
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Предыстории</h1>
+                <h1 className="text-2xl font-bold text-foreground">
+                  Предыстории
+                </h1>
                 <p className="text-sm text-muted-foreground">
                   {backgrounds.length} предысторий
                 </p>
@@ -387,7 +395,11 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
             </div>
 
             {canEdit && (
-              <Button onClick={handleCreateBackground} size="sm" className="gap-2">
+              <Button
+                onClick={handleCreateBackground}
+                size="sm"
+                className="gap-2"
+              >
                 <Plus className="w-4 h-4" />
                 Создать
               </Button>
@@ -398,150 +410,219 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {backgrounds.map((background: Background, index: number) => {
             const Icon = BACKGROUND_ICONS[background.externalId] || BookOpen;
-            const isSelected = selectedBackground === background.id;
 
             return (
-              <div key={background.id + index} className="space-y-4">
-                <button
-                  onClick={() => setSelectedBackground(isSelected ? null : background.id)}
-                  className={`w-full text-left p-4 rounded-lg border transition-all ${
-                    isSelected
-                      ? "bg-primary/10 border-primary"
-                      : "bg-card border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    {/* Icon */}
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-sm text-foreground truncate">
-                          {background.nameRu}
-                        </h3>
-                        {canEdit && isSelected && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditBackground(background);
-                            }}
-                          >
-                            <Pencil className="w-3 h-3" />
-                          </Button>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {background.name}
-                      </p>
-                      <div className="flex items-center gap-1 flex-wrap mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                          {background.skillProficiencies.length} навыка
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                          {background.startingGold} зм
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                          {background.languages} языков
-                        </span>
-                      </div>
-                    </div>
+              <button
+                key={background.id + index}
+                onClick={() => setSelectedBackground(background.id)}
+                className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
+              >
+                <div className="flex items-start gap-3">
+                  {/* Icon */}
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
+                    <Icon className="w-5 h-5 text-white" />
                   </div>
-                </button>
 
-                {/* Expanded Details */}
-                {isSelected && (
-                  <div className="bg-card/80 border border-primary/20 rounded-2xl p-6 mt-2 animate-fade-in">
-                    <div className="flex items-start justify-between mb-4">
-                      <h4 className="font-semibold text-foreground">Описание</h4>
-                      {canEdit && selectedBackgroundData.data?.data?.background && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive p-1"
-                          onClick={() => {
-                            if (confirm(`Вы уверены, что хотите удалить предысторию "${selectedBackgroundData.data.data.background.nameRu}"?`)) {
-                              deleteBackgroundMutation.mutate(selectedBackground);
-                            }
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {background.description}
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm text-foreground truncate">
+                      {background.nameRu}
+                    </h3>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {background.name}
                     </p>
-
-                    <div className="space-y-4">
-                      {/* Skill Proficiencies */}
-                      <div>
-                        <h5 className="font-medium text-foreground mb-2">Владение навыками</h5>
-                        <div className="flex flex-wrap gap-2">
-                          {background.skillProficiencies.map((skill) => (
-                            <span key={skill} className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">
-                              {SKILLS.find(s => s.value === skill)?.label || skill}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Tool Proficiencies */}
-                      {background.toolProficiencies.length > 0 && (
-                        <div>
-                          <h5 className="font-medium text-foreground mb-2">Владение инструментами</h5>
-                          <div className="flex flex-wrap gap-2">
-                            {background.toolProficiencies.map((tool, idx) => (
-                              <span key={idx} className="text-xs px-2 py-1 rounded bg-accent/10 text-accent">
-                                {tool}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Equipment */}
-                      {background.equipment.length > 0 && (
-                        <div>
-                          <h5 className="font-medium text-foreground mb-2">Снаряжение</h5>
-                          <ul className="text-sm text-muted-foreground space-y-1">
-                            {background.equipment.map((item, idx) => (
-                              <li key={idx}>• {item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* Origin Feat */}
-                      <div>
-                        <h5 className="font-medium text-foreground mb-2">Черта происхождения</h5>
-                        <p className="text-sm text-muted-foreground">{background.originFeat}</p>
-                      </div>
-
-                      {/* Ability Score Increase */}
-                      <div>
-                        <h5 className="font-medium text-foreground mb-2">Увеличение характеристик</h5>
-                        <div className="flex flex-wrap gap-2">
-                          {background.abilityScoreIncrease.options.map((ability, idx) => (
-                            <span key={ability} className="text-xs px-2 py-1 rounded bg-muted/50">
-                              {ABILITIES.find(a => a.value === ability)?.label || ability}
-                              {background.abilityScoreIncrease.amount[idx] > 0 && ` +${background.abilityScoreIncrease.amount[idx]}`}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                    <div className="flex items-center gap-1 flex-wrap mt-1">
+                      <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                        {background.skillProficiencies.length} навыка
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+                        {background.startingGold} зм
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
+                        {background.languages} языков
+                      </span>
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              </button>
             );
           })}
         </div>
+
+        {/* Slide-over Drawer for Background Details */}
+        {selectedBackground && data?.data?.backgrounds && (
+          <SlideOverDrawer
+            isOpen={!!selectedBackground}
+            onClose={() => setSelectedBackground(null)}
+            title={
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const bg = data.data.backgrounds.find(
+                    (b: Background) => b.id === selectedBackground
+                  );
+                  const Icon = bg
+                    ? BACKGROUND_ICONS[bg.externalId] || BookOpen
+                    : BookOpen;
+                  return <Icon className="w-5 h-5 text-primary" />;
+                })()}
+                <span>
+                  {data.data.backgrounds.find(
+                    (b: Background) => b.id === selectedBackground
+                  )?.nameRu || "Предыстория"}
+                </span>
+              </div>
+            }
+            actions={
+              canEdit && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const bg = data.data.backgrounds.find(
+                        (b: Background) => b.id === selectedBackground
+                      );
+                      if (bg) handleEditBackground(bg);
+                    }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      const bg = data.data.backgrounds.find(
+                        (b: Background) => b.id === selectedBackground
+                      );
+                      if (
+                        bg &&
+                        confirm(
+                          `Вы уверены, что хотите удалить предысторию "${bg.nameRu}"?`
+                        )
+                      ) {
+                        deleteBackgroundMutation.mutate(selectedBackground);
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            }
+          >
+            {(() => {
+              const background = data.data.backgrounds.find(
+                (b: Background) => b.id === selectedBackground
+              );
+              if (!background) return null;
+
+              return (
+                <div className="space-y-6">
+                  {/* Description */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      Описание
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {background.description}
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Skill Proficiencies */}
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">
+                        Владение навыками
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {background.skillProficiencies.map((skill: string) => (
+                          <span
+                            key={skill}
+                            className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
+                          >
+                            {SKILLS.find((s) => s.value === skill)?.label ||
+                              skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tool Proficiencies */}
+                    {background.toolProficiencies.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-foreground mb-2">
+                          Владение инструментами
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {background.toolProficiencies.map(
+                            (tool: string, idx: number) => (
+                              <span
+                                key={idx}
+                                className="text-xs px-2 py-1 rounded bg-accent/10 text-accent"
+                              >
+                                {tool}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Equipment */}
+                    {background.equipment.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-foreground mb-2">
+                          Снаряжение
+                        </h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          {background.equipment.map(
+                            (item: string, idx: number) => (
+                              <li key={idx}>• {item}</li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Origin Feat */}
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">
+                        Черта происхождения
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {background.originFeat}
+                      </p>
+                    </div>
+
+                    {/* Ability Score Increase */}
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">
+                        Увеличение характеристик
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {background.abilityScoreIncrease.options.map(
+                          (ability: string, idx: number) => (
+                            <span
+                              key={ability}
+                              className="text-xs px-2 py-1 rounded bg-muted/50"
+                            >
+                              {ABILITIES.find((a) => a.value === ability)
+                                ?.label || ability}
+                              {background.abilityScoreIncrease.amount[idx] >
+                                0 &&
+                                ` +${background.abilityScoreIncrease.amount[idx]}`}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </SlideOverDrawer>
+        )}
 
         {backgrounds.length === 0 && (
           <div className="text-center py-12">
@@ -562,13 +643,19 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
           <div className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
               <h2 className="text-xl font-semibold text-foreground">
-                {isCreateModalOpen ? "Создать предысторию" : "Редактировать предысторию"}
+                {isCreateModalOpen
+                  ? "Создать предысторию"
+                  : "Редактировать предысторию"}
               </h2>
-              <Button variant="ghost" size="sm" onClick={() => {
-                setIsCreateModalOpen(false);
-                setIsEditModalOpen(false);
-                resetCreateForm();
-              }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsCreateModalOpen(false);
+                  setIsEditModalOpen(false);
+                  resetCreateForm();
+                }}
+              >
                 <X className="w-4 h-4" />
               </Button>
             </div>
@@ -580,12 +667,18 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 <Input
                   id="externalId"
                   value={editingBackground.externalId}
-                  onChange={(e) => setEditingBackground({ ...editingBackground, externalId: e.target.value })}
+                  onChange={(e) =>
+                    setEditingBackground({
+                      ...editingBackground,
+                      externalId: e.target.value,
+                    })
+                  }
                   placeholder="Например: acolyte"
                   disabled={!isCreateModalOpen}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Уникальный идентификатор, используется в коде. Можно изменить только при создании.
+                  Уникальный идентификатор, используется в коде. Можно изменить
+                  только при создании.
                 </p>
               </div>
 
@@ -595,7 +688,12 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 <Input
                   id="nameRu"
                   value={editingBackground.nameRu}
-                  onChange={(e) => setEditingBackground({ ...editingBackground, nameRu: e.target.value })}
+                  onChange={(e) =>
+                    setEditingBackground({
+                      ...editingBackground,
+                      nameRu: e.target.value,
+                    })
+                  }
                   placeholder="Например: Прислужник"
                 />
               </div>
@@ -606,7 +704,12 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 <Input
                   id="name"
                   value={editingBackground.name}
-                  onChange={(e) => setEditingBackground({ ...editingBackground, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditingBackground({
+                      ...editingBackground,
+                      name: e.target.value,
+                    })
+                  }
                   placeholder="Например: Acolyte"
                 />
               </div>
@@ -617,7 +720,12 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 <Textarea
                   id="description"
                   value={editingBackground.description}
-                  onChange={(e) => setEditingBackground({ ...editingBackground, description: e.target.value })}
+                  onChange={(e) =>
+                    setEditingBackground({
+                      ...editingBackground,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Описание предыстории..."
                   rows={4}
                 />
@@ -628,10 +736,15 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 <Label>Владение навыками</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {SKILLS.map((skill) => (
-                    <label key={skill.value} className="flex items-center gap-2 cursor-pointer">
+                    <label
+                      key={skill.value}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <input
                         type="checkbox"
-                        checked={editingBackground.skillProficiencies.includes(skill.value)}
+                        checked={editingBackground.skillProficiencies.includes(
+                          skill.value
+                        )}
                         onChange={() => handleSkillToggle(skill.value)}
                         className="rounded"
                       />
@@ -649,7 +762,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                     value={newTool}
                     onChange={(e) => setNewTool(e.target.value)}
                     placeholder="Набор каллиграфа"
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddTool()}
+                    onKeyPress={(e) => e.key === "Enter" && handleAddTool()}
                   />
                   <Button onClick={handleAddTool} type="button">
                     <Plus className="w-4 h-4" />
@@ -658,9 +771,15 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 {editingBackground.toolProficiencies.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {editingBackground.toolProficiencies.map((tool, idx) => (
-                      <span key={idx} className="text-xs px-2 py-1 rounded bg-muted flex items-center gap-1">
+                      <span
+                        key={idx}
+                        className="text-xs px-2 py-1 rounded bg-muted flex items-center gap-1"
+                      >
                         {tool}
-                        <button onClick={() => handleRemoveTool(idx)} className="hover:text-destructive">
+                        <button
+                          onClick={() => handleRemoveTool(idx)}
+                          className="hover:text-destructive"
+                        >
                           <X className="w-3 h-3" />
                         </button>
                       </span>
@@ -676,7 +795,12 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                   id="languages"
                   type="number"
                   value={editingBackground.languages}
-                  onChange={(e) => setEditingBackground({ ...editingBackground, languages: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setEditingBackground({
+                      ...editingBackground,
+                      languages: parseInt(e.target.value) || 0,
+                    })
+                  }
                   min="0"
                   max="5"
                 />
@@ -690,7 +814,9 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                     value={newEquipment}
                     onChange={(e) => setNewEquipment(e.target.value)}
                     placeholder="Священный символ"
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddEquipment()}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && handleAddEquipment()
+                    }
                   />
                   <Button onClick={handleAddEquipment} type="button">
                     <Plus className="w-4 h-4" />
@@ -699,9 +825,15 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 {editingBackground.equipment.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {editingBackground.equipment.map((item, idx) => (
-                      <span key={idx} className="text-xs px-2 py-1 rounded bg-muted flex items-center gap-1">
+                      <span
+                        key={idx}
+                        className="text-xs px-2 py-1 rounded bg-muted flex items-center gap-1"
+                      >
                         {item}
-                        <button onClick={() => handleRemoveEquipment(idx)} className="hover:text-destructive">
+                        <button
+                          onClick={() => handleRemoveEquipment(idx)}
+                          className="hover:text-destructive"
+                        >
                           <X className="w-3 h-3" />
                         </button>
                       </span>
@@ -717,7 +849,12 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                   id="startingGold"
                   type="number"
                   value={editingBackground.startingGold}
-                  onChange={(e) => setEditingBackground({ ...editingBackground, startingGold: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setEditingBackground({
+                      ...editingBackground,
+                      startingGold: parseInt(e.target.value) || 0,
+                    })
+                  }
                   min="0"
                 />
               </div>
@@ -728,7 +865,12 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 <Input
                   id="originFeat"
                   value={editingBackground.originFeat}
-                  onChange={(e) => setEditingBackground({ ...editingBackground, originFeat: e.target.value })}
+                  onChange={(e) =>
+                    setEditingBackground({
+                      ...editingBackground,
+                      originFeat: e.target.value,
+                    })
+                  }
                   placeholder="Посвящённый в магию (Жрец)"
                 />
               </div>
@@ -738,10 +880,15 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 <Label>Доступные характеристики для увеличения</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {ABILITIES.map((ability) => (
-                    <label key={ability.value} className="flex items-center gap-2 cursor-pointer">
+                    <label
+                      key={ability.value}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <input
                         type="checkbox"
-                        checked={editingBackground.abilityScoreIncrease.options.includes(ability.value)}
+                        checked={editingBackground.abilityScoreIncrease.options.includes(
+                          ability.value
+                        )}
                         onChange={() => handleAbilityToggle(ability.value)}
                         className="rounded"
                       />
@@ -753,18 +900,24 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
 
               {/* Ability Score Amount */}
               <div className="space-y-2">
-                <Label htmlFor="abilityAmount">Значения увеличения (через запятую)</Label>
+                <Label htmlFor="abilityAmount">
+                  Значения увеличения (через запятую)
+                </Label>
                 <Input
                   id="abilityAmount"
-                  value={editingBackground.abilityScoreIncrease.amount.join(", ")}
+                  value={editingBackground.abilityScoreIncrease.amount.join(
+                    ", "
+                  )}
                   onChange={(e) => {
-                    const values = e.target.value.split(",").map(v => parseInt(v.trim()) || 0);
+                    const values = e.target.value
+                      .split(",")
+                      .map((v) => parseInt(v.trim()) || 0);
                     setEditingBackground({
                       ...editingBackground,
                       abilityScoreIncrease: {
                         ...editingBackground.abilityScoreIncrease,
                         amount: values,
-                      }
+                      },
                     });
                   }}
                   placeholder="2, 1, 0"
@@ -782,7 +935,12 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                   options={SOURCES}
                   value={editingBackground.source}
                   placeholder="Выберите источник"
-                  onChange={(e) => setEditingBackground({ ...editingBackground, source: e.target.value as string })}
+                  onChange={(e) =>
+                    setEditingBackground({
+                      ...editingBackground,
+                      source: e.target.value as string,
+                    })
+                  }
                 />
               </div>
 
@@ -800,7 +958,10 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                 </Button>
                 <Button
                   onClick={handleSaveBackground}
-                  disabled={createBackgroundMutation.isPending || updateBackgroundMutation.isPending}
+                  disabled={
+                    createBackgroundMutation.isPending ||
+                    updateBackgroundMutation.isPending
+                  }
                   className="gap-2"
                 >
                   <Save className="w-4 h-4" />

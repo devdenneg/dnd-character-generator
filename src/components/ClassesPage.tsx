@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
 import {
   Shield,
   Zap,
@@ -26,7 +27,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { ElementType } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import type { AbilityName } from "@/types/character";
 
@@ -245,7 +246,12 @@ function MultiSelect({ label, options, selected, onChange }: MultiSelectProps) {
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        Выбрано: {selected.length} {selected.length === 1 ? "пункт" : selected.length > 1 && selected.length < 5 ? "пункта" : "пунктов"}
+        Выбрано: {selected.length}{" "}
+        {selected.length === 1
+          ? "пункт"
+          : selected.length > 1 && selected.length < 5
+          ? "пункта"
+          : "пунктов"}
       </p>
     </div>
   );
@@ -280,9 +286,15 @@ function EquipmentDisplay({ item }: EquipmentDisplayProps) {
                 Доспех
               </span>
             )}
-            {(item.category === "gear" || item.category === "tool" || item.category === "pack") && (
+            {(item.category === "gear" ||
+              item.category === "tool" ||
+              item.category === "pack") && (
               <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                {item.category === "gear" ? "Снаряжение" : item.category === "tool" ? "Инструмент" : "Набор"}
+                {item.category === "gear"
+                  ? "Снаряжение"
+                  : item.category === "tool"
+                  ? "Инструмент"
+                  : "Набор"}
               </span>
             )}
             <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
@@ -294,7 +306,7 @@ function EquipmentDisplay({ item }: EquipmentDisplayProps) {
               </span>
             )}
           </div>
-          
+
           {/* Weapon details */}
           {item.category === "weapon" && item.damage && (
             <div className="text-xs text-muted-foreground mt-1">
@@ -304,12 +316,13 @@ function EquipmentDisplay({ item }: EquipmentDisplayProps) {
               )}
             </div>
           )}
-          
+
           {/* Armor details */}
           {item.category === "armor" && (
             <div className="text-xs text-muted-foreground mt-1">
               AC: {item.armorClass} • Тип: {item.armorType}
-              {item.maxDexBonus !== undefined && ` • Макс. бонус Ловкости: ${item.maxDexBonus}`}
+              {item.maxDexBonus !== undefined &&
+                ` • Макс. бонус Ловкости: ${item.maxDexBonus}`}
             </div>
           )}
         </div>
@@ -326,7 +339,12 @@ interface EquipmentEditorProps {
   onRemove: (index: number) => void;
 }
 
-function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorProps) {
+function EquipmentEditor({
+  item,
+  index,
+  onUpdate,
+  onRemove,
+}: EquipmentEditorProps) {
   return (
     <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-3">
       <div className="flex items-start justify-between">
@@ -347,7 +365,7 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
           <X className="w-3 h-3" />
         </Button>
       </div>
-      
+
       {/* Common Fields */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-2">
@@ -369,7 +387,7 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
           />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-2">
           <Label htmlFor={`equip-weight-${index}`}>Вес (кг)</Label>
@@ -378,7 +396,11 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
             type="number"
             step="0.1"
             value={item.weight || ""}
-            onChange={(e) => onUpdate(index, { weight: parseFloat(e.target.value) || undefined })}
+            onChange={(e) =>
+              onUpdate(index, {
+                weight: parseFloat(e.target.value) || undefined,
+              })
+            }
             placeholder="0"
           />
         </div>
@@ -401,9 +423,11 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
             id={`equip-qty-${index}`}
             type="number"
             value={item.cost.quantity}
-            onChange={(e) => onUpdate(index, { 
-              cost: { ...item.cost, quantity: parseInt(e.target.value) || 0 } 
-            })}
+            onChange={(e) =>
+              onUpdate(index, {
+                cost: { ...item.cost, quantity: parseInt(e.target.value) || 0 },
+              })
+            }
             placeholder="1"
             min="0"
           />
@@ -414,9 +438,11 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
             id={`equip-currency-${index}`}
             value={item.cost.unit}
             placeholder="Валюта"
-            onChange={(e) => onUpdate(index, { 
-              cost: { ...item.cost, unit: e.target.value } 
-            })}
+            onChange={(e) =>
+              onUpdate(index, {
+                cost: { ...item.cost, unit: e.target.value },
+              })
+            }
             options={[
               { value: "cp", label: "cp (медь)" },
               { value: "sp", label: "sp (серебро)" },
@@ -437,9 +463,11 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
               <Input
                 id={`weapon-dice-${index}`}
                 value={item.damage.dice}
-                onChange={(e) => onUpdate(index, { 
-                  damage: { ...item.damage, dice: e.target.value } 
-                })}
+                onChange={(e) =>
+                  onUpdate(index, {
+                    damage: { ...item.damage, dice: e.target.value },
+                  })
+                }
                 placeholder="1d8"
               />
             </div>
@@ -448,22 +476,31 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
               <Input
                 id={`weapon-type-${index}`}
                 value={item.damage.type}
-                onChange={(e) => onUpdate(index, { 
-                  damage: { ...item.damage, type: e.target.value } 
-                })}
+                onChange={(e) =>
+                  onUpdate(index, {
+                    damage: { ...item.damage, type: e.target.value },
+                  })
+                }
                 placeholder="рубящий"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`weapon-props-${index}`}>Свойства (через запятую)</Label>
+            <Label htmlFor={`weapon-props-${index}`}>
+              Свойства (через запятую)
+            </Label>
             <Input
               id={`weapon-props-${index}`}
               value={item.properties?.join(", ") || ""}
-              onChange={(e) => onUpdate(index, { 
-                properties: e.target.value.split(",").map(p => p.trim()).filter(Boolean) 
-              })}
+              onChange={(e) =>
+                onUpdate(index, {
+                  properties: e.target.value
+                    .split(",")
+                    .map((p) => p.trim())
+                    .filter(Boolean),
+                })
+              }
               placeholder="Лёгкое, Метательное (20/60)"
             />
           </div>
@@ -480,9 +517,11 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
                 id={`armor-ac-${index}`}
                 type="number"
                 value={item.armorClass}
-                onChange={(e) => onUpdate(index, { 
-                  armorClass: parseInt(e.target.value) || 10 
-                })}
+                onChange={(e) =>
+                  onUpdate(index, {
+                    armorClass: parseInt(e.target.value) || 10,
+                  })
+                }
                 placeholder="10"
               />
             </div>
@@ -492,9 +531,15 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
                 id={`armor-type-${index}`}
                 value={item.armorType}
                 placeholder="Тип доспеха"
-                onChange={(e) => onUpdate(index, { 
-                  armorType: e.target.value as "light" | "medium" | "heavy" | "shield"
-                })}
+                onChange={(e) =>
+                  onUpdate(index, {
+                    armorType: e.target.value as
+                      | "light"
+                      | "medium"
+                      | "heavy"
+                      | "shield",
+                  })
+                }
                 options={[
                   { value: "light", label: "Лёгкий" },
                   { value: "medium", label: "Средний" },
@@ -512,9 +557,13 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
                 id={`armor-dex-${index}`}
                 type="number"
                 value={item.maxDexBonus || ""}
-                onChange={(e) => onUpdate(index, { 
-                  maxDexBonus: e.target.value ? parseInt(e.target.value) : undefined
-                })}
+                onChange={(e) =>
+                  onUpdate(index, {
+                    maxDexBonus: e.target.value
+                      ? parseInt(e.target.value)
+                      : undefined,
+                  })
+                }
                 placeholder="Оставьте пустым для без ограничений"
               />
             </div>
@@ -523,9 +572,12 @@ function EquipmentEditor({ item, index, onUpdate, onRemove }: EquipmentEditorPro
       )}
 
       {/* Gear-specific fields */}
-      {(item.category === "gear" || item.category === "tool" || item.category === "pack") && (
+      {(item.category === "gear" ||
+        item.category === "tool" ||
+        item.category === "pack") && (
         <div className="text-xs text-muted-foreground p-3 rounded-md bg-muted/50">
-          Для этого типа снаряжения достаточно указать название, вес и стоимость.
+          Для этого типа снаряжения достаточно указать название, вес и
+          стоимость.
         </div>
       )}
     </div>
@@ -565,21 +617,17 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [newFeature, setNewFeature] = useState<Pick<ClassFeature, "name" | "nameRu" | "description" | "level">>({
+  const [newFeature, setNewFeature] = useState<
+    Pick<ClassFeature, "name" | "nameRu" | "description" | "level">
+  >({
     name: "",
     nameRu: "",
     description: "",
     level: 1,
   });
-  const [newEquipmentCategory, setNewEquipmentCategory] = useState<"weapon" | "armor" | "gear">("weapon");
-
-  // Selected class data query
-  const selectedClassData = useQuery({
-    queryKey: ["class", selectedClass],
-    queryFn: () => classesApi.get(selectedClass!),
-    enabled: !!selectedClass,
-    staleTime: Infinity,
-  });
+  const [newEquipmentCategory, setNewEquipmentCategory] = useState<
+    "weapon" | "armor" | "gear"
+  >("weapon");
 
   // Create class mutation
   const createClassMutation = useMutation({
@@ -672,7 +720,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
   };
 
   const handleSaveClass = () => {
-    if (!editingClass.externalId || !editingClass.name || !editingClass.nameRu || !editingClass.description) {
+    if (
+      !editingClass.externalId ||
+      !editingClass.name ||
+      !editingClass.nameRu ||
+      !editingClass.description
+    ) {
       alert("Пожалуйста, заполните все обязательные поля");
       return;
     }
@@ -781,17 +834,22 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
       ...editingClass,
       startingEquipment: {
         ...editingClass.startingEquipment,
-        equipment: editingClass.startingEquipment.equipment.filter((_, i) => i !== index),
+        equipment: editingClass.startingEquipment.equipment.filter(
+          (_, i) => i !== index
+        ),
       },
     });
   };
 
-  const handleUpdateEquipmentItem = (index: number, updates: Partial<EquipmentItem>) => {
+  const handleUpdateEquipmentItem = (
+    index: number,
+    updates: Partial<EquipmentItem>
+  ) => {
     if (!editingClass.startingEquipment) return;
 
     const updatedEquipment = [...editingClass.startingEquipment.equipment];
     const currentItem = updatedEquipment[index];
-    
+
     // Merge updates with current item while preserving type
     updatedEquipment[index] = { ...currentItem, ...updates } as EquipmentItem;
 
@@ -840,8 +898,8 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
               Ошибка загрузки классов
             </h2>
             <p className="text-sm text-destructive/80">
-              Не удалось загрузить данные о классах с сервера. Пожалуйста, попробуйте
-              позже.
+              Не удалось загрузить данные о классах с сервера. Пожалуйста,
+              попробуйте позже.
             </p>
             {onBack && (
               <Button variant="outline" className="mt-4" onClick={onBack}>
@@ -888,186 +946,250 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {classes.map((cls: CharacterClass, index: number) => {
             const Icon = CLASS_ICONS[cls.externalId] || Shield;
-            const isSelected = selectedClass === cls.id;
 
             return (
-              <div key={cls.id + index} className="space-y-4">
-                <button
-                  onClick={() => setSelectedClass(isSelected ? null : cls.id)}
-                  className={`w-full text-left p-4 rounded-lg border transition-all ${
-                    isSelected
-                      ? "bg-primary/10 border-primary"
-                      : "bg-card border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    {/* Icon */}
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
-                      <Icon className="w-5 h-5 text-white" />
+              <button
+                key={cls.id + index}
+                onClick={() => setSelectedClass(cls.id)}
+                className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
+              >
+                <div className="flex items-start gap-3">
+                  {/* Icon */}
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm text-foreground truncate">
+                      {cls.nameRu}
+                    </h3>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {cls.name}
+                    </p>
+                    <div className="flex items-center gap-1 flex-wrap mt-1">
+                      <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                        d{cls.hitDie}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+                        {cls.primaryAbility.join(", ")}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
+                        {cls.features.length} черт
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
+                        {cls.subclasses.length} подклассов
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Slide-over Drawer for Class Details */}
+        {selectedClass && data?.data?.classes && (
+          <SlideOverDrawer
+            isOpen={!!selectedClass}
+            onClose={() => setSelectedClass(null)}
+            title={
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const cls = data.data.classes.find(
+                    (c: CharacterClass) => c.id === selectedClass
+                  );
+                  const Icon = cls
+                    ? CLASS_ICONS[cls.externalId] || Shield
+                    : Shield;
+                  return <Icon className="w-5 h-5 text-primary" />;
+                })()}
+                <span>
+                  {data.data.classes.find(
+                    (c: CharacterClass) => c.id === selectedClass
+                  )?.nameRu || "Класс"}
+                </span>
+              </div>
+            }
+            actions={
+              canEdit && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const cls = data.data.classes.find(
+                        (c: CharacterClass) => c.id === selectedClass
+                      );
+                      if (cls) handleEditClass(cls);
+                    }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      const cls = data.data.classes.find(
+                        (c: CharacterClass) => c.id === selectedClass
+                      );
+                      if (
+                        cls &&
+                        confirm(
+                          `Вы уверены, что хотите удалить класс "${cls.nameRu}"?`
+                        )
+                      ) {
+                        deleteClassMutation.mutate(selectedClass);
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            }
+          >
+            {(() => {
+              const cls = data.data.classes.find(
+                (c: CharacterClass) => c.id === selectedClass
+              );
+              if (!cls) return null;
+
+              return (
+                <div className="space-y-6">
+                  {/* Description */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      Описание
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {cls.description}
+                    </p>
+                  </div>
+
+                  {/* Class Statistics */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                      <h4 className="font-medium text-foreground text-sm mb-3">
+                        Характеристики
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Кость хитов:
+                          </span>
+                          <span className="font-medium">d{cls.hitDie}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Основная:
+                          </span>
+                          <span className="font-medium">
+                            {cls.primaryAbility.join(", ")}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Спасброски:
+                          </span>
+                          <span className="font-medium">
+                            {cls.savingThrows.join(", ")}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Подкласс с уровня:
+                          </span>
+                          <span className="font-medium">
+                            {cls.subclassLevel}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Навыки:</span>
+                          <span className="font-medium">
+                            {cls.skillCount} из {cls.skillChoices.length}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-sm text-foreground truncate">
-                          {cls.nameRu}
-                        </h3>
-                        {canEdit && isSelected && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditClass(cls);
-                            }}
-                          >
-                            <Pencil className="w-3 h-3" />
-                          </Button>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {cls.name}
-                      </p>
-                      <div className="flex items-center gap-1 flex-wrap mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                          d{cls.hitDie}
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                          {cls.primaryAbility.join(", ")}
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                          {cls.features.length} черт
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                          {cls.subclasses.length} подклассов
-                        </span>
+                    <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                      <h4 className="font-medium text-foreground text-sm mb-3">
+                        Владения
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-muted-foreground block mb-1">
+                            Доспехи:
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {cls.armorProficiencies.map(
+                              (prof: string, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary"
+                                >
+                                  {prof}
+                                </span>
+                              )
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block mb-1">
+                            Оружие:
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {cls.weaponProficiencies.map(
+                              (prof: string, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary"
+                                >
+                                  {prof}
+                                </span>
+                              )
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </button>
 
-                {/* Expanded Details */}
-                {isSelected && (
-                  <div className="bg-card/80 border border-primary/20 rounded-2xl p-6 mt-2 animate-fade-in">
-                    <div className="flex items-start justify-between mb-4">
-                      <h4 className="font-semibold text-foreground">Описание</h4>
-                      {canEdit && selectedClassData.data?.data?.class && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive p-1"
-                          onClick={() => {
-                            if (confirm(`Вы уверены, что хотите удалить класс "${selectedClassData.data.data.class.nameRu}"?`)) {
-                              deleteClassMutation.mutate(selectedClass);
-                            }
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-6">
-                      {cls.description}
-                    </p>
-
-                    {/* Class Statistics */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                      <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                        <h5 className="font-medium text-foreground text-sm mb-2">Характеристики</h5>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Кость хитов:</span>
-                            <span className="font-medium">d{cls.hitDie}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Основная:</span>
-                            <span className="font-medium">
-                              {cls.primaryAbility.join(", ")}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Спасброски:</span>
-                            <span className="font-medium">
-                              {cls.savingThrows.join(", ")}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Подкласс с уровня:</span>
-                            <span className="font-medium">{cls.subclassLevel}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Навыки:</span>
-                            <span className="font-medium">
-                              {cls.skillCount} из {cls.skillChoices.length}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                        <h5 className="font-medium text-foreground text-sm mb-2">Владения</h5>
-                        <div className="space-y-2 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Доспехи:</span>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {cls.armorProficiencies.map((prof: string, idx: number) => (
-                                <span key={idx} className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                                  {prof}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Оружие:</span>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {cls.weaponProficiencies.map((prof: string, idx: number) => (
-                                <span key={idx} className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                                  {prof}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <h4 className="font-semibold text-foreground mb-2">Черты класса</h4>
-                    <div className="space-y-3 mb-6">
+                  {/* Features */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">
+                      Черты класса
+                    </h3>
+                    <div className="space-y-3">
                       {cls.features.map((feature: ClassFeature) => (
                         <div
                           key={feature.id}
                           className="p-4 rounded-xl bg-muted/30 border border-border/30"
                         >
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <div>
-                              <h5 className="font-medium text-foreground text-sm">
-                                {feature.nameRu} (уровень {feature.level})
-                              </h5>
-                              <span className="text-xs text-muted-foreground/70">
-                                {feature.name}
-                              </span>
-                            </div>
-                            {canEdit && isSelected && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-destructive hover:text-destructive p-1 h-6 w-6"
-                                onClick={() => handleRemoveFeature(feature.id)}
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            )}
+                          <div className="mb-1">
+                            <h5 className="font-medium text-foreground text-sm">
+                              {feature.nameRu} (уровень {feature.level})
+                            </h5>
+                            <span className="text-xs text-muted-foreground/70">
+                              {feature.name}
+                            </span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-sm text-muted-foreground">
                             {feature.description}
                           </p>
                         </div>
                       ))}
                     </div>
+                  </div>
 
-                    <h4 className="font-semibold text-foreground mb-2">Подклассы</h4>
-                    <div className="space-y-3 mb-6">
+                  {/* Subclasses */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">
+                      Подклассы
+                    </h3>
+                    <div className="space-y-3">
                       {cls.subclasses.map((subclass: Subclass) => (
                         <div
                           key={subclass.id}
@@ -1079,14 +1201,19 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           <span className="text-xs text-muted-foreground/70">
                             {subclass.name}
                           </span>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-sm text-muted-foreground mt-1">
                             {subclass.description}
                           </p>
                         </div>
                       ))}
                     </div>
+                  </div>
 
-                    <h4 className="font-semibold text-foreground mb-2">Начальное снаряжение</h4>
+                  {/* Starting Equipment */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">
+                      Начальное снаряжение
+                    </h3>
                     {cls.startingEquipment ? (
                       <div className="space-y-3">
                         {cls.startingEquipment.gold > 0 && (
@@ -1097,9 +1224,11 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           </div>
                         )}
                         <div className="space-y-2">
-                          {cls.startingEquipment.equipment.map((item: EquipmentItem, index: number) => (
-                            <EquipmentDisplay key={index} item={item} />
-                          ))}
+                          {cls.startingEquipment.equipment.map(
+                            (item: EquipmentItem, index: number) => (
+                              <EquipmentDisplay key={index} item={item} />
+                            )
+                          )}
                         </div>
                       </div>
                     ) : (
@@ -1107,92 +1236,136 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                         Начальное снаряжение не указано
                       </p>
                     )}
+                  </div>
 
-                    {/* Spellcasting */}
-                    {cls.spellcasting && (
-                      <>
-                        <h4 className="font-semibold text-foreground mb-2 mt-6">Владение заклинаниями (Spellcasting)</h4>
-                        <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
-                            <div>
-                              <span className="text-muted-foreground">Базовая характеристика:</span>
-                              <span className="font-medium ml-2">
-                                {cls.spellcasting.ability === "strength" && "Сила"}
-                                {cls.spellcasting.ability === "dexterity" && "Ловкость"}
-                                {cls.spellcasting.ability === "constitution" && "Телосложение"}
-                                {cls.spellcasting.ability === "intelligence" && "Интеллект"}
-                                {cls.spellcasting.ability === "wisdom" && "Мудрость"}
-                                {cls.spellcasting.ability === "charisma" && "Харизма"}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Заговоры (1-20 уровень):</span>
-                              <span className="font-medium ml-2">
-                                {cls.spellcasting.cantripsKnown.join(", ")}
-                              </span>
-                            </div>
-                            {cls.spellcasting.spellsKnown && (
-                              <div>
-                                <span className="text-muted-foreground">Известные заклинания (1-20 уровень):</span>
-                                <span className="font-medium ml-2">
-                                  {cls.spellcasting.spellsKnown.join(", ")}
-                                </span>
-                              </div>
-                            )}
+                  {/* Spellcasting */}
+                  {cls.spellcasting && (
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-3">
+                        Владение заклинаниями (Spellcasting)
+                      </h3>
+                      <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
+                          <div>
+                            <span className="text-muted-foreground">
+                              Базовая характеристика:
+                            </span>
+                            <span className="font-medium ml-2">
+                              {cls.spellcasting.ability === "strength" &&
+                                "Сила"}
+                              {cls.spellcasting.ability === "dexterity" &&
+                                "Ловкость"}
+                              {cls.spellcasting.ability === "constitution" &&
+                                "Телосложение"}
+                              {cls.spellcasting.ability === "intelligence" &&
+                                "Интеллект"}
+                              {cls.spellcasting.ability === "wisdom" &&
+                                "Мудрость"}
+                              {cls.spellcasting.ability === "charisma" &&
+                                "Харизма"}
+                            </span>
                           </div>
+                          <div>
+                            <span className="text-muted-foreground">
+                              Заговоры (1-20 уровень):
+                            </span>
+                            <span className="font-medium ml-2">
+                              {cls.spellcasting.cantripsKnown.join(", ")}
+                            </span>
+                          </div>
+                          {cls.spellcasting.spellsKnown && (
+                            <div>
+                              <span className="text-muted-foreground">
+                                Известные заклинания (1-20 уровень):
+                              </span>
+                              <span className="font-medium ml-2">
+                                {cls.spellcasting.spellsKnown.join(", ")}
+                              </span>
+                            </div>
+                          )}
+                        </div>
 
-                          {/* Spell Slots Table - Read-only */}
-                          {(() => {
-                            const maxSpellLevel = cls.spellcasting.spellSlots.reduce(
-                              (max, level) => Math.max(max, level.length),
+                        {/* Spell Slots Table - Read-only */}
+                        {(() => {
+                          const maxSpellLevel =
+                            cls.spellcasting.spellSlots.reduce(
+                              (max: number, level: number[]) =>
+                                Math.max(max, level.length),
                               0
                             );
 
-                            return maxSpellLevel > 0 ? (
-                              <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                  <thead>
-                                    <tr className="bg-muted/50">
-                                      <th className="p-2 text-left font-medium min-w-[100px]">Уровень персонажа \u2192 Уровень заклинания</th>
-                                      {Array.from({ length: maxSpellLevel }, (_, i) => (
-                                        <th key={i} className="p-2 text-center font-medium min-w-[40px]">
+                          return maxSpellLevel > 0 ? (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="bg-muted/50">
+                                    <th className="p-2 text-left font-medium min-w-[100px]">
+                                      Уровень персонажа \u2192 Уровень
+                                      заклинания
+                                    </th>
+                                    {Array.from(
+                                      { length: maxSpellLevel },
+                                      (_, i) => (
+                                        <th
+                                          key={i}
+                                          className="p-2 text-center font-medium min-w-[40px]"
+                                        >
                                           {i + 1}
                                         </th>
-                                      ))}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {Array.from({ length: 20 }, (_, charLevel) => {
-                                      const rowHasData = cls?.spellcasting?.spellSlots[charLevel] &&
-                                        cls?.spellcasting?.spellSlots[charLevel].some(slot => slot > 0);
+                                      )
+                                    )}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {Array.from(
+                                    { length: 20 },
+                                    (_, charLevel) => {
+                                      const rowHasData =
+                                        cls?.spellcasting?.spellSlots[
+                                          charLevel
+                                        ] &&
+                                        cls?.spellcasting?.spellSlots[
+                                          charLevel
+                                        ].some((slot: number) => slot > 0);
 
                                       return rowHasData ? (
-                                        <tr key={charLevel} className="border-b border-border/30">
+                                        <tr
+                                          key={charLevel}
+                                          className="border-b border-border/30"
+                                        >
                                           <td className="p-2 font-medium bg-muted/20">
                                             {charLevel + 1}
                                           </td>
-                                          {Array.from({ length: maxSpellLevel }, (_, spellLevel) => (
-                                            <td key={`${charLevel}-${spellLevel}`} className="p-1 text-center">
-                                              {cls?.spellcasting?.spellSlots[charLevel]?.[spellLevel] || 0}
-                                            </td>
-                                          ))}
+                                          {Array.from(
+                                            { length: maxSpellLevel },
+                                            (_, spellLevel) => (
+                                              <td
+                                                key={`${charLevel}-${spellLevel}`}
+                                                className="p-1 text-center"
+                                              >
+                                                {cls?.spellcasting?.spellSlots[
+                                                  charLevel
+                                                ]?.[spellLevel] || 0}
+                                              </td>
+                                            )
+                                          )}
                                         </tr>
                                       ) : null;
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            ) : null;
-                          })()}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                                    }
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </SlideOverDrawer>
+        )}
 
         {classes.length === 0 && (
           <div className="text-center py-12">
@@ -1215,35 +1388,59 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
               <h2 className="text-xl font-semibold text-foreground">
                 {isCreateModalOpen ? "Создать класс" : "Редактировать класс"}
               </h2>
-              <Button variant="ghost" size="sm" onClick={() => {
-                setIsCreateModalOpen(false);
-                setIsEditModalOpen(false);
-                resetCreateForm();
-              }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsCreateModalOpen(false);
+                  setIsEditModalOpen(false);
+                  resetCreateForm();
+                }}
+              >
                 <X className="w-4 h-4" />
               </Button>
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="flex-1 flex flex-col overflow-hidden"
+            >
               <div className="px-6 pt-4 border-b border-border/50">
                 <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
-                  <TabsTrigger value="basic" className="gap-2 whitespace-nowrap">
+                  <TabsTrigger
+                    value="basic"
+                    className="gap-2 whitespace-nowrap"
+                  >
                     <Info className="w-4 h-4" />
                     Основное
                   </TabsTrigger>
-                  <TabsTrigger value="stats" className="gap-2 whitespace-nowrap">
+                  <TabsTrigger
+                    value="stats"
+                    className="gap-2 whitespace-nowrap"
+                  >
                     <Sparkles className="w-4 h-4" />
                     Характеристики
                   </TabsTrigger>
-                  <TabsTrigger value="features" className="gap-2 whitespace-nowrap">
+                  <TabsTrigger
+                    value="features"
+                    className="gap-2 whitespace-nowrap"
+                  >
                     <Swords className="w-4 h-4" />
                     Черты ({editingClass.features.length})
                   </TabsTrigger>
-                  <TabsTrigger value="equipment" className="gap-2 whitespace-nowrap">
+                  <TabsTrigger
+                    value="equipment"
+                    className="gap-2 whitespace-nowrap"
+                  >
                     <Backpack className="w-4 h-4" />
-                    Снаряжение ({editingClass.startingEquipment?.equipment.length || 0})
+                    Снаряжение (
+                    {editingClass.startingEquipment?.equipment.length || 0})
                   </TabsTrigger>
-                  <TabsTrigger value="spellcasting" className="gap-2 whitespace-nowrap">
+                  <TabsTrigger
+                    value="spellcasting"
+                    className="gap-2 whitespace-nowrap"
+                  >
                     <Wand2 className="w-4 h-4" />
                     Магия
                   </TabsTrigger>
@@ -1259,12 +1456,18 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     <Input
                       id="externalId"
                       value={editingClass.externalId}
-                      onChange={(e) => setEditingClass({ ...editingClass, externalId: e.target.value })}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          externalId: e.target.value,
+                        })
+                      }
                       placeholder="Например: barbarian"
                       disabled={!isCreateModalOpen}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Уникальный идентификатор, используется в коде. Можно изменить только при создании.
+                      Уникальный идентификатор, используется в коде. Можно
+                      изменить только при создании.
                     </p>
                   </div>
 
@@ -1274,7 +1477,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     <Input
                       id="nameRu"
                       value={editingClass.nameRu}
-                      onChange={(e) => setEditingClass({ ...editingClass, nameRu: e.target.value })}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          nameRu: e.target.value,
+                        })
+                      }
                       placeholder="Например: Варвар"
                     />
                   </div>
@@ -1285,7 +1493,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     <Input
                       id="name"
                       value={editingClass.name}
-                      onChange={(e) => setEditingClass({ ...editingClass, name: e.target.value })}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          name: e.target.value,
+                        })
+                      }
                       placeholder="Например: Barbarian"
                     />
                   </div>
@@ -1298,7 +1511,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       options={HIT_DIE_OPTIONS}
                       value={editingClass.hitDie.toString()}
                       placeholder="Выберите кость хитов"
-                      onChange={(e) => setEditingClass({ ...editingClass, hitDie: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          hitDie: parseInt(e.target.value),
+                        })
+                      }
                     />
                   </div>
 
@@ -1308,7 +1526,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     <Textarea
                       id="description"
                       value={editingClass.description}
-                      onChange={(e) => setEditingClass({ ...editingClass, description: e.target.value })}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          description: e.target.value,
+                        })
+                      }
                       placeholder="Описание класса..."
                       rows={4}
                     />
@@ -1316,12 +1539,19 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
 
                   {/* Subclass Level */}
                   <div className="space-y-2">
-                    <Label htmlFor="subclassLevel">Уровень получения подкласса (Subclass Level)</Label>
+                    <Label htmlFor="subclassLevel">
+                      Уровень получения подкласса (Subclass Level)
+                    </Label>
                     <Input
                       id="subclassLevel"
                       type="number"
                       value={editingClass.subclassLevel}
-                      onChange={(e) => setEditingClass({ ...editingClass, subclassLevel: parseInt(e.target.value) || 1 })}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          subclassLevel: parseInt(e.target.value) || 1,
+                        })
+                      }
                       placeholder="Уровень получения подкласса"
                       min="1"
                       max="20"
@@ -1336,7 +1566,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       options={SOURCE_OPTIONS}
                       value={editingClass.source}
                       placeholder="Выберите источник"
-                      onChange={(e) => setEditingClass({ ...editingClass, source: e.target.value })}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          source: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </TabsContent>
@@ -1348,7 +1583,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     label="Основная характеристика (Primary Ability)"
                     options={ABILITY_OPTIONS}
                     selected={editingClass.primaryAbility}
-                    onChange={(selected) => setEditingClass({ ...editingClass, primaryAbility: selected })}
+                    onChange={(selected) =>
+                      setEditingClass({
+                        ...editingClass,
+                        primaryAbility: selected,
+                      })
+                    }
                   />
 
                   {/* Saving Throws */}
@@ -1356,7 +1596,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     label="Спасброски (Saving Throws)"
                     options={ABILITY_OPTIONS}
                     selected={editingClass.savingThrows}
-                    onChange={(selected) => setEditingClass({ ...editingClass, savingThrows: selected })}
+                    onChange={(selected) =>
+                      setEditingClass({
+                        ...editingClass,
+                        savingThrows: selected,
+                      })
+                    }
                   />
 
                   {/* Armor Proficiencies */}
@@ -1364,7 +1609,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     label="Владение доспехами (Armor Proficiencies)"
                     options={ARMOR_PROFICIENCY_OPTIONS}
                     selected={editingClass.armorProficiencies}
-                    onChange={(selected) => setEditingClass({ ...editingClass, armorProficiencies: selected })}
+                    onChange={(selected) =>
+                      setEditingClass({
+                        ...editingClass,
+                        armorProficiencies: selected,
+                      })
+                    }
                   />
 
                   {/* Weapon Proficiencies */}
@@ -1372,7 +1622,12 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     label="Владение оружием (Weapon Proficiencies)"
                     options={WEAPON_PROFICIENCY_OPTIONS}
                     selected={editingClass.weaponProficiencies}
-                    onChange={(selected) => setEditingClass({ ...editingClass, weaponProficiencies: selected })}
+                    onChange={(selected) =>
+                      setEditingClass({
+                        ...editingClass,
+                        weaponProficiencies: selected,
+                      })
+                    }
                   />
 
                   {/* Skill Choices */}
@@ -1380,17 +1635,29 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     label="Навыки на выбор (Skill Choices)"
                     options={SKILL_OPTIONS}
                     selected={editingClass.skillChoices}
-                    onChange={(selected) => setEditingClass({ ...editingClass, skillChoices: selected })}
+                    onChange={(selected) =>
+                      setEditingClass({
+                        ...editingClass,
+                        skillChoices: selected,
+                      })
+                    }
                   />
 
                   {/* Skill Count */}
                   <div className="space-y-2">
-                    <Label htmlFor="skillCount">Количество навыков на выбор (Skill Count)</Label>
+                    <Label htmlFor="skillCount">
+                      Количество навыков на выбор (Skill Count)
+                    </Label>
                     <Input
                       id="skillCount"
                       type="number"
                       value={editingClass.skillCount}
-                      onChange={(e) => setEditingClass({ ...editingClass, skillCount: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          skillCount: parseInt(e.target.value) || 0,
+                        })
+                      }
                       placeholder="Количество навыков"
                       min="0"
                     />
@@ -1400,9 +1667,17 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                 {/* TAB: Черты класса */}
                 <TabsContent value="features" className="space-y-4 mt-0">
                   <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium">Черты класса</Label>
+                    <Label className="text-base font-medium">
+                      Черты класса
+                    </Label>
                     <span className="text-sm text-muted-foreground">
-                      {editingClass.features.length} {editingClass.features.length === 1 ? "черта" : editingClass.features.length > 1 && editingClass.features.length < 5 ? "черты" : "черт"}
+                      {editingClass.features.length}{" "}
+                      {editingClass.features.length === 1
+                        ? "черта"
+                        : editingClass.features.length > 1 &&
+                          editingClass.features.length < 5
+                        ? "черты"
+                        : "черт"}
                     </span>
                   </div>
 
@@ -1414,32 +1689,53 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     </h5>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="newFeatureName" className="text-sm">Название черты (английский) *</Label>
+                        <Label htmlFor="newFeatureName" className="text-sm">
+                          Название черты (английский) *
+                        </Label>
                         <Input
                           id="newFeatureName"
                           value={newFeature.name}
-                          onChange={(e) => setNewFeature({ ...newFeature, name: e.target.value })}
+                          onChange={(e) =>
+                            setNewFeature({
+                              ...newFeature,
+                              name: e.target.value,
+                            })
+                          }
                           placeholder="Например: Rage"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="newFeatureNameRu" className="text-sm">Название черты (русский) *</Label>
+                        <Label htmlFor="newFeatureNameRu" className="text-sm">
+                          Название черты (русский) *
+                        </Label>
                         <Input
                           id="newFeatureNameRu"
                           value={newFeature.nameRu}
-                          onChange={(e) => setNewFeature({ ...newFeature, nameRu: e.target.value })}
+                          onChange={(e) =>
+                            setNewFeature({
+                              ...newFeature,
+                              nameRu: e.target.value,
+                            })
+                          }
                           placeholder="Например: Ярость"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="newFeatureLevel" className="text-sm">Уровень получения черты *</Label>
+                        <Label htmlFor="newFeatureLevel" className="text-sm">
+                          Уровень получения черты *
+                        </Label>
                         <Input
                           id="newFeatureLevel"
                           type="number"
                           value={newFeature.level}
-                          onChange={(e) => setNewFeature({ ...newFeature, level: parseInt(e.target.value) || 1 })}
+                          onChange={(e) =>
+                            setNewFeature({
+                              ...newFeature,
+                              level: parseInt(e.target.value) || 1,
+                            })
+                          }
                           placeholder="Уровень"
                           min="1"
                           max="20"
@@ -1447,11 +1743,18 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newFeatureDesc" className="text-sm">Описание черты *</Label>
+                      <Label htmlFor="newFeatureDesc" className="text-sm">
+                        Описание черты *
+                      </Label>
                       <Textarea
                         id="newFeatureDesc"
                         value={newFeature.description}
-                        onChange={(e) => setNewFeature({ ...newFeature, description: e.target.value })}
+                        onChange={(e) =>
+                          setNewFeature({
+                            ...newFeature,
+                            description: e.target.value,
+                          })
+                        }
                         placeholder="Опишите эффект этой черты..."
                         rows={3}
                       />
@@ -1459,7 +1762,11 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     <Button
                       onClick={handleAddFeature}
                       className="w-full gap-2"
-                      disabled={!newFeature.name || !newFeature.nameRu || !newFeature.description}
+                      disabled={
+                        !newFeature.name ||
+                        !newFeature.nameRu ||
+                        !newFeature.description
+                      }
                     >
                       <Plus className="w-4 h-4" />
                       Добавить черту
@@ -1469,86 +1776,147 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                   {/* Existing Features List */}
                   {editingClass.features.length > 0 && (
                     <div className="space-y-3">
-                      <h6 className="text-sm font-medium text-muted-foreground">Список черт:</h6>
-                      {editingClass.features.map((feature: ClassFeature, index: number) => (
-                        <div key={feature.id || index} className="p-4 rounded-xl bg-card border border-border/50 space-y-3">
-                          <div className="flex items-start justify-between pb-3 border-b border-border/30">
-                            <h5 className="font-medium text-foreground text-base">Черта #{index + 1}</h5>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2"
-                              onClick={() => handleRemoveFeature(feature.id || index.toString())}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor={`feature-name-${index}`} className="text-xs">Название (английский)</Label>
-                              <Input
-                                id={`feature-name-${index}`}
-                                value={feature.name}
-                                onChange={(e) => {
-                                  const featuresArray = editingClass.features || [];
-                                  const updatedFeatures = [...featuresArray];
-                                  updatedFeatures[index] = { ...updatedFeatures[index], name: e.target.value };
-                                  setEditingClass({ ...editingClass, features: updatedFeatures });
-                                }}
-                                placeholder="Название (англ)"
-                              />
+                      <h6 className="text-sm font-medium text-muted-foreground">
+                        Список черт:
+                      </h6>
+                      {editingClass.features.map(
+                        (feature: ClassFeature, index: number) => (
+                          <div
+                            key={feature.id || index}
+                            className="p-4 rounded-xl bg-card border border-border/50 space-y-3"
+                          >
+                            <div className="flex items-start justify-between pb-3 border-b border-border/30">
+                              <h5 className="font-medium text-foreground text-base">
+                                Черта #{index + 1}
+                              </h5>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2"
+                                onClick={() =>
+                                  handleRemoveFeature(
+                                    feature.id || index.toString()
+                                  )
+                                }
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`feature-name-${index}`}
+                                  className="text-xs"
+                                >
+                                  Название (английский)
+                                </Label>
+                                <Input
+                                  id={`feature-name-${index}`}
+                                  value={feature.name}
+                                  onChange={(e) => {
+                                    const featuresArray =
+                                      editingClass.features || [];
+                                    const updatedFeatures = [...featuresArray];
+                                    updatedFeatures[index] = {
+                                      ...updatedFeatures[index],
+                                      name: e.target.value,
+                                    };
+                                    setEditingClass({
+                                      ...editingClass,
+                                      features: updatedFeatures,
+                                    });
+                                  }}
+                                  placeholder="Название (англ)"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`feature-nameRu-${index}`}
+                                  className="text-xs"
+                                >
+                                  Название (русский)
+                                </Label>
+                                <Input
+                                  id={`feature-nameRu-${index}`}
+                                  value={feature.nameRu}
+                                  onChange={(e) => {
+                                    const featuresArray =
+                                      editingClass.features || [];
+                                    const updatedFeatures = [...featuresArray];
+                                    updatedFeatures[index] = {
+                                      ...updatedFeatures[index],
+                                      nameRu: e.target.value,
+                                    };
+                                    setEditingClass({
+                                      ...editingClass,
+                                      features: updatedFeatures,
+                                    });
+                                  }}
+                                  placeholder="Название (рус)"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`feature-level-${index}`}
+                                  className="text-xs"
+                                >
+                                  Уровень получения
+                                </Label>
+                                <Input
+                                  id={`feature-level-${index}`}
+                                  type="number"
+                                  value={feature.level}
+                                  onChange={(e) => {
+                                    const featuresArray =
+                                      editingClass.features || [];
+                                    const updatedFeatures = [...featuresArray];
+                                    updatedFeatures[index] = {
+                                      ...updatedFeatures[index],
+                                      level: parseInt(e.target.value) || 1,
+                                    };
+                                    setEditingClass({
+                                      ...editingClass,
+                                      features: updatedFeatures,
+                                    });
+                                  }}
+                                  placeholder="Уровень"
+                                  min="1"
+                                  max="20"
+                                />
+                              </div>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`feature-nameRu-${index}`} className="text-xs">Название (русский)</Label>
-                              <Input
-                                id={`feature-nameRu-${index}`}
-                                value={feature.nameRu}
+                              <Label
+                                htmlFor={`feature-desc-${index}`}
+                                className="text-xs"
+                              >
+                                Описание
+                              </Label>
+                              <Textarea
+                                id={`feature-desc-${index}`}
+                                value={feature.description}
                                 onChange={(e) => {
-                                  const featuresArray = editingClass.features || [];
+                                  const featuresArray =
+                                    editingClass.features || [];
                                   const updatedFeatures = [...featuresArray];
-                                  updatedFeatures[index] = { ...updatedFeatures[index], nameRu: e.target.value };
-                                  setEditingClass({ ...editingClass, features: updatedFeatures });
+                                  updatedFeatures[index] = {
+                                    ...updatedFeatures[index],
+                                    description: e.target.value,
+                                  };
+                                  setEditingClass({
+                                    ...editingClass,
+                                    features: updatedFeatures,
+                                  });
                                 }}
-                                placeholder="Название (рус)"
+                                placeholder="Описание черты"
+                                rows={2}
                               />
                             </div>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor={`feature-level-${index}`} className="text-xs">Уровень получения</Label>
-                              <Input
-                                id={`feature-level-${index}`}
-                                type="number"
-                                value={feature.level}
-                                onChange={(e) => {
-                                  const featuresArray = editingClass.features || [];
-                                  const updatedFeatures = [...featuresArray];
-                                  updatedFeatures[index] = { ...updatedFeatures[index], level: parseInt(e.target.value) || 1 };
-                                  setEditingClass({ ...editingClass, features: updatedFeatures });
-                                }}
-                                placeholder="Уровень"
-                                min="1"
-                                max="20"
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`feature-desc-${index}`} className="text-xs">Описание</Label>
-                            <Textarea
-                              id={`feature-desc-${index}`}
-                              value={feature.description}
-                              onChange={(e) => {
-                                const featuresArray = editingClass.features || [];
-                                const updatedFeatures = [...featuresArray];
-                                updatedFeatures[index] = { ...updatedFeatures[index], description: e.target.value };
-                                setEditingClass({ ...editingClass, features: updatedFeatures });
-                              }}
-                              placeholder="Описание черты"
-                              rows={2}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   )}
                 </TabsContent>
@@ -1556,29 +1924,46 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                 {/* TAB: Начальное снаряжение */}
                 <TabsContent value="equipment" className="space-y-4 mt-0">
                   <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium">Начальное снаряжение</Label>
+                    <Label className="text-base font-medium">
+                      Начальное снаряжение
+                    </Label>
                     <span className="text-sm text-muted-foreground">
-                      {editingClass.startingEquipment?.equipment.length || 0} {(editingClass.startingEquipment?.equipment.length || 0) === 1 ? "предмет" : (editingClass.startingEquipment?.equipment.length || 0) > 1 && (editingClass.startingEquipment?.equipment.length || 0) < 5 ? "предмета" : "предметов"}
+                      {editingClass.startingEquipment?.equipment.length || 0}{" "}
+                      {(editingClass.startingEquipment?.equipment.length ||
+                        0) === 1
+                        ? "предмет"
+                        : (editingClass.startingEquipment?.equipment.length ||
+                            0) > 1 &&
+                          (editingClass.startingEquipment?.equipment.length ||
+                            0) < 5
+                        ? "предмета"
+                        : "предметов"}
                     </span>
                   </div>
 
                   {/* Gold */}
                   <div className="p-5 rounded-xl bg-muted/30 border border-border/30">
                     <div className="space-y-2">
-                      <Label htmlFor="gold" className="text-sm">Начальное золото (gp)</Label>
+                      <Label htmlFor="gold" className="text-sm">
+                        Начальное золото (gp)
+                      </Label>
                       <div className="flex gap-2">
                         <Input
                           id="gold"
                           type="number"
                           value={editingClass.startingEquipment?.gold || 0}
-                          onChange={(e) => setEditingClass({
-                            ...editingClass,
-                            startingEquipment: {
-                              ...editingClass.startingEquipment,
-                              equipment: editingClass.startingEquipment?.equipment || [],
-                              gold: parseInt(e.target.value) || 0,
-                            }
-                          })}
+                          onChange={(e) =>
+                            setEditingClass({
+                              ...editingClass,
+                              startingEquipment: {
+                                ...editingClass.startingEquipment,
+                                equipment:
+                                  editingClass.startingEquipment?.equipment ||
+                                  [],
+                                gold: parseInt(e.target.value) || 0,
+                              },
+                            })
+                          }
                           placeholder="0"
                           min="0"
                         />
@@ -1592,10 +1977,16 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                   {/* Add New Equipment Item */}
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm mb-2 block">Выберите тип снаряжения для добавления</Label>
+                      <Label className="text-sm mb-2 block">
+                        Выберите тип снаряжения для добавления
+                      </Label>
                       <div className="grid grid-cols-3 gap-2">
                         <Button
-                          variant={newEquipmentCategory === "weapon" ? "default" : "outline"}
+                          variant={
+                            newEquipmentCategory === "weapon"
+                              ? "default"
+                              : "outline"
+                          }
                           onClick={() => setNewEquipmentCategory("weapon")}
                           className="gap-2"
                         >
@@ -1603,7 +1994,11 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           Оружие
                         </Button>
                         <Button
-                          variant={newEquipmentCategory === "armor" ? "default" : "outline"}
+                          variant={
+                            newEquipmentCategory === "armor"
+                              ? "default"
+                              : "outline"
+                          }
                           onClick={() => setNewEquipmentCategory("armor")}
                           className="gap-2"
                         >
@@ -1611,7 +2006,11 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                           Доспех
                         </Button>
                         <Button
-                          variant={newEquipmentCategory === "gear" ? "default" : "outline"}
+                          variant={
+                            newEquipmentCategory === "gear"
+                              ? "default"
+                              : "outline"
+                          }
                           onClick={() => setNewEquipmentCategory("gear")}
                           className="gap-2"
                         >
@@ -1626,33 +2025,45 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       className="w-full gap-2"
                     >
                       <Plus className="w-4 h-4" />
-                      Добавить {newEquipmentCategory === "weapon" ? "оружие" : newEquipmentCategory === "armor" ? "доспех" : "снаряжение"}
+                      Добавить{" "}
+                      {newEquipmentCategory === "weapon"
+                        ? "оружие"
+                        : newEquipmentCategory === "armor"
+                        ? "доспех"
+                        : "снаряжение"}
                     </Button>
                   </div>
 
                   {/* Equipment Items List */}
-                  {editingClass.startingEquipment?.equipment && editingClass.startingEquipment.equipment.length > 0 && (
-                    <div className="space-y-3">
-                      <h6 className="text-sm font-medium text-muted-foreground">Список снаряжения:</h6>
+                  {editingClass.startingEquipment?.equipment &&
+                    editingClass.startingEquipment.equipment.length > 0 && (
                       <div className="space-y-3">
-                        {editingClass.startingEquipment.equipment.map((item: EquipmentItem, index: number) => (
-                          <EquipmentEditor
-                            key={index}
-                            item={item}
-                            index={index}
-                            onUpdate={handleUpdateEquipmentItem}
-                            onRemove={handleRemoveEquipmentItem}
-                          />
-                        ))}
+                        <h6 className="text-sm font-medium text-muted-foreground">
+                          Список снаряжения:
+                        </h6>
+                        <div className="space-y-3">
+                          {editingClass.startingEquipment.equipment.map(
+                            (item: EquipmentItem, index: number) => (
+                              <EquipmentEditor
+                                key={index}
+                                item={item}
+                                index={index}
+                                onUpdate={handleUpdateEquipmentItem}
+                                onRemove={handleRemoveEquipmentItem}
+                              />
+                            )
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </TabsContent>
 
                 {/* TAB: Магия/Spellcasting */}
                 <TabsContent value="spellcasting" className="space-y-4 mt-0">
                   <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium">Владение заклинаниями (Spellcasting)</Label>
+                    <Label className="text-base font-medium">
+                      Владение заклинаниями (Spellcasting)
+                    </Label>
                     <span className="text-sm text-muted-foreground">
                       {editingClass.spellcasting ? "Включено" : "Отключено"}
                     </span>
@@ -1673,7 +2084,9 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                                 ability: "charisma",
                                 cantripsKnown: Array(20).fill(0),
                                 spellsKnown: Array(20).fill(0),
-                                spellSlots: Array(20).fill(null).map(() => []), // 20 character levels, each with array of spell slots
+                                spellSlots: Array(20)
+                                  .fill(null)
+                                  .map(() => []), // 20 character levels, each with array of spell slots
                               },
                             });
                           } else {
@@ -1690,180 +2103,254 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       </Label>
                     </div>
 
-                  {/* Spellcasting Fields */}
-                  {editingClass.spellcasting && (
-                    <>
-                      {/* Ability */}
-                      <div className="space-y-2">
-                        <Label htmlFor="spellcastingAbility">Базовая характеристика *</Label>
-                        <Select
-                          id="spellcastingAbility"
-                          options={ABILITY_OPTIONS}
-                          value={editingClass.spellcasting.ability}
-                          placeholder="Выберите характеристику"
-                          onChange={(e) =>
-                            setEditingClass({
-                              ...editingClass,
-                              spellcasting: {
-                                ...editingClass.spellcasting!,
-                                ability: e.target.value as AbilityName,
-                              },
-                            })
-                          }
-                        />
-                      </div>
-
-                      {/* Cantrips Known - 20 levels */}
-                      <div className="space-y-2">
-                        <Label>Заговоры на каждый уровень (Cantrips Known)</Label>
-                        <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
-                          {editingClass.spellcasting.cantripsKnown.map((count: number, levelIndex: number) => (
-                            <div key={`cantrip-level-${levelIndex}`} className="space-y-1">
-                              <Label htmlFor={`cantrip-${levelIndex}`} className="text-xs">
-                                Ур. {levelIndex + 1}
-                              </Label>
-                              <Input
-                                id={`cantrip-${levelIndex}`}
-                                type="number"
-                                value={count}
-                                onChange={(e) => {
-                                  const newCantrips = [...editingClass.spellcasting!.cantripsKnown];
-                                  newCantrips[levelIndex] = parseInt(e.target.value) || 0;
-                                  setEditingClass({
-                                    ...editingClass,
-                                    spellcasting: {
-                                      ...editingClass.spellcasting!,
-                                      cantripsKnown: newCantrips,
-                                    },
-                                  });
-                                }}
-                                placeholder="0"
-                                min="0"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Spells Known - 20 levels (optional) */}
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id="hasSpellsKnown"
-                            checked={editingClass.spellcasting.spellsKnown !== undefined}
-                            onChange={(e) => {
+                    {/* Spellcasting Fields */}
+                    {editingClass.spellcasting && (
+                      <>
+                        {/* Ability */}
+                        <div className="space-y-2">
+                          <Label htmlFor="spellcastingAbility">
+                            Базовая характеристика *
+                          </Label>
+                          <Select
+                            id="spellcastingAbility"
+                            options={ABILITY_OPTIONS}
+                            value={editingClass.spellcasting.ability}
+                            placeholder="Выберите характеристику"
+                            onChange={(e) =>
                               setEditingClass({
                                 ...editingClass,
                                 spellcasting: {
                                   ...editingClass.spellcasting!,
-                                  spellsKnown: e.target.checked ? Array(20).fill(0) : undefined,
+                                  ability: e.target.value as AbilityName,
                                 },
-                              });
-                            }}
-                            className="w-4 h-4"
+                              })
+                            }
                           />
-                          <Label htmlFor="hasSpellsKnown" className="text-sm">
-                            Известные заклинания на каждый уровень (Spells Known)
-                          </Label>
                         </div>
 
-                        {editingClass.spellcasting.spellsKnown !== undefined && (
+                        {/* Cantrips Known - 20 levels */}
+                        <div className="space-y-2">
+                          <Label>
+                            Заговоры на каждый уровень (Cantrips Known)
+                          </Label>
                           <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
-                            {editingClass.spellcasting.spellsKnown.map((count: number, levelIndex: number) => (
-                              <div key={`spell-level-${levelIndex}`} className="space-y-1">
-                                <Label htmlFor={`spell-${levelIndex}`} className="text-xs">
-                                  Ур. {levelIndex + 1}
-                                </Label>
-                                <Input
-                                  id={`spell-${levelIndex}`}
-                                  type="number"
-                                  value={count}
-                                  onChange={(e) => {
-                                    const newSpells = [...editingClass.spellcasting!.spellsKnown!];
-                                    newSpells[levelIndex] = parseInt(e.target.value) || 0;
-                                    setEditingClass({
-                                      ...editingClass,
-                                      spellcasting: {
-                                        ...editingClass.spellcasting!,
-                                        spellsKnown: newSpells,
-                                      },
-                                    });
-                                  }}
-                                  placeholder="0"
-                                  min="0"
-                                />
-                              </div>
-                            ))}
+                            {editingClass.spellcasting.cantripsKnown.map(
+                              (count: number, levelIndex: number) => (
+                                <div
+                                  key={`cantrip-level-${levelIndex}`}
+                                  className="space-y-1"
+                                >
+                                  <Label
+                                    htmlFor={`cantrip-${levelIndex}`}
+                                    className="text-xs"
+                                  >
+                                    Ур. {levelIndex + 1}
+                                  </Label>
+                                  <Input
+                                    id={`cantrip-${levelIndex}`}
+                                    type="number"
+                                    value={count}
+                                    onChange={(e) => {
+                                      const newCantrips = [
+                                        ...editingClass.spellcasting!
+                                          .cantripsKnown,
+                                      ];
+                                      newCantrips[levelIndex] =
+                                        parseInt(e.target.value) || 0;
+                                      setEditingClass({
+                                        ...editingClass,
+                                        spellcasting: {
+                                          ...editingClass.spellcasting!,
+                                          cantripsKnown: newCantrips,
+                                        },
+                                      });
+                                    }}
+                                    placeholder="0"
+                                    min="0"
+                                  />
+                                </div>
+                              )
+                            )}
                           </div>
-                        )}
-                      </div>
+                        </div>
 
-                      {/* Spell Slots - dynamic spell levels x 20 character levels */}
-                      <div className="space-y-2">
-                        <Label>Ячейки заклинаний (Spell Slots)</Label>
-                        {(() => {
-                          // Calculate maximum spell level from data
-                          const maxSpellLevel = editingClass.spellcasting!.spellSlots.reduce(
-                            (max, level) => Math.max(max, level.length),
-                            0
-                          );
+                        {/* Spells Known - 20 levels (optional) */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="hasSpellsKnown"
+                              checked={
+                                editingClass.spellcasting.spellsKnown !==
+                                undefined
+                              }
+                              onChange={(e) => {
+                                setEditingClass({
+                                  ...editingClass,
+                                  spellcasting: {
+                                    ...editingClass.spellcasting!,
+                                    spellsKnown: e.target.checked
+                                      ? Array(20).fill(0)
+                                      : undefined,
+                                  },
+                                });
+                              }}
+                              className="w-4 h-4"
+                            />
+                            <Label htmlFor="hasSpellsKnown" className="text-sm">
+                              Известные заклинания на каждый уровень (Spells
+                              Known)
+                            </Label>
+                          </div>
 
-                          return (
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="bg-muted/50">
-                                    <th className="p-2 text-left font-medium min-w-[100px]">Уровень персонажа \u2192 Уровень заклинания</th>
-                                    {Array.from({ length: maxSpellLevel }, (_, i) => (
-                                      <th key={i} className="p-2 text-center font-medium min-w-[40px]">
-                                        {i + 1}
-                                      </th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {Array.from({ length: 20 }, (_, charLevel) => (
-                                    <tr key={charLevel} className="border-b border-border/30">
-                                      <td className="p-2 font-medium bg-muted/20">
-                                        {charLevel + 1}
-                                      </td>
-                                      {Array.from({ length: maxSpellLevel }, (_, spellLevel) => (
-                                        <td key={`${charLevel}-${spellLevel}`} className="p-1">
-                                          <Input
-                                            type="number"
-                                            value={editingClass.spellcasting!.spellSlots[charLevel]?.[spellLevel] || 0}
-                                            onChange={(e) => {
-                                              const newSpellSlots = [...editingClass.spellcasting!.spellSlots];
-                                              // Ensure array exists for this character level
-                                              if (!newSpellSlots[charLevel]) {
-                                                newSpellSlots[charLevel] = [];
-                                              }
-                                              newSpellSlots[charLevel][spellLevel] = parseInt(e.target.value) || 0;
-                                              setEditingClass({
-                                                ...editingClass,
-                                                spellcasting: {
-                                                  ...editingClass.spellcasting!,
-                                                  spellSlots: newSpellSlots,
-                                                },
-                                              });
-                                            }}
-                                            placeholder="0"
-                                            min="0"
-                                            className="w-full text-center"
-                                          />
-                                        </td>
-                                      ))}
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                          {editingClass.spellcasting.spellsKnown !==
+                            undefined && (
+                            <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
+                              {editingClass.spellcasting.spellsKnown.map(
+                                (count: number, levelIndex: number) => (
+                                  <div
+                                    key={`spell-level-${levelIndex}`}
+                                    className="space-y-1"
+                                  >
+                                    <Label
+                                      htmlFor={`spell-${levelIndex}`}
+                                      className="text-xs"
+                                    >
+                                      Ур. {levelIndex + 1}
+                                    </Label>
+                                    <Input
+                                      id={`spell-${levelIndex}`}
+                                      type="number"
+                                      value={count}
+                                      onChange={(e) => {
+                                        const newSpells = [
+                                          ...editingClass.spellcasting!
+                                            .spellsKnown!,
+                                        ];
+                                        newSpells[levelIndex] =
+                                          parseInt(e.target.value) || 0;
+                                        setEditingClass({
+                                          ...editingClass,
+                                          spellcasting: {
+                                            ...editingClass.spellcasting!,
+                                            spellsKnown: newSpells,
+                                          },
+                                        });
+                                      }}
+                                      placeholder="0"
+                                      min="0"
+                                    />
+                                  </div>
+                                )
+                              )}
                             </div>
-                          );
-                        })()}
-                      </div>
-                    </>
-                  )}
+                          )}
+                        </div>
+
+                        {/* Spell Slots - dynamic spell levels x 20 character levels */}
+                        <div className="space-y-2">
+                          <Label>Ячейки заклинаний (Spell Slots)</Label>
+                          {(() => {
+                            // Calculate maximum spell level from data
+                            const maxSpellLevel =
+                              editingClass.spellcasting!.spellSlots.reduce(
+                                (max, level) => Math.max(max, level.length),
+                                0
+                              );
+
+                            return (
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead>
+                                    <tr className="bg-muted/50">
+                                      <th className="p-2 text-left font-medium min-w-[100px]">
+                                        Уровень персонажа \u2192 Уровень
+                                        заклинания
+                                      </th>
+                                      {Array.from(
+                                        { length: maxSpellLevel },
+                                        (_, i) => (
+                                          <th
+                                            key={i}
+                                            className="p-2 text-center font-medium min-w-[40px]"
+                                          >
+                                            {i + 1}
+                                          </th>
+                                        )
+                                      )}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {Array.from(
+                                      { length: 20 },
+                                      (_, charLevel) => (
+                                        <tr
+                                          key={charLevel}
+                                          className="border-b border-border/30"
+                                        >
+                                          <td className="p-2 font-medium bg-muted/20">
+                                            {charLevel + 1}
+                                          </td>
+                                          {Array.from(
+                                            { length: maxSpellLevel },
+                                            (_, spellLevel) => (
+                                              <td
+                                                key={`${charLevel}-${spellLevel}`}
+                                                className="p-1"
+                                              >
+                                                <Input
+                                                  type="number"
+                                                  value={
+                                                    editingClass.spellcasting!
+                                                      .spellSlots[charLevel]?.[
+                                                      spellLevel
+                                                    ] || 0
+                                                  }
+                                                  onChange={(e) => {
+                                                    const newSpellSlots = [
+                                                      ...editingClass.spellcasting!
+                                                        .spellSlots,
+                                                    ];
+                                                    // Ensure array exists for this character level
+                                                    if (
+                                                      !newSpellSlots[charLevel]
+                                                    ) {
+                                                      newSpellSlots[charLevel] =
+                                                        [];
+                                                    }
+                                                    newSpellSlots[charLevel][
+                                                      spellLevel
+                                                    ] =
+                                                      parseInt(
+                                                        e.target.value
+                                                      ) || 0;
+                                                    setEditingClass({
+                                                      ...editingClass,
+                                                      spellcasting: {
+                                                        ...editingClass.spellcasting!,
+                                                        spellSlots:
+                                                          newSpellSlots,
+                                                      },
+                                                    });
+                                                  }}
+                                                  placeholder="0"
+                                                  min="0"
+                                                  className="w-full text-center"
+                                                />
+                                              </td>
+                                            )
+                                          )}
+                                        </tr>
+                                      )
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </TabsContent>
               </div>
@@ -1882,7 +2369,10 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                 </Button>
                 <Button
                   onClick={handleSaveClass}
-                  disabled={createClassMutation.isPending || updateClassMutation.isPending}
+                  disabled={
+                    createClassMutation.isPending ||
+                    updateClassMutation.isPending
+                  }
                   className="gap-2"
                 >
                   <Save className="w-4 h-4" />

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
 import {
   Sparkles,
   Plus,
@@ -237,10 +238,13 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   const spells = data?.data?.spells || [];
 
   // Группируем заклинания по уровням
-  const spellsByLevel: Record<number, Spell[]> = {};
-  for (let i = 0; i <= 9; i++) {
-    spellsByLevel[i] = spells.filter((spell: Spell) => spell.level === i);
-  }
+  const spellsByLevel: Record<number, Spell[]> = useMemo(() => {
+    const byLevel: Record<number, Spell[]> = {};
+    for (let i = 0; i <= 9; i++) {
+      byLevel[i] = spells.filter((spell: Spell) => spell.level === i);
+    }
+    return byLevel;
+  }, [spells]);
 
   // Получаем заклинания выбранного уровня с учетом поиска
   const currentLevelSpells = useMemo(() => {
@@ -305,17 +309,11 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   }
 
   const renderSpellCard = (spell: Spell) => {
-    const isSelected = selectedSpell === spell.id;
-
     return (
       <div
         key={spell.id}
-        onClick={() => setSelectedSpell(isSelected ? null : spell.id)}
-        className={`p-4 rounded-lg border cursor-pointer transition-all ${
-          isSelected
-            ? "bg-primary/10 border-primary"
-            : "bg-card border-border hover:border-primary/50"
-        }`}
+        onClick={() => setSelectedSpell(spell.id)}
+        className="p-4 rounded-lg border cursor-pointer transition-all bg-card border-border hover:border-primary/50"
       >
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex-1 min-w-0">
@@ -326,87 +324,10 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               {spell.name}
             </p>
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground whitespace-nowrap">
-              {spell.school}
-            </span>
-            {canEdit && isSelected && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditSpell(spell);
-                }}
-              >
-                <Pencil className="w-3 h-3" />
-              </Button>
-            )}
-          </div>
+          <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground whitespace-nowrap flex-shrink-0">
+            {spell.school}
+          </span>
         </div>
-
-        {isSelected && (
-          <div className="mt-3 pt-3 border-t border-border space-y-2 animate-fade-in">
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="text-muted-foreground">Время:</span>
-                <span className="ml-1 text-foreground">
-                  {spell.castingTime}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Дистанция:</span>
-                <span className="ml-1 text-foreground">{spell.range}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Компоненты:</span>
-                <span className="ml-1 text-foreground">{spell.components}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Длительность:</span>
-                <span className="ml-1 text-foreground">{spell.duration}</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {spell.description}
-            </p>
-
-            <div className="flex flex-wrap gap-1">
-              {spell.classes.map((classId) => {
-                const classInfo = AVAILABLE_CLASSES.find(
-                  (c) => c.id === classId
-                );
-                return (
-                  <span
-                    key={classId}
-                    className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary"
-                  >
-                    {classInfo?.name || classId}
-                  </span>
-                );
-              })}
-            </div>
-
-            {canEdit && (
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full mt-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm(`Удалить заклинание "${spell.nameRu}"?`)) {
-                    deleteSpellMutation.mutate(spell.id);
-                  }
-                }}
-              >
-                <Trash2 className="w-3 h-3 mr-1" />
-                Удалить
-              </Button>
-            )}
-          </div>
-        )}
       </div>
     );
   };
@@ -503,6 +424,159 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                 : `Заклинания ${selectedLevel} уровня пока не загружены`}
             </p>
           </div>
+        )}
+
+        {/* Slide-over Drawer for Spell Details */}
+        {selectedSpell && data?.data?.spells && (
+          <SlideOverDrawer
+            isOpen={!!selectedSpell}
+            onClose={() => setSelectedSpell(null)}
+            title={
+              <div className="flex items-center gap-3">
+                <Wand2 className="w-5 h-5 text-primary" />
+                <span>
+                  {data.data.spells.find((s: Spell) => s.id === selectedSpell)
+                    ?.nameRu || "Заклинание"}
+                </span>
+              </div>
+            }
+            actions={
+              canEdit && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const spell = data.data.spells.find(
+                        (s: Spell) => s.id === selectedSpell
+                      );
+                      if (spell) handleEditSpell(spell);
+                    }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      const spell = data.data.spells.find(
+                        (s: Spell) => s.id === selectedSpell
+                      );
+                      if (
+                        spell &&
+                        confirm(`Удалить заклинание "${spell.nameRu}"?`)
+                      ) {
+                        deleteSpellMutation.mutate(spell.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            }
+          >
+            {(() => {
+              const spell = data.data.spells.find(
+                (s: Spell) => s.id === selectedSpell
+              );
+              if (!spell) return null;
+
+              const levelLabel =
+                spell.level === 0 ? "Заговор" : `${spell.level} уровень`;
+
+              return (
+                <div className="space-y-6">
+                  {/* Basic Info */}
+                  <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground block mb-1">
+                          Уровень
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {levelLabel}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block mb-1">
+                          Школа магии
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {spell.school}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block mb-1">
+                          Время накладывания
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {spell.castingTime}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block mb-1">
+                          Дистанция
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {spell.range}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block mb-1">
+                          Компоненты
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {spell.components}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block mb-1">
+                          Длительность
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {spell.duration}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      Описание
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {spell.description}
+                    </p>
+                  </div>
+
+                  {/* Classes */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">
+                      Доступно классам
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {spell.classes.map((classId: string) => {
+                        const classInfo = AVAILABLE_CLASSES.find(
+                          (c) => c.id === classId
+                        );
+                        return (
+                          <span
+                            key={classId}
+                            className="text-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20"
+                          >
+                            {classInfo?.name || classId}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </SlideOverDrawer>
         )}
       </div>
 

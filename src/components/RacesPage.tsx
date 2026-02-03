@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
 import {
   Users,
   Zap,
@@ -21,7 +22,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { ElementType } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Types
@@ -105,14 +106,6 @@ export function RacesPage({ onBack }: RacesPageProps) {
     name: "",
     nameRu: "",
     description: "",
-  });
-
-  // Selected race data query
-  const selectedRaceData = useQuery({
-    queryKey: ["race", selectedRace],
-    queryFn: () => racesApi.get(selectedRace!),
-    enabled: !!selectedRace,
-    staleTime: Infinity,
   });
 
   // Create race mutation
@@ -330,137 +323,178 @@ export function RacesPage({ onBack }: RacesPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {races.map((race: Race, index: number) => {
             const Icon = RACE_ICONS[race.externalId] || Users;
-            const isSelected = selectedRace === race.id;
 
             return (
-              <div key={race.id + index} className="space-y-4">
-                <button
-                  onClick={() => setSelectedRace(isSelected ? null : race.id)}
-                  className={`w-full text-left p-4 rounded-lg border transition-all ${
-                    isSelected
-                      ? "bg-primary/10 border-primary"
-                      : "bg-card border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    {/* Icon */}
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
+              <button
+                key={race.id + index}
+                onClick={() => setSelectedRace(race.id)}
+                className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
+              >
+                <div className="flex items-start gap-3">
+                  {/* Icon */}
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-sm text-foreground truncate">
-                          {race.nameRu}
-                        </h3>
-                        {canEdit && isSelected && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditRace(race);
-                            }}
-                          >
-                            <Pencil className="w-3 h-3" />
-                          </Button>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {race.name}
-                      </p>
-                      <div className="flex items-center gap-1 flex-wrap mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                          {race.speed} фт
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                          {race.size === "Medium"
-                            ? "Средний"
-                            : race.size === "Small"
-                            ? "Малый"
-                            : "Большой"}
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                          {(race.traits as RaceTrait[])?.length || 0} черт
-                        </span>
-                      </div>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm text-foreground truncate">
+                      {race.nameRu}
+                    </h3>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {race.name}
+                    </p>
+                    <div className="flex items-center gap-1 flex-wrap mt-1">
+                      <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                        {race.speed} фт
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+                        {race.size === "Medium"
+                          ? "Средний"
+                          : race.size === "Small"
+                          ? "Малый"
+                          : "Большой"}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
+                        {(race.traits as RaceTrait[])?.length || 0} черт
+                      </span>
                     </div>
                   </div>
-                </button>
+                </div>
+              </button>
+            );
+          })}
+        </div>
 
-                {/* Expanded Details */}
-                {isSelected && (
-                  <div className="bg-card border border-primary/20 rounded-lg p-4 mt-2 animate-fade-in">
-                    <div className="flex items-start justify-between mb-3">
-                      <h4 className="font-semibold text-sm text-foreground">
-                        Описание
-                      </h4>
-                      {canEdit && selectedRaceData.data?.data?.race && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive h-6 w-6 p-0"
-                          onClick={() => {
-                            if (
-                              confirm(
-                                `Удалить расу "${selectedRaceData.data.data.race.nameRu}"?`
-                              )
-                            ) {
-                              deleteRaceMutation.mutate(selectedRace);
-                            }
-                          }}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+        {/* Slide-over Drawer for Race Details */}
+        {selectedRace && data?.data?.races && (
+          <SlideOverDrawer
+            isOpen={!!selectedRace}
+            onClose={() => setSelectedRace(null)}
+            title={
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const race = data.data.races.find(
+                    (r: Race) => r.id === selectedRace
+                  );
+                  const Icon = race
+                    ? RACE_ICONS[race.externalId] || Users
+                    : Users;
+                  return <Icon className="w-5 h-5 text-primary" />;
+                })()}
+                <span>
+                  {data.data.races.find((r: Race) => r.id === selectedRace)
+                    ?.nameRu || "Раса"}
+                </span>
+              </div>
+            }
+            actions={
+              canEdit && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const race = data.data.races.find(
+                        (r: Race) => r.id === selectedRace
+                      );
+                      if (race) handleEditRace(race);
+                    }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      const race = data.data.races.find(
+                        (r: Race) => r.id === selectedRace
+                      );
+                      if (race && confirm(`Удалить расу "${race.nameRu}"?`)) {
+                        deleteRaceMutation.mutate(selectedRace);
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            }
+          >
+            {(() => {
+              const race = data.data.races.find(
+                (r: Race) => r.id === selectedRace
+              );
+              if (!race) return null;
+
+              return (
+                <div className="space-y-6">
+                  {/* Description */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      Описание
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {race.description}
                     </p>
+                  </div>
 
-                    <h4 className="font-semibold text-sm text-foreground mb-2">
-                      Черты
-                    </h4>
-                    <div className="space-y-2">
+                  {/* Basic Stats */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                      <span className="text-muted-foreground text-xs block mb-1">
+                        Скорость
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {race.speed} фт
+                      </span>
+                    </div>
+                    <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                      <span className="text-muted-foreground text-xs block mb-1">
+                        Размер
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {race.size === "Medium"
+                          ? "Средний"
+                          : race.size === "Small"
+                          ? "Малый"
+                          : "Большой"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Traits */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">
+                      Черты расы
+                    </h3>
+                    <div className="space-y-3">
                       {(race.traits as RaceTrait[])?.map((trait: RaceTrait) => (
                         <div
                           key={trait.id}
-                          className="p-3 rounded-lg bg-muted/30 border border-border/30"
+                          className="p-4 rounded-xl bg-muted/30 border border-border/30"
                         >
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <div>
-                              <h5 className="font-medium text-foreground text-xs">
-                                {trait.nameRu}
-                              </h5>
-                              <span className="text-xs text-muted-foreground/70">
-                                {trait.name}
-                              </span>
-                            </div>
-                            {canEdit && isSelected && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-destructive hover:text-destructive h-5 w-5 p-0"
-                                onClick={() => handleRemoveTrait(trait.id)}
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            )}
+                          <div className="mb-1">
+                            <h5 className="font-medium text-foreground text-sm">
+                              {trait.nameRu}
+                            </h5>
+                            <span className="text-xs text-muted-foreground/70">
+                              {trait.name}
+                            </span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-sm text-muted-foreground">
                             {trait.description}
                           </p>
                         </div>
                       ))}
                     </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                </div>
+              );
+            })()}
+          </SlideOverDrawer>
+        )}
 
         {races.length === 0 && (
           <div className="text-center py-12">

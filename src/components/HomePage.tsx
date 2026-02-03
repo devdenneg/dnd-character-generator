@@ -181,7 +181,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 onClick={() => onNavigate("home")}
                 className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity text-5xl md:text-7xl lg:text-8xl"
               >
-                🤙
+                D&D Generator
               </button>
 
               {/* Auth Section */}
