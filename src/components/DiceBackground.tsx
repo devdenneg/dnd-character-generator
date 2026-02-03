@@ -1,7 +1,25 @@
 import { useMemo } from "react";
 
 // D&D dice symbols
-const DICE_SYMBOLS = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+const DICE_SYMBOLS = [
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+  "🎲",
+];
 
 function generateRandomDice() {
   const diceCount = 20; // Увеличили количество кубиков
