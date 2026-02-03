@@ -26,25 +26,16 @@ export function SpellsStep() {
   // Загружаем заклинания для конкретного класса с сервера
   const { data: spellsData, isLoading, error } = useBackendSpellsByClass(classId);
 
-  console.log('SpellsStep: Loading state:', isLoading);
-  console.log('SpellsStep: Error:', error);
-  console.log('SpellsStep: Spells data:', spellsData);
-  console.log('SpellsStep: Is spellcaster:', isSpellcaster);
-  console.log('SpellsStep: Class ID:', classId);
-  console.log('SpellsStep: Character class:', character.class);
-
   // Получаем статистику персонажа
   const stats = getStats();
 
   // Получаем заклинания для класса из данных сервера (уже отфильтрованы по классу)
   const availableSpells = useMemo(() => {
     if (!spellsData?.data?.spells) {
-      console.log('SpellsStep: No spells data', spellsData);
       return [];
     }
 
     const allSpells = spellsData.data.spells;
-    console.log('SpellsStep: Spells for class count:', allSpells.length);
 
     // Преобразуем в формат Spell
     return allSpells.map((spell: any) => ({
@@ -65,13 +56,9 @@ export function SpellsStep() {
   const classCantrips = availableSpells.filter((s: Spell) => s.level === 0);
   const classLevel1Spells = availableSpells.filter((s: Spell) => s.level === 1);
 
-  console.log('SpellsStep: Available spells:', availableSpells.length);
-  console.log('SpellsStep: Cantrips:', classCantrips.length);
-  console.log('SpellsStep: Level 1 spells:', classLevel1Spells.length);
-
   // Количество известных заговоров и заклинаний из stats
-  const cantripsKnown = stats.spellcasting?.cantripsKnown || 0;
-  const spellsKnown = stats.spellcasting?.spellsKnown || 0;
+  const cantripsKnown = stats.spellcasting?.cantripsKnown[0] || 0;
+  const spellsKnown = stats.spellcasting?.spellsKnown[0] || 0;
   const spellSlots = stats.spellcasting?.spellSlots || {
     level1: 0,
     level2: 0,
@@ -183,7 +170,7 @@ export function SpellsStep() {
               Заклинания не найдены
             </h3>
             <p className="text-sm text-muted-foreground">
-              В базе данных нет заклинаний. Запустите seed для загрузки данных.
+              Для класса {character.class?.nameRu} ({classId}) не найдено заклинаний в базе данных.
             </p>
           </CardContent>
         </Card>
