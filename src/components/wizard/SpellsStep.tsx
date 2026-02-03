@@ -24,11 +24,7 @@ export function SpellsStep() {
   const classId = character.class?.externalId || "";
 
   // Загружаем заклинания для конкретного класса с сервера
-  const {
-    data: spellsData,
-    isLoading,
-    error,
-  } = useBackendSpellsByClass(classId);
+  const { data: spellsData, isLoading, error } = useBackendSpellsByClass(classId);
 
   // Получаем статистику персонажа
   const stats = getStats();
@@ -63,7 +59,17 @@ export function SpellsStep() {
   // Количество известных заговоров и заклинаний из stats
   const cantripsKnown = stats.spellcasting?.cantripsKnown || 0;
   const spellsKnown = stats.spellcasting?.spellsKnown || 0;
-  const spellSlots = stats.spellcasting?.spellSlots || [[0]];
+  const spellSlots = stats.spellcasting?.spellSlots || {
+    level1: 0,
+    level2: 0,
+    level3: 0,
+    level4: 0,
+    level5: 0,
+    level6: 0,
+    level7: 0,
+    level8: 0,
+    level9: 0,
+  };
 
   const selectedCantrips = character.cantripsKnown.length;
   const selectedSpells = character.spellsKnown.length;
@@ -143,11 +149,10 @@ export function SpellsStep() {
               Ошибка загрузки заклинаний
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Не удалось загрузить заклинания с сервера. Убедитесь, что бэкенд
-              запущен.
+              Не удалось загрузить заклинания с сервера. Убедитесь, что бэкенд запущен.
             </p>
             <p className="text-xs text-muted-foreground">
-              {error instanceof Error ? error.message : "Неизвестная ошибка"}
+              {error instanceof Error ? error.message : 'Неизвестная ошибка'}
             </p>
           </CardContent>
         </Card>
@@ -161,10 +166,11 @@ export function SpellsStep() {
         <Card className="bg-muted/30">
           <CardContent className="py-8 text-center">
             <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">Заклинания не найдены</h3>
+            <h3 className="text-lg font-medium mb-2">
+              Заклинания не найдены
+            </h3>
             <p className="text-sm text-muted-foreground">
-              Для класса {character.class?.nameRu} ({classId}) не найдено
-              заклинаний в базе данных.
+              Для класса {character.class?.nameRu} ({classId}) не найдено заклинаний в базе данных.
             </p>
           </CardContent>
         </Card>
@@ -200,12 +206,12 @@ export function SpellsStep() {
                 </p>
               </div>
             )}
-            {/* {spellSlots?.[0] > 0 && (
+            {spellSlots.level1 > 0 && (
               <div className="bg-card p-3 rounded-lg">
                 <p className="text-xs text-muted-foreground">Ячейки 1 круга</p>
                 <p className="text-xl font-bold">{spellSlots.level1}</p>
               </div>
-            )} */}
+            )}
             <div className="bg-card p-3 rounded-lg">
               <p className="text-xs text-muted-foreground">
                 Базовая характеристика

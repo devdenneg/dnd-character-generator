@@ -581,7 +581,17 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         abilityModifier: spellMod,
         spellSaveDC,
         spellAttackBonus,
-        spellSlots: character.class.spellcasting.spellSlots ?? [[0]],
+        spellSlots: {
+          level1: character.class.spellcasting.spellSlots[0][0] ?? 0,
+          level2: 0,
+          level3: 0,
+          level4: 0,
+          level5: 0,
+          level6: 0,
+          level7: 0,
+          level8: 0,
+          level9: 0,
+        },
         cantripsKnown: character.class.spellcasting.cantripsKnown[0] ?? 0,
         spellsKnown: character.class.spellcasting.spellsKnown?.[0] ?? 0,
       };

@@ -205,7 +205,7 @@ export interface SpellcastingStats {
   abilityModifier: number; // Модификатор характеристики
   spellSaveDC: number; // Сложность спасброска = 8 + мастерство + мод
   spellAttackBonus: number; // Бонус атаки заклинанием = мастерство + мод
-  spellSlots: number[][]; // Ячейки заклинаний по уровням
+  spellSlots: SpellSlots; // Ячейки заклинаний по уровням
   cantripsKnown: number; // Количество известных заговоров
   spellsKnown: number; // Количество известных заклинаний
 }
