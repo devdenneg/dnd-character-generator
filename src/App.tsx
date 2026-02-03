@@ -36,6 +36,7 @@ import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { TelegramProvider } from "@/contexts/TelegramContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PageLayout } from "@/components/PageLayout";
 import "@/i18n";
 
@@ -371,15 +372,17 @@ function AppRoutes() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TelegramProvider>
-        <AuthProvider>
-          <SocketProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </SocketProvider>
-        </AuthProvider>
-      </TelegramProvider>
+      <ThemeProvider>
+        <TelegramProvider>
+          <AuthProvider>
+            <SocketProvider>
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </SocketProvider>
+          </AuthProvider>
+        </TelegramProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

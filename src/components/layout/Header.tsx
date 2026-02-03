@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { LogIn, LogOut, User, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeSelector } from "@/components/ThemeSelector";
 
 export function Header() {
   const navigate = useNavigate();
@@ -39,6 +40,9 @@ export function Header() {
 
           {/* Auth Section */}
           <div className="flex items-center gap-3">
+            {/* Theme Selector */}
+            <ThemeSelector />
+
             {isLoading ? (
               <div className="w-9 h-9 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
