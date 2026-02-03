@@ -1,82 +1,92 @@
 import {
-  UserPlus,
   Sparkles,
   BookOpen,
   ChevronRight,
   LogIn,
   LogOut,
   User,
-  Users,
   Crown,
-  Trophy,
-  Lock,
-  Skull,
   Shield,
-  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DiceBackground } from "@/components/DiceBackground";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import createCharImage from "@/components/assets/createChar.jpg";
+import myCharImage from "@/components/assets/myChar.jpg";
+import racesImage from "@/components/assets/races.jpg";
+import classesImage from "@/components/assets/classes.jpg";
+import backgroundsImage from "@/components/assets/backgrounds.jpg";
+import spellsImage from "@/components/assets/spells.jpg";
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
 }
 
-const MENU_ITEMS = [
+interface MenuItem {
+  id: string;
+  title: string;
+  description: string;
+  gradient: string;
+  roles: ("player" | "master")[];
+  inDevelopment: boolean;
+  image?: string;
+}
+
+const MENU_ITEMS: MenuItem[] = [
   {
     id: "character-wizard",
     title: "Создание персонажа",
     description: "Пошаговый мастер создания персонажа по правилам PHB 2024",
-    icon: UserPlus,
     gradient: "from-primary to-accent",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: createCharImage,
   },
   {
     id: "my-characters",
     title: "Мои персонажи",
     description: "Сохранённые персонажи в облаке",
-    icon: Users,
     gradient: "from-emerald-500 to-teal-500",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: myCharImage,
   },
   {
     id: "races",
-    title: "Расы PHB 2024",
+    title: "Расы",
     description: "Все расы из Книги игрока 2024 года",
-    icon: Skull,
     gradient: "from-rose-500 to-pink-500",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: racesImage,
   },
   {
     id: "classes",
-    title: "Классы PHB 2024",
+    title: "Классы",
     description: "Все классы из Книги игрока 2024 года",
-    icon: Shield,
     gradient: "from-cyan-500 to-blue-500",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: classesImage,
   },
   {
     id: "backgrounds",
-    title: "Предыстории PHB 2024",
+    title: "Предыстории",
     description: "Все предыстории из Книги игрока 2024 года",
-    icon: BookOpen,
     gradient: "from-purple-500 to-indigo-500",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: backgroundsImage,
   },
   {
     id: "spells",
-    title: "Заклинания PHB 2024",
+    title: "Заклинания",
     description: "Все заклинания из Книги игрока 2024 года",
-    icon: Wand2,
     gradient: "from-violet-500 to-purple-500",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: spellsImage,
   },
   // Скрытые пункты меню (временно закомментированы)
   /*
@@ -374,19 +384,34 @@ export function HomePage({ onNavigate }: HomePageProps) {
                           }
                         }}
                         className={`
-                          w-full text-left p-6 rounded-2xl border transition-all duration-300
+                          w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden
                           ${
                             isDisabled
                               ? "bg-card/5 border-border/10 cursor-not-allowed grayscale"
-                              : "group animate-fade-in-up bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative overflow-hidden"
+                              : "group animate-fade-in-up bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative"
                           }
                         `}
                         style={{
                           animationDelay: `${index * 100}ms`,
                         }}
                       >
+                        {/* Background image with fade effect */}
+                        {item.image && !isDisabled && (
+                          <div className="absolute inset-0">
+                            <img
+                              src={item.image}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                            {/* Fade overlay from left */}
+                            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/80 to-card/95" />
+                            {/* Top/bottom gradients for better text readability */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/40" />
+                          </div>
+                        )}
+
                         {/* Glassmorphism glow effect */}
-                        {!isDisabled && (
+                        {!isDisabled && !item.image && (
                           <div
                             className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity blur-xl`}
                           />
@@ -398,26 +423,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                         )}
 
                         {/* Content */}
-                        <div className="flex items-start gap-5 relative z-5">
-                          {/* Icon */}
-                          <div
-                            className={`
-                              w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0
-                              bg-gradient-to-br ${item.gradient}
-                              ${
-                                !isDisabled
-                                  ? "shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300"
-                                  : "opacity-60"
-                              }
-                            `}
-                          >
-                            {isDisabled ? (
-                              <Lock className="w-8 h-8 text-white" />
-                            ) : (
-                              <item.icon className="w-8 h-8 text-white drop-shadow-lg" />
-                            )}
-                          </div>
-
+                        <div className="flex items-start gap-5 relative z-5 p-6">
                           {/* Text Content */}
                           <div className="flex-1 min-w-0">
                             <h3
@@ -496,19 +502,34 @@ export function HomePage({ onNavigate }: HomePageProps) {
                           }
                         }}
                         className={`
-                          w-full text-left p-6 rounded-2xl border transition-all duration-300
+                          w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden
                           ${
                             isDisabled
                               ? "bg-card/5 border-border/10 cursor-not-allowed grayscale"
-                              : "group animate-fade-in-up bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative overflow-hidden"
+                              : "group animate-fade-in-up bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative"
                           }
                         `}
                         style={{
                           animationDelay: `${index * 100}ms`,
                         }}
                       >
+                        {/* Background image with fade effect */}
+                        {item.image && !isDisabled && (
+                          <div className="absolute inset-0">
+                            <img
+                              src={item.image}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                            {/* Fade overlay from left */}
+                            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/80 to-card/95" />
+                            {/* Top/bottom gradients for better text readability */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/40" />
+                          </div>
+                        )}
+
                         {/* Glassmorphism glow effect */}
-                        {!isDisabled && (
+                        {!isDisabled && !item.image && (
                           <div
                             className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity blur-xl`}
                           />
@@ -520,26 +541,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                         )}
 
                         {/* Content */}
-                        <div className="flex items-start gap-4 relative z-5">
-                          {/* Icon */}
-                          <div
-                            className={`
-                              w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0
-                              bg-gradient-to-br ${item.gradient}
-                              ${
-                                !isDisabled
-                                  ? "shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300"
-                                  : "opacity-60"
-                              }
-                            `}
-                          >
-                            {isDisabled ? (
-                              <Lock className="w-7 h-7 text-white" />
-                            ) : (
-                              <item.icon className="w-7 h-7 text-white drop-shadow-lg" />
-                            )}
-                          </div>
-
+                        <div className="flex items-start gap-4 relative z-5 p-6">
                           {/* Text Content */}
                           <div className="flex-1 min-w-0">
                             <h3
@@ -561,56 +563,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
                   })}
               </div>
             )}
-          </div>
-
-          {/* Quick Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-            <div className="bg-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-8 animate-fade-in-up delay-150 relative overflow-hidden group hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
-              {/* Hover glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-10 transition-opacity" />
-
-              <div className="flex items-center gap-5 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-display font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                    PHB 2024
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Актуальные правила Player's Handbook 2024 года
-                  </p>
-                  <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                    <BookOpen className="w-3 h-3" />
-                    12 классов
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-8 animate-fade-in-up delay-200 relative overflow-hidden group hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
-              {/* Hover glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-10 transition-opacity" />
-
-              <div className="flex items-center gap-5 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Trophy className="w-6 h-6 text-emerald-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-display font-semibold text-foreground mb-2 group-hover:text-emerald-500 transition-colors">
-                    Достижения
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Отслеживайте свой прогресс в создании персонажей и получайте
-                    награды за выполнение особых условий.
-                  </p>
-                  <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium">
-                    <Trophy className="w-3 h-3" />
-                    Скоро
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </main>
 
