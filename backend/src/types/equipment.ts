@@ -11,7 +11,7 @@ export interface EquipmentItem {
   externalId: string;
   name: string;
   nameRu: string;
-  category: 'weapon' | 'armor' | 'gear' | 'tool' | 'pack';
+  category: "weapon" | "armor" | "gear" | "tool" | "pack";
   cost: {
     quantity: number;
     unit: string;
@@ -23,7 +23,7 @@ export interface EquipmentItem {
     type: string;
   };
   armorClass?: number;
-  armorType?: 'light' | 'medium' | 'heavy' | 'shield';
+  armorType?: "light" | "medium" | "heavy" | "shield";
   maxDexBonus?: number;
   properties?: string[];
   // Index signature for Prisma JSON compatibility
@@ -34,7 +34,7 @@ export interface SpellcastingConfig {
   ability: string;
   cantripsKnown: number[];
   spellsKnown?: number[];
-  spellSlots: number[][];
+  spellSlots?: number[][];
   // Index signature for Prisma JSON compatibility
   [key: string]: any;
 }

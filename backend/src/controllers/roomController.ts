@@ -28,7 +28,7 @@ const joinRoomSchema = z.object({
 export async function create(req: AuthenticatedRequest, res: Response) {
   try {
     const validatedData = createRoomSchema.parse(req.body);
-    const userId = req.userId;
+    const userId = req.userId!; // Non-null assertion since this route requires auth
 
     const room = await roomService.createRoom(userId, validatedData);
 
@@ -56,9 +56,9 @@ export async function create(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function list(req: Request, res: Response) {
+export async function list(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.userId;
+    const userId = req.userId!; // Non-null assertion since this route requires auth
     const rooms = await roomService.getRoomsByMasterId(userId);
 
     res.json({
@@ -122,7 +122,7 @@ export async function getById(req: Request, res: Response) {
 export async function update(req: AuthenticatedRequest, res: Response) {
   try {
     const roomId = req.params.id as string;
-    const userId = req.userId;
+    const userId = req.userId!; // Non-null assertion since this route requires auth
     const validatedData = updateRoomSchema.parse(req.body);
 
     const room = await roomService.updateRoom(roomId, userId, validatedData);
@@ -161,7 +161,7 @@ export async function update(req: AuthenticatedRequest, res: Response) {
 export async function remove(req: AuthenticatedRequest, res: Response) {
   try {
     const roomId = req.params.id as string;
-    const userId = req.userId;
+    const userId = req.userId!; // Non-null assertion since this route requires auth
 
     const deleted = await roomService.deleteRoom(roomId, userId);
 
@@ -216,14 +216,14 @@ export async function verifyPassword(req: Request, res: Response) {
 export async function joinRoom(req: AuthenticatedRequest, res: Response) {
   try {
     const roomId = req.params.id as string;
-    const userId = req.userId;
+    const userId = req.userId!; // Non-null assertion since this route requires auth
     const { password, characterId } = joinRoomSchema.parse(req.body);
 
     const result = await roomService.joinRoom(
       roomId,
       userId,
       characterId,
-      password,
+      password
     );
 
     if (!result.success) {
@@ -276,7 +276,7 @@ export async function getRoomPlayers(req: Request, res: Response) {
 export async function startGame(req: AuthenticatedRequest, res: Response) {
   try {
     const roomId = req.params.id as string;
-    const userId = req.userId;
+    const userId = req.userId!; // Non-null assertion since this route requires auth
 
     const room = await roomService.startGame(roomId, userId);
 
