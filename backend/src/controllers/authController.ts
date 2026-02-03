@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { registerUser, loginUser, getUserById } from "../services/authService";
 import { validateTelegramWebAppData, getTelegramEmail, getTelegramUsername } from "../utils/telegram";
+import { AuthenticatedRequest } from "../middleware/authMiddleware";
 
 // Validation schemas
 const registerSchema = z.object({
@@ -93,9 +94,9 @@ export async function logout(_req: Request, res: Response) {
   });
 }
 
-export async function me(req: Request, res: Response) {
+export async function me(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       res.status(401).json({

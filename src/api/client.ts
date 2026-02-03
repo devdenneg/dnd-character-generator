@@ -1,4 +1,12 @@
 import axios from "axios";
+import type {
+  CharacterData,
+  CharacterResponse,
+  CharactersListResponse,
+  AuthResponse,
+} from "@/types/api";
+import type { StartingEquipment } from "@/types/equipment";
+import type { SpellcastingConfig } from "@/types/spellcasting";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -40,12 +48,12 @@ export const authApi = {
     name?: string;
     role?: "player" | "master";
   }) => {
-    const response = await apiClient.post("/auth/register", data);
+    const response = await apiClient.post<AuthResponse>("/auth/register", data);
     return response.data;
   },
 
   login: async (data: { email: string; password: string }) => {
-    const response = await apiClient.post("/auth/login", data);
+    const response = await apiClient.post<AuthResponse>("/auth/login", data);
     return response.data;
   },
 
@@ -68,22 +76,22 @@ export const authApi = {
 // Characters API
 export const charactersApi = {
   list: async () => {
-    const response = await apiClient.get("/characters");
+    const response = await apiClient.get<CharactersListResponse>("/characters");
     return response.data;
   },
 
-  create: async (data: { name: string; data: any }) => {
-    const response = await apiClient.post("/characters", data);
+  create: async (data: { name: string; data: CharacterData }) => {
+    const response = await apiClient.post<CharacterResponse>("/characters", data);
     return response.data;
   },
 
   get: async (id: string) => {
-    const response = await apiClient.get(`/characters/${id}`);
+    const response = await apiClient.get<CharacterResponse>(`/characters/${id}`);
     return response.data;
   },
 
-  update: async (id: string, data: { name?: string; data?: any }) => {
-    const response = await apiClient.put(`/characters/${id}`, data);
+  update: async (id: string, data: { name?: string; data?: CharacterData }) => {
+    const response = await apiClient.put<CharacterResponse>(`/characters/${id}`, data);
     return response.data;
   },
 
@@ -277,13 +285,8 @@ export const classesApi = {
         level: number;
       }>;
     }>;
-    startingEquipment?: any;
-    spellcasting?: {
-      ability: string;
-      cantripsKnown: number[];
-      spellsKnown?: number[];
-      spellSlots: number[][];
-    };
+    startingEquipment?: StartingEquipment;
+    spellcasting?: SpellcastingConfig;
   }) => {
     const response = await apiClient.post("/classes", data);
     return response.data;
@@ -324,13 +327,8 @@ export const classesApi = {
           level: number;
         }>;
       }>;
-      startingEquipment?: any;
-      spellcasting?: {
-        ability: string;
-        cantripsKnown: number[];
-        spellsKnown?: number[];
-        spellSlots: number[][];
-      };
+      startingEquipment?: StartingEquipment;
+      spellcasting?: SpellcastingConfig;
     },
   ) => {
     const response = await apiClient.put(`/classes/${id}`, data);

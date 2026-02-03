@@ -13,502 +13,29 @@ import type {
   Wallet,
   SpellSlots,
 } from "@/types/character";
-
-// Таблица ячеек заклинаний PHB 2024 (полные заклинатели: Жрец, Друид, Волшебник, Бард, Чародей)
-const FULL_CASTER_SPELL_SLOTS: SpellSlots[] = [
-  {
-    level1: 2,
-    level2: 0,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 1
-  {
-    level1: 3,
-    level2: 0,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 2
-  {
-    level1: 4,
-    level2: 2,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 3
-  {
-    level1: 4,
-    level2: 3,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 4
-  {
-    level1: 4,
-    level2: 3,
-    level3: 2,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 5
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 6
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 1,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 7
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 2,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 8
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 1,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 9
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 10
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 1,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 11
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 1,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 12
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 1,
-    level7: 1,
-    level8: 0,
-    level9: 0,
-  }, // 13
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 1,
-    level7: 1,
-    level8: 0,
-    level9: 0,
-  }, // 14
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 1,
-    level7: 1,
-    level8: 1,
-    level9: 0,
-  }, // 15
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 1,
-    level7: 1,
-    level8: 1,
-    level9: 0,
-  }, // 16
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 1,
-    level7: 1,
-    level8: 1,
-    level9: 1,
-  }, // 17
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 3,
-    level6: 1,
-    level7: 1,
-    level8: 1,
-    level9: 1,
-  }, // 18
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 3,
-    level6: 2,
-    level7: 1,
-    level8: 1,
-    level9: 1,
-  }, // 19
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 3,
-    level6: 2,
-    level7: 2,
-    level8: 1,
-    level9: 1,
-  }, // 20
-];
-
-// Таблица ячеек для полузаклинателей (Паладин, Следопыт)
-const HALF_CASTER_SPELL_SLOTS: SpellSlots[] = [
-  {
-    level1: 0,
-    level2: 0,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 1
-  {
-    level1: 2,
-    level2: 0,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 2
-  {
-    level1: 3,
-    level2: 0,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 3
-  {
-    level1: 3,
-    level2: 0,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 4
-  {
-    level1: 4,
-    level2: 2,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 5
-  {
-    level1: 4,
-    level2: 2,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 6
-  {
-    level1: 4,
-    level2: 3,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 7
-  {
-    level1: 4,
-    level2: 3,
-    level3: 0,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 8
-  {
-    level1: 4,
-    level2: 3,
-    level3: 2,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 9
-  {
-    level1: 4,
-    level2: 3,
-    level3: 2,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 10
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 11
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 0,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 12
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 1,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 13
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 1,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 14
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 2,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 15
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 2,
-    level5: 0,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 16
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 1,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 17
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 1,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 18
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 19
-  {
-    level1: 4,
-    level2: 3,
-    level3: 3,
-    level4: 3,
-    level5: 2,
-    level6: 0,
-    level7: 0,
-    level8: 0,
-    level9: 0,
-  }, // 20
-];
-
-// Пакт-магия Колдуна (особая механика)
-const WARLOCK_SPELL_SLOTS: { slots: number; level: number }[] = [
-  { slots: 1, level: 1 }, // 1
-  { slots: 2, level: 1 }, // 2
-  { slots: 2, level: 2 }, // 3
-  { slots: 2, level: 2 }, // 4
-  { slots: 2, level: 3 }, // 5
-  { slots: 2, level: 3 }, // 6
-  { slots: 2, level: 4 }, // 7
-  { slots: 2, level: 4 }, // 8
-  { slots: 2, level: 5 }, // 9
-  { slots: 2, level: 5 }, // 10
-  { slots: 3, level: 5 }, // 11
-  { slots: 3, level: 5 }, // 12
-  { slots: 3, level: 5 }, // 13
-  { slots: 3, level: 5 }, // 14
-  { slots: 3, level: 5 }, // 15
-  { slots: 3, level: 5 }, // 16
-  { slots: 4, level: 5 }, // 17
-  { slots: 4, level: 5 }, // 18
-  { slots: 4, level: 5 }, // 19
-  { slots: 4, level: 5 }, // 20
-];
-
-// Известные заговоры по уровням
-const CANTRIPS_KNOWN: Record<string, number[]> = {
-  bard: [2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
-  cleric: [3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
-  druid: [2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
-  sorcerer: [4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
-  warlock: [2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
-  wizard: [3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
-};
-
-// Известные заклинания (для классов, которые знают фиксированное число)
-const SPELLS_KNOWN: Record<string, number[]> = {
-  bard: [
-    4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 15, 16, 18, 19, 19, 20, 22, 22, 22,
-  ],
-  ranger: [0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11],
-  sorcerer: [
-    2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 13, 14, 14, 15, 15, 15, 15,
-  ],
-  warlock: [
-    2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15,
-  ],
-};
+import {
+  calculateModifier,
+  calculateProficiencyBonus,
+  calculateHitPoints,
+  calculateSpellSaveDC,
+  calculateSpellAttackBonus,
+  calculateInitiative,
+  calculatePassivePerception,
+} from "@/utils/calculations";
+import { calculateArmorClass, getEquippedArmor, hasShieldEquipped } from "@/utils/armorClass";
+import {
+  validateRaceSelection,
+  validateClassSelection,
+  validateSkillSelection,
+  validateAbilityScores,
+} from "@/utils/validation";
+import {
+  FULL_CASTER_SPELL_SLOTS,
+  HALF_CASTER_SPELL_SLOTS,
+  WARLOCK_SPELL_SLOTS,
+  CANTRIPS_KNOWN,
+  SPELLS_KNOWN,
+} from "@/constants/dnd";
 
 const initialWallet: Wallet = {
   copper: 0,
@@ -644,16 +171,6 @@ interface CharacterState {
   loadCharacter: (data: Character, characterId?: string) => void;
 }
 
-// Calculate ability modifier
-function calculateModifier(score: number): number {
-  return Math.floor((score - 10) / 2);
-}
-
-// Calculate proficiency bonus by level
-function calculateProficiencyBonus(level: number): number {
-  return Math.ceil(level / 4) + 1;
-}
-
 export const useCharacterStore = create<CharacterState>((set, get) => ({
   character: { ...initialCharacter },
   currentStep: "race",
@@ -709,27 +226,21 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
 
     switch (currentStep) {
       case "race":
-        return character.race !== null;
+        return validateRaceSelection(character.race);
       case "class":
-        return character.class !== null;
+        return validateClassSelection(character.class);
       case "skills":
         // Проверяем, что выбрано нужное количество навыков от класса
         if (!character.class) return false;
         const backgroundSkills = character.background?.skillProficiencies || [];
-        const classSkillCount = character.skillProficiencies.filter(
-          (s) => !backgroundSkills.includes(s),
-        ).length;
-        return classSkillCount >= character.class.skillCount;
+        return validateSkillSelection(
+          character.skillProficiencies,
+          character.class.skillCount,
+          backgroundSkills
+        );
       case "abilities":
         // Проверяем, что все значения из стандартного набора распределены
-        const scores = Object.values(character.abilityScores);
-        const standardArray = [15, 14, 13, 12, 10, 8];
-        const sortedScores = [...scores].sort((a, b) => b - a);
-        const sortedStandard = [...standardArray].sort((a, b) => b - a);
-        // Проверяем, что распределены именно значения из стандартного набора
-        return sortedScores.every(
-          (score, idx) => score === sortedStandard[idx],
-        );
+        return validateAbilityScores(character.abilityScores, character.abilityScoreMethod);
       case "background":
         return character.background !== null;
       case "abilityIncrease":
@@ -979,58 +490,21 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     const conMod = getModifier("constitution");
     const wisMod = getModifier("wisdom");
 
-    // Calculate armor class - check for equipped armor and shields (D&D 2024 rules)
-    let armorClass = 10 + dexMod;
+    // Calculate armor class using utility
+    const equippedArmor = getEquippedArmor(character.equipment);
+    const hasShield = hasShieldEquipped(character.equipment);
+    const armorClass = calculateArmorClass(10, dexMod, equippedArmor, hasShield);
 
-    // Find equipped armor (excluding shields)
-    const equippedArmor = character.equipment.find((e) => e.category === "armor" && e.armorType !== "shield");
-    const hasShield = character.equipment.some((e) => e.armorType === "shield");
-
-    if (equippedArmor && equippedArmor.armorClass) {
-      const armorBase = equippedArmor.armorClass;
-      let dexBonus = 0;
-
-      // D&D 2024 правила расчёта КД с доспехом:
-      // Лёгкий доспех: КД = Значение доспеха + Модификатор Ловкости (без ограничений)
-      // Средний доспех: КД = Значение доспеха + Модификатор Ловкости (макс. +2)
-      // Тяжёлый доспех: КД = Значение доспеха (модификатор Ловкости не добавляется)
-      if (equippedArmor.armorType === "light") {
-        // Лёгкий доспех - полный бонус Ловкости
-        dexBonus = dexMod;
-      } else if (equippedArmor.armorType === "medium") {
-        // Средний доспех - максимум +2 к Ловкости
-        const maxDexBonus = 2;
-        dexBonus = Math.min(dexMod, maxDexBonus);
-      } else if (equippedArmor.armorType === "heavy") {
-        // Тяжёлый доспех - без бонуса Ловкости
-        dexBonus = 0;
-      }
-
-      armorClass = armorBase + dexBonus;
-    }
-
-    // Add shield bonus (+2)
-    if (hasShield) {
-      armorClass += 2;
-    }
-
-    // Calculate hit points (hit die + CON modifier at level 1)
+    // Calculate hit points using utility
     const hitDie = character.class?.hitDie || 8;
-    const hitPointMaximum =
-      hitDie +
-      conMod +
-      (character.level - 1) * (Math.floor(hitDie / 2) + 1 + conMod);
+    const hitPointMaximum = calculateHitPoints(character.level, hitDie, conMod);
 
     // Speed from race
     const speed = character.race?.speed || 30;
 
-    // Passive perception
-    const passivePerception =
-      10 +
-      wisMod +
-      (character.skillProficiencies.includes("perception")
-        ? proficiencyBonus
-        : 0);
+    // Passive perception using utility
+    const isProficientPerception = character.skillProficiencies.includes("perception");
+    const passivePerception = calculatePassivePerception(wisMod, proficiencyBonus, isProficientPerception);
 
     // Ability modifiers
     const abilityModifiers: AbilityScores = {
@@ -1109,8 +583,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     if (character.class?.spellcasting) {
       const spellAbility = character.class.spellcasting.ability;
       const spellMod = abilityModifiers[spellAbility];
-      const spellSaveDC = 8 + proficiencyBonus + spellMod;
-      const spellAttackBonus = proficiencyBonus + spellMod;
+      const spellSaveDC = calculateSpellSaveDC(proficiencyBonus, spellMod);
+      const spellAttackBonus = calculateSpellAttackBonus(proficiencyBonus, spellMod);
 
       // Определяем ячейки заклинаний
       let spellSlots: SpellSlots = {
@@ -1176,7 +650,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     return {
       proficiencyBonus,
       armorClass,
-      initiative: dexMod,
+      initiative: calculateInitiative(dexMod),
       speed,
       hitPointMaximum,
       hitDice: `${character.level}d${hitDie}`,

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
+import { getErrorMessage } from "@/utils/errorHandling";
 import { CharacterSheet } from "@/components/CharacterSheet";
 import { generateCharacterPDF } from "@/utils/pdfGenerator";
 import { useAuth } from "@/contexts/AuthContext";
@@ -88,8 +89,8 @@ export function SummaryStep() {
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err: any) {
-      setSaveError(err.response?.data?.error || "Ошибка сохранения");
+    } catch (err: unknown) {
+      setSaveError(getErrorMessage(err, "Ошибка сохранения"));
     } finally {
       setIsSaving(false);
     }

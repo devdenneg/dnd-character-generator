@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/utils/errorHandling";
 
 interface Room {
   id: string;
@@ -45,8 +46,8 @@ export function MyRoomsPage() {
       setIsLoading(true);
       const response = await roomsApi.list();
       setRooms(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Не удалось загрузить комнаты");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Не удалось загрузить комнаты"));
     } finally {
       setIsLoading(false);
     }
@@ -60,8 +61,8 @@ export function MyRoomsPage() {
     try {
       await roomsApi.delete(roomId);
       setRooms(rooms.filter((r) => r.id !== roomId));
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Не удалось удалить комнату");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Не удалось удалить комнату"));
     }
   };
 
@@ -71,8 +72,8 @@ export function MyRoomsPage() {
       setRooms(
         rooms.map((r) => (r.id === roomId ? { ...r, isActive: !isActive } : r)),
       );
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Не удалось изменить статус комнаты");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Не удалось изменить статус комнаты"));
     }
   };
 

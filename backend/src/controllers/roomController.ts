@@ -27,7 +27,7 @@ const joinRoomSchema = z.object({
 export async function create(req: Request, res: Response) {
   try {
     const validatedData = createRoomSchema.parse(req.body);
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     const room = await roomService.createRoom(userId, validatedData);
 
@@ -57,7 +57,7 @@ export async function create(req: Request, res: Response) {
 
 export async function list(req: Request, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId;
     const rooms = await roomService.getRoomsByMasterId(userId);
 
     res.json({
@@ -121,7 +121,7 @@ export async function getById(req: Request, res: Response) {
 export async function update(req: Request, res: Response) {
   try {
     const roomId = req.params.id as string;
-    const userId = (req as any).userId;
+    const userId = req.userId;
     const validatedData = updateRoomSchema.parse(req.body);
 
     const room = await roomService.updateRoom(roomId, userId, validatedData);
@@ -160,7 +160,7 @@ export async function update(req: Request, res: Response) {
 export async function remove(req: Request, res: Response) {
   try {
     const roomId = req.params.id as string;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     const deleted = await roomService.deleteRoom(roomId, userId);
 
@@ -215,7 +215,7 @@ export async function verifyPassword(req: Request, res: Response) {
 export async function joinRoom(req: Request, res: Response) {
   try {
     const roomId = req.params.id as string;
-    const userId = (req as any).userId;
+    const userId = req.userId;
     const { password, characterId } = joinRoomSchema.parse(req.body);
 
     const result = await roomService.joinRoom(
@@ -275,7 +275,7 @@ export async function getRoomPlayers(req: Request, res: Response) {
 export async function startGame(req: Request, res: Response) {
   try {
     const roomId = req.params.id as string;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     const room = await roomService.startGame(roomId, userId);
 

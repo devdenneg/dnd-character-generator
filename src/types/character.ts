@@ -21,6 +21,7 @@ export interface Race {
   size: "Small" | "Medium" | "Large";
   traits: RaceTrait[];
   source: "srd" | "phb2024";
+  emoji?: string;
 }
 
 export interface RaceTrait {

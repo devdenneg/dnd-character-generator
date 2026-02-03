@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/utils/errorHandling";
 import { useSocket } from "@/contexts/SocketContext";
 import { MasterRoomView } from "@/components/MasterRoomView";
 
@@ -108,9 +109,9 @@ export function RoomDetailsPage() {
       setRoom(roomResponse.data);
       // The API returns { success: true, data: [...] }
       setPlayers(playersResponse.data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Load room error:", err);
-      setError(err.response?.data?.error || "Не удалось загрузить комнату");
+      setError(getErrorMessage(err, "Не удалось загрузить комнату"));
     } finally {
       setIsLoading(false);
     }

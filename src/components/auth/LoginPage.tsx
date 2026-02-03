@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/utils/errorHandling";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -24,8 +25,8 @@ export function LoginPage() {
     try {
       await login(email, password);
       navigate("/");
-    } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Ошибка входа");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Ошибка входа"));
     } finally {
       setIsLoading(false);
     }

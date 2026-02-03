@@ -5,12 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { roomsApi, charactersApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
+import type { CharacterEntity, RoomEntity } from "@/types/api";
+import { getErrorMessage } from "@/utils/errorHandling";
 
-interface Room {
-  id: string;
-  name: string;
-  maxPlayers: number;
-  isActive: boolean;
+interface RoomWithMaster extends RoomEntity {
   master: {
     id: string;
     name: string | null;
@@ -18,18 +16,12 @@ interface Room {
   };
 }
 
-interface Character {
-  id: string;
-  name: string;
-  data: any;
-}
-
 export function JoinRoomPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [room, setRoom] = useState<Room | null>(null);
-  const [characters, setCharacters] = useState<Character[]>([]);
+  const [room, setRoom] = useState<RoomWithMaster | null>(null);
+  const [characters, setCharacters] = useState<CharacterEntity[]>([]);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -64,9 +56,9 @@ export function JoinRoomPage() {
       if (charactersData.length > 0) {
         setSelectedCharacterId(charactersData[0].id);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading data:", err);
-      setError(err.response?.data?.error || "Не удалось загрузить данные");
+      setError(getErrorMessage(err, "Не удалось загрузить данные"));
     } finally {
       setIsLoading(false);
     }
@@ -93,10 +85,8 @@ export function JoinRoomPage() {
 
       // Navigate to room details
       navigate(`/room/${id}`);
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error || "Не удалось присоединиться к комнате",
-      );
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Не удалось присоединиться к комнате"));
     } finally {
       setIsJoining(false);
     }
@@ -294,7 +284,7 @@ export function JoinRoomPage() {
                             {char.name}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {char.data.race?.name} {char.data.class?.name}
+                            {char.data.race?.nameRu} {char.data.class?.nameRu}
                             {char.data.level && ` • Уровень ${char.data.level}`}
                           </p>
                         </div>

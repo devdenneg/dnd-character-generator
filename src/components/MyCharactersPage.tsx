@@ -16,21 +16,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { charactersApi } from "@/api/client";
 import { useCharacterStore } from "@/store/characterStore";
-
-interface SavedCharacter {
-  id: string;
-  name: string;
-  data: any;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { CharacterEntity } from "@/types/api";
+import { getErrorMessage } from "@/utils/errorHandling";
 
 export function MyCharactersPage() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { loadCharacter } = useCharacterStore();
 
-  const [characters, setCharacters] = useState<SavedCharacter[]>([]);
+  const [characters, setCharacters] = useState<CharacterEntity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -51,8 +45,8 @@ export function MyCharactersPage() {
       if (response.success) {
         setCharacters(response.data.characters);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Ошибка загрузки персонажей");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Ошибка загрузки персонажей"));
     } finally {
       setIsLoading(false);
     }
@@ -65,15 +59,20 @@ export function MyCharactersPage() {
       setDeletingId(id);
       await charactersApi.delete(id);
       setCharacters((prev) => prev.filter((c) => c.id !== id));
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Ошибка удаления");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Ошибка удаления"));
     } finally {
       setDeletingId(null);
     }
   };
 
-  const handleLoad = (character: SavedCharacter) => {
-    loadCharacter(character.data, character.id);
+  const handleLoad = (character: CharacterEntity) => {
+    // Создаем полный объект Character из CharacterData
+    const fullCharacter = {
+      ...character.data,
+      name: character.name,
+    };
+    loadCharacter(fullCharacter, character.id);
     navigate("/character");
   };
 

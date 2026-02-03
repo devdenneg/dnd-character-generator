@@ -9,6 +9,7 @@ import { PlayerAchievementCard } from "../components/PlayerAchievementCard";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
+import { getErrorMessage } from "@/utils/errorHandling";
 
 interface RoomPlayer {
   id: string;
@@ -157,8 +158,8 @@ export const MasterAchievementsPage: React.FC = () => {
       });
       setSuccessMessage("Ачивка успешно выдана!");
       setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Не удалось выдать ачивку");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Не удалось выдать ачивку"));
       console.error(err);
     }
   };

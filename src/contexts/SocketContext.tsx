@@ -7,11 +7,12 @@ import {
 } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "./AuthContext";
+import type { AchievementNotification, AchievementEntity, CharacterEntity } from "@/types/api";
 
 interface SocketContextType {
   socket: Socket | null;
   isConnected: boolean;
-  showAchievementNotification: (achievement: any, character: any) => void;
+  showAchievementNotification: (achievement: AchievementEntity, character: CharacterEntity) => void;
 }
 
 const SocketContext = createContext<SocketContextType>({
@@ -29,10 +30,10 @@ interface SocketProviderProps {
 export function SocketProvider({ children }: SocketProviderProps) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [achievementNotification, setAchievementNotification] = useState<any>(null);
+  const [achievementNotification, setAchievementNotification] = useState<AchievementNotification | null>(null);
   const { isAuthenticated } = useAuth();
 
-  const showAchievementNotification = (achievement: any, character: any) => {
+  const showAchievementNotification = (achievement: AchievementEntity, character: CharacterEntity) => {
     setAchievementNotification({ achievement, character });
     setTimeout(() => setAchievementNotification(null), 5000);
   };
@@ -81,7 +82,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
     });
 
     // Обработка получения ачивки
-    newSocket.on("achievement-granted", (data: { achievement: any; character: any; grantedAt: string }) => {
+    newSocket.on("achievement-granted", (data: { achievement: AchievementEntity; character: CharacterEntity; grantedAt: string }) => {
       showAchievementNotification(data.achievement, data.character);
 
       // Также показываем browser notification если разрешено

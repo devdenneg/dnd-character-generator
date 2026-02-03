@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/utils/errorHandling";
 
 export function CreateRoomPage() {
   const navigate = useNavigate();
@@ -26,8 +27,8 @@ export function CreateRoomPage() {
     try {
       await roomsApi.create(formData);
       navigate("/my-rooms");
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Не удалось создать комнату");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Не удалось создать комнату"));
     } finally {
       setIsLoading(false);
     }

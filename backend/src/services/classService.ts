@@ -1,4 +1,5 @@
 import prisma from "../db";
+import type { StartingEquipment, SpellcastingConfig } from "../types/equipment";
 
 export interface ClassFeatureInput {
   name: string;
@@ -23,13 +24,6 @@ export interface SubclassInput {
   features: SubclassFeatureInput[];
 }
 
-export interface SpellcastingInput {
-  ability: string;
-  cantripsKnown: number[];
-  spellsKnown?: number[];
-  spellSlots: number[][];
-}
-
 export interface CharacterClassInput {
   externalId: string;
   name: string;
@@ -46,8 +40,8 @@ export interface CharacterClassInput {
   source: string;
   features: ClassFeatureInput[];
   subclasses: SubclassInput[];
-  startingEquipment?: any;
-  spellcasting?: any;
+  startingEquipment?: StartingEquipment;
+  spellcasting?: SpellcastingConfig;
 }
 
 export async function getAllClasses(source?: string) {

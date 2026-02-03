@@ -8,17 +8,7 @@ import {
   updateCharacter,
   deleteCharacter,
 } from "../services/characterService";
-
-// Validation schemas
-const createCharacterSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  data: z.any(),
-});
-
-const updateCharacterSchema = z.object({
-  name: z.string().min(1).optional(),
-  data: z.any().optional(),
-});
+import { createCharacterSchema, updateCharacterSchema } from "../schemas/character.schema";
 
 export async function create(req: AuthenticatedRequest, res: Response) {
   try {

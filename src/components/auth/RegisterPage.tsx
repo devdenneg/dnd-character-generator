@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/utils/errorHandling";
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -46,10 +47,8 @@ export function RegisterPage() {
     try {
       await register(email, password, name || undefined, role);
       navigate("/");
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error || err.message || "Ошибка регистрации",
-      );
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Ошибка регистрации"));
     } finally {
       setIsLoading(false);
     }

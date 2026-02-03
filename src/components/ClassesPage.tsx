@@ -29,6 +29,7 @@ import { useState } from "react";
 import type { ElementType } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import type { AbilityName } from "@/types/character";
 
 // Types
 interface ClassFeature {
@@ -92,7 +93,7 @@ interface StartingEquipment {
 }
 
 interface Spellcasting {
-  ability: string;
+  ability: AbilityName;
   cantripsKnown: number[];
   spellsKnown?: number[];
   spellSlots: number[][];
@@ -1729,7 +1730,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                               ...editingClass,
                               spellcasting: {
                                 ...editingClass.spellcasting!,
-                                ability: e.target.value,
+                                ability: e.target.value as AbilityName,
                               },
                             })
                           }

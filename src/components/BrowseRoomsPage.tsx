@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/utils/errorHandling";
 
 interface Room {
   id: string;
@@ -66,8 +67,8 @@ export function BrowseRoomsPage() {
         setRooms(response.data);
         setFilteredRooms(response.data);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Не удалось загрузить комнаты");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Не удалось загрузить комнаты"));
     } finally {
       setIsLoading(false);
     }

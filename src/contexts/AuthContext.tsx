@@ -1,16 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { authApi } from "@/api/client";
-
-interface User {
-  id: string;
-  email: string;
-  name: string | null;
-  role: "player" | "master";
-}
+import type { UserEntity } from "@/types/api";
 
 interface AuthContextType {
-  user: User | null;
+  user: UserEntity | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -26,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserEntity | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is logged in on mount

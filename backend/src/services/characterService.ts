@@ -1,14 +1,5 @@
 import prisma from "../db";
-
-export interface CreateCharacterInput {
-  name: string;
-  data: any;
-}
-
-export interface UpdateCharacterInput {
-  name?: string;
-  data?: any;
-}
+import type { CreateCharacterInput, UpdateCharacterInput } from "../types/character";
 
 export async function createCharacter(
   userId: string,
