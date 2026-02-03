@@ -57,8 +57,8 @@ export function SpellsStep() {
   const classLevel1Spells = availableSpells.filter((s: Spell) => s.level === 1);
 
   // Количество известных заговоров и заклинаний из stats
-  const cantripsKnown = stats.spellcasting?.cantripsKnown[0] || 0;
-  const spellsKnown = stats.spellcasting?.spellsKnown[0] || 0;
+  const cantripsKnown = stats.spellcasting?.cantripsKnown || 0;
+  const spellsKnown = stats.spellcasting?.spellsKnown || 0;
   const spellSlots = stats.spellcasting?.spellSlots || {
     level1: 0,
     level2: 0,
