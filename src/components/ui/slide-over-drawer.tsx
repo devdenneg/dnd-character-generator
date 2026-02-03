@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 interface SlideOverDrawerProps {
   isOpen: boolean;
@@ -17,17 +17,38 @@ export function SlideOverDrawer({
   children,
   actions,
 }: SlideOverDrawerProps) {
+  const [isClosing, setIsClosing] = useState(false);
+  const [shouldRender, setShouldRender] = useState(isOpen);
+
+  // Handle opening
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    }
+  }, [isOpen]);
+
+  // Handle closing with animation
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShouldRender(false);
+      setIsClosing(false);
+      onClose();
+    }, 250); // Match animation duration
+  };
+
   // Close on ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        handleClose();
       }
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -42,18 +63,24 @@ export function SlideOverDrawer({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
+        className={`absolute inset-0 bg-black/50 backdrop-blur-sm ${
+          isClosing ? "animate-fade-out" : "animate-modal-backdrop"
+        }`}
+        onClick={handleClose}
       />
 
       {/* Drawer */}
-      <div className="relative w-full max-w-xl h-full bg-card border-l border-border shadow-2xl animate-in slide-in-from-right duration-300 ease-out overflow-hidden flex flex-col">
+      <div
+        className={`relative w-full max-w-xl h-full bg-card border-l border-border shadow-2xl overflow-hidden flex flex-col ${
+          isClosing ? "animate-slide-out-right" : "animate-slide-in-right"
+        }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
           <h2 className="text-lg font-semibold text-foreground">{title}</h2>
@@ -62,7 +89,7 @@ export function SlideOverDrawer({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onClose}
+              onClick={handleClose}
               className="h-8 w-8 p-0"
             >
               <X className="h-4 w-4" />
