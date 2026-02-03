@@ -467,7 +467,6 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
 
   getStats: () => {
     const { character } = get();
-    console.log("aboba", character);
     const getModifier = get().getAbilityModifier;
 
     const proficiencyBonus = calculateProficiencyBonus(character.level);
@@ -585,61 +584,14 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         spellMod
       );
 
-      // Определяем ячейки заклинаний
-      let spellSlots: SpellSlots = {
-        level1: 0,
-        level2: 0,
-        level3: 0,
-        level4: 0,
-        level5: 0,
-        level6: 0,
-        level7: 0,
-        level8: 0,
-        level9: 0,
-      };
-
-      const classId = character.class.id;
-      const level = character.level;
-
-      // Полные заклинатели
-      if (["bard", "cleric", "druid", "sorcerer", "wizard"].includes(classId)) {
-        spellSlots = FULL_CASTER_SPELL_SLOTS[level - 1];
-      }
-      // Полузаклинатели
-      else if (["paladin", "ranger"].includes(classId)) {
-        spellSlots = HALF_CASTER_SPELL_SLOTS[level - 1];
-      }
-      // Колдун (особая механика)
-      else if (classId === "warlock") {
-        const warlockData = WARLOCK_SPELL_SLOTS[level - 1];
-        // У колдуна все ячейки одного уровня
-        const key = `level${warlockData.level}` as keyof SpellSlots;
-        spellSlots = { ...spellSlots, [key]: warlockData.slots };
-      }
-
-      // Количество известных заговоров
-      const cantripsKnownCount = CANTRIPS_KNOWN[classId]?.[level - 1] || 0;
-
-      // Количество известных заклинаний
-      let spellsKnownCount = 0;
-      if (SPELLS_KNOWN[classId]) {
-        spellsKnownCount = SPELLS_KNOWN[classId][level - 1];
-      } else if (["cleric", "druid", "paladin"].includes(classId)) {
-        // Для подготавливающих классов: модификатор + уровень (минимум 1)
-        spellsKnownCount = Math.max(1, spellMod + level);
-      } else if (classId === "wizard") {
-        // Волшебник: 6 + 2 за уровень в книге, готовит INT + уровень
-        spellsKnownCount = Math.max(1, spellMod + level);
-      }
-
       spellcasting = {
         ability: spellAbility,
         abilityModifier: spellMod,
         spellSaveDC,
         spellAttackBonus,
-        spellSlots,
-        cantripsKnown: cantripsKnownCount,
-        spellsKnown: spellsKnownCount,
+        spellSlots: character.class.spellcasting.spellSlots ?? [[0]],
+        cantripsKnown: character.class.spellcasting.cantripsKnown[0] ?? 0,
+        spellsKnown: character.class.spellcasting.spellsKnown?.[0] ?? 0,
       };
     }
 
