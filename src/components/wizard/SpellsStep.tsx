@@ -21,7 +21,7 @@ export function SpellsStep() {
 
   // Проверяем, является ли класс заклинателем
   const isSpellcaster = character.class?.spellcasting !== undefined;
-  const classId = character.class?.id || "";
+  const classId = character.class?.externalId || "";
 
   // Загружаем заклинания для конкретного класса с сервера
   const { data: spellsData, isLoading, error } = useBackendSpellsByClass(classId);
