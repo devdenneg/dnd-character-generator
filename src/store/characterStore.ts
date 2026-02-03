@@ -11,31 +11,25 @@ import type {
   Character,
   CharacterStats,
   Wallet,
-  SpellSlots,
 } from "@/types/character";
 import {
   calculateModifier,
   calculateProficiencyBonus,
   calculateHitPoints,
-  calculateSpellSaveDC,
-  calculateSpellAttackBonus,
   calculateInitiative,
   calculatePassivePerception,
 } from "@/utils/calculations";
-import { calculateArmorClass, getEquippedArmor, hasShieldEquipped } from "@/utils/armorClass";
+import {
+  calculateArmorClass,
+  getEquippedArmor,
+  hasShieldEquipped,
+} from "@/utils/armorClass";
 import {
   validateRaceSelection,
   validateClassSelection,
   validateSkillSelection,
   validateAbilityScores,
 } from "@/utils/validation";
-import {
-  FULL_CASTER_SPELL_SLOTS,
-  HALF_CASTER_SPELL_SLOTS,
-  WARLOCK_SPELL_SLOTS,
-  CANTRIPS_KNOWN,
-  SPELLS_KNOWN,
-} from "@/constants/dnd";
 
 const initialWallet: Wallet = {
   copper: 0,
@@ -151,7 +145,7 @@ interface CharacterState {
   addSpell: (spell: Spell, type: "cantrip" | "known" | "prepared") => void;
   removeSpell: (
     spellId: string,
-    type: "cantrip" | "known" | "prepared",
+    type: "cantrip" | "known" | "prepared"
   ) => void;
   setCharacterDetails: (details: Partial<Character>) => void;
   setName: (name: string) => void;
@@ -240,17 +234,20 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         );
       case "abilities":
         // Проверяем, что все значения из стандартного набора распределены
-        return validateAbilityScores(character.abilityScores, character.abilityScoreMethod);
+        return validateAbilityScores(
+          character.abilityScores,
+          character.abilityScoreMethod
+        );
       case "background":
         return character.background !== null;
       case "abilityIncrease":
         // Проверяем, что выбраны бонусы (+2 и +1 ИЛИ три раза +1)
         const increases = character.abilityScoreIncreases;
         const plus2Count = Object.values(increases).filter(
-          (v) => v === 2,
+          (v) => v === 2
         ).length;
         const plus1Count = Object.values(increases).filter(
-          (v) => v === 1,
+          (v) => v === 1
         ).length;
         // Стратегия +2/+1 или +1/+1/+1
         return (
@@ -294,20 +291,21 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
   setBackground: (background) =>
     set((state) => {
       const currentSkills = state.character.skillProficiencies || [];
-      const oldBackgroundSkills = state.character.background?.skillProficiencies || [];
-      
+      const oldBackgroundSkills =
+        state.character.background?.skillProficiencies || [];
+
       // Удаляем навыки старой предыстории
       const skillsWithoutOldBackground = currentSkills.filter(
         (skill) => !oldBackgroundSkills.includes(skill)
       );
-      
+
       // Добавляем навыки новой предыстории
       const newBackgroundSkills = background?.skillProficiencies || [];
       const updatedSkills = [
         ...skillsWithoutOldBackground,
         ...newBackgroundSkills,
       ];
-      
+
       return {
         character: {
           ...state.character,
@@ -358,7 +356,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       character: {
         ...state.character,
         skillProficiencies: state.character.skillProficiencies.filter(
-          (s) => s !== skill,
+          (s) => s !== skill
         ),
       },
     })),
@@ -395,8 +393,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         type === "cantrip"
           ? "cantripsKnown"
           : type === "known"
-            ? "spellsKnown"
-            : "spellsPrepared";
+          ? "spellsKnown"
+          : "spellsPrepared";
       return {
         character: {
           ...state.character,
@@ -411,8 +409,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         type === "cantrip"
           ? "cantripsKnown"
           : type === "known"
-            ? "spellsKnown"
-            : "spellsPrepared";
+          ? "spellsKnown"
+          : "spellsPrepared";
       return {
         character: {
           ...state.character,
@@ -469,7 +467,12 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     // Calculate armor class using utility
     const equippedArmor = getEquippedArmor(character.equipment);
     const hasShield = hasShieldEquipped(character.equipment);
-    const armorClass = calculateArmorClass(10, dexMod, equippedArmor, hasShield);
+    const armorClass = calculateArmorClass(
+      10,
+      dexMod,
+      equippedArmor,
+      hasShield
+    );
 
     // Calculate hit points using utility
     const hitDie = character.class?.hitDie || 8;
@@ -479,8 +482,13 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     const speed = character.race?.speed || 30;
 
     // Passive perception using utility
-    const isProficientPerception = character.skillProficiencies.includes("perception");
-    const passivePerception = calculatePassivePerception(wisMod, proficiencyBonus, isProficientPerception);
+    const isProficientPerception =
+      character.skillProficiencies.includes("perception");
+    const passivePerception = calculatePassivePerception(
+      wisMod,
+      proficiencyBonus,
+      isProficientPerception
+    );
 
     // Ability modifiers
     const abilityModifiers: AbilityScores = {
@@ -543,7 +551,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     };
 
     for (const [skill, ability] of Object.entries(skillAbilityMap)) {
-      const isProficient = character.skillProficiencies?.includes(skill) || false;
+      const isProficient =
+        character.skillProficiencies?.includes(skill) || false;
       const hasExpertise = character.expertiseSkills?.includes(skill) || false;
       const profBonus = isProficient
         ? hasExpertise
@@ -554,71 +563,71 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     }
 
     // Магические характеристики (PHB 2024)
-    let spellcasting = null;
+    // let spellcasting = null;
 
-    if (character.class?.spellcasting) {
-      const spellAbility = character.class.spellcasting.ability;
-      const spellMod = abilityModifiers[spellAbility];
-      const spellSaveDC = calculateSpellSaveDC(proficiencyBonus, spellMod);
-      const spellAttackBonus = calculateSpellAttackBonus(proficiencyBonus, spellMod);
+    // if (character.class?.spellcasting) {
+    //   const spellAbility = character.class.spellcasting.ability;
+    //   const spellMod = abilityModifiers[spellAbility];
+    //   // const spellSaveDC = calculateSpellSaveDC(proficiencyBonus, spellMod);
+    // const spellAttackBonus = calculateSpellAttackBonus(proficiencyBonus, spellMod);
 
-      // Определяем ячейки заклинаний
-      let spellSlots: SpellSlots = {
-        level1: 0,
-        level2: 0,
-        level3: 0,
-        level4: 0,
-        level5: 0,
-        level6: 0,
-        level7: 0,
-        level8: 0,
-        level9: 0,
-      };
+    // // Определяем ячейки заклинаний
+    // let spellSlots: SpellSlots = {
+    //   level1: 0,
+    //   level2: 0,
+    //   level3: 0,
+    //   level4: 0,
+    //   level5: 0,
+    //   level6: 0,
+    //   level7: 0,
+    //   level8: 0,
+    //   level9: 0,
+    // };
 
-      const classId = character.class.id;
-      const level = character.level;
+    // const classId = character.class.id;
+    // const level = character.level;
 
-      // Полные заклинатели
-      if (["bard", "cleric", "druid", "sorcerer", "wizard"].includes(classId)) {
-        spellSlots = FULL_CASTER_SPELL_SLOTS[level - 1];
-      }
-      // Полузаклинатели
-      else if (["paladin", "ranger"].includes(classId)) {
-        spellSlots = HALF_CASTER_SPELL_SLOTS[level - 1];
-      }
-      // Колдун (особая механика)
-      else if (classId === "warlock") {
-        const warlockData = WARLOCK_SPELL_SLOTS[level - 1];
-        // У колдуна все ячейки одного уровня
-        const key = `level${warlockData.level}` as keyof SpellSlots;
-        spellSlots = { ...spellSlots, [key]: warlockData.slots };
-      }
+    // // Полные заклинатели
+    // if (["bard", "cleric", "druid", "sorcerer", "wizard"].includes(classId)) {
+    //   spellSlots = FULL_CASTER_SPELL_SLOTS[level - 1];
+    // }
+    // // Полузаклинатели
+    // else if (["paladin", "ranger"].includes(classId)) {
+    //   spellSlots = HALF_CASTER_SPELL_SLOTS[level - 1];
+    // }
+    // // Колдун (особая механика)
+    // else if (classId === "warlock") {
+    //   const warlockData = WARLOCK_SPELL_SLOTS[level - 1];
+    //   // У колдуна все ячейки одного уровня
+    //   const key = `level${warlockData.level}` as keyof SpellSlots;
+    //   spellSlots = { ...spellSlots, [key]: warlockData.slots };
+    // }
 
-      // Количество известных заговоров
-      const cantripsKnownCount = CANTRIPS_KNOWN[classId]?.[level - 1] || 0;
+    // // Количество известных заговоров
+    // const cantripsKnownCount = CANTRIPS_KNOWN[classId]?.[level - 1] || 0;
 
-      // Количество известных заклинаний
-      let spellsKnownCount = 0;
-      if (SPELLS_KNOWN[classId]) {
-        spellsKnownCount = SPELLS_KNOWN[classId][level - 1];
-      } else if (["cleric", "druid", "paladin"].includes(classId)) {
-        // Для подготавливающих классов: модификатор + уровень (минимум 1)
-        spellsKnownCount = Math.max(1, spellMod + level);
-      } else if (classId === "wizard") {
-        // Волшебник: 6 + 2 за уровень в книге, готовит INT + уровень
-        spellsKnownCount = Math.max(1, spellMod + level);
-      }
+    // // Количество известных заклинаний
+    // let spellsKnownCount = 0;
+    // if (SPELLS_KNOWN[classId]) {
+    //   spellsKnownCount = SPELLS_KNOWN[classId][level - 1];
+    // } else if (["cleric", "druid", "paladin"].includes(classId)) {
+    //   // Для подготавливающих классов: модификатор + уровень (минимум 1)
+    //   spellsKnownCount = Math.max(1, spellMod + level);
+    // } else if (classId === "wizard") {
+    //   // Волшебник: 6 + 2 за уровень в книге, готовит INT + уровень
+    //   spellsKnownCount = Math.max(1, spellMod + level);
+    // }
 
-      spellcasting = {
-        ability: spellAbility,
-        abilityModifier: spellMod,
-        spellSaveDC,
-        spellAttackBonus,
-        spellSlots,
-        cantripsKnown: cantripsKnownCount,
-        spellsKnown: spellsKnownCount,
-      };
-    }
+    // spellcasting = {
+    //   ability: spellAbility,
+    //   abilityModifier: spellMod,
+    //   spellSaveDC,
+    //   spellAttackBonus,
+    //   spellSlots,
+    //   cantripsKnown: cantripsKnownCount,
+    //   spellsKnown: spellsKnownCount,
+    // };
+    // }
 
     // Кошелёк
     const wallet: Wallet = { ...character.wallet };
@@ -634,7 +643,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       abilityModifiers,
       savingThrows,
       skills,
-      spellcasting,
+      spellcasting: null,
       wallet,
     };
   },
