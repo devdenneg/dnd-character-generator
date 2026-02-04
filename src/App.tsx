@@ -23,8 +23,6 @@ import {
 } from "@/components/wizard";
 import { Glossary } from "@/components/Glossary";
 import { HomePage } from "@/components/HomePage";
-import { LoginPage } from "@/components/auth/LoginPage";
-import { RegisterPage } from "@/components/auth/RegisterPage";
 import { MyCharactersPage } from "@/components/MyCharactersPage";
 import { CreateRoomPage } from "@/components/CreateRoomPage";
 import { MyRoomsPage } from "@/components/MyRoomsPage";
@@ -33,6 +31,7 @@ import { JoinRoomPage } from "@/components/JoinRoomPage";
 import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
 import { MasterAchievementsPage } from "@/components/MasterAchievementsPage";
 import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
+import { NotFoundPage } from "@/components/NotFoundPage";
 import { RacesPage } from "@/components/RacesPage";
 import { ClassesPage } from "@/components/ClassesPage";
 import { BackgroundsPage } from "@/components/BackgroundsPage";
@@ -41,6 +40,7 @@ import { EquipmentPage } from "@/components/EquipmentPage";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { AuthModalProvider, useAuthModal } from "@/contexts/AuthModalContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { TelegramProvider } from "@/contexts/TelegramContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -62,6 +62,7 @@ function CharacterWizardPage() {
     useCharacterStore();
   const [showGlossary, setShowGlossary] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { openLogin, openRegister } = useAuthModal();
 
   // Clear character store when leaving page
   useEffect(() => {
@@ -86,8 +87,8 @@ function CharacterWizardPage() {
             Для создания персонажа необходимо войти в аккаунт
           </p>
           <div className="flex gap-3 justify-center">
-            <Button onClick={() => navigate("/login")}>Войти</Button>
-            <Button variant="outline" onClick={() => navigate("/register")}>
+            <Button onClick={openLogin}>Войти</Button>
+            <Button variant="outline" onClick={openRegister}>
               Регистрация
             </Button>
           </div>
@@ -279,12 +280,6 @@ function HomePageWrapper() {
       case "glossary":
         navigate("/glossary");
         break;
-      case "login":
-        navigate("/login");
-        break;
-      case "register":
-        navigate("/register");
-        break;
       default:
         navigate("/");
     }
@@ -351,6 +346,11 @@ function AppRoutes() {
     setIsLoaded(true);
   }, []);
 
+  // Сброс скролла при изменении маршрута
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -361,9 +361,7 @@ function AppRoutes() {
 
   // Определяем, нужно ли показывать Header и Footer
   const isCharacterWizard = location.pathname === "/character";
-  const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/register";
-  const showHeaderFooter = !isCharacterWizard && !isAuthPage;
+  const showHeaderFooter = !isCharacterWizard;
 
   return (
     <PageLayout showHeader={showHeaderFooter} showFooter={showHeaderFooter}>
@@ -387,8 +385,7 @@ function AppRoutes() {
         />
         <Route path="/achievements" element={<PlayerAchievementsPage />} />
         <Route path="/glossary" element={<GlossaryPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </PageLayout>
   );
@@ -400,11 +397,13 @@ function App() {
       <ThemeProvider>
         <TelegramProvider>
           <AuthProvider>
-            <SocketProvider>
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
-            </SocketProvider>
+            <AuthModalProvider>
+              <SocketProvider>
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </SocketProvider>
+            </AuthModalProvider>
           </AuthProvider>
         </TelegramProvider>
       </ThemeProvider>

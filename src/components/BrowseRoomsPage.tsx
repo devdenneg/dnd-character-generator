@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import { getErrorMessage } from "@/utils/errorHandling";
 
 interface Room {
@@ -29,6 +30,7 @@ interface Room {
 export function BrowseRoomsPage() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { openLogin, openRegister } = useAuthModal();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,8 +54,8 @@ export function BrowseRoomsPage() {
         rooms.filter(
           (room) =>
             room.name.toLowerCase().includes(query) ||
-            room.master.name?.toLowerCase().includes(query),
-        ),
+            room.master.name?.toLowerCase().includes(query)
+        )
       );
     }
   }, [searchQuery, rooms]);
@@ -134,8 +136,8 @@ export function BrowseRoomsPage() {
                 Чтобы присоединиться к комнате, необходимо войти в аккаунт
               </p>
               <div className="flex gap-3 justify-center">
-                <Button onClick={() => navigate("/login")}>Войти</Button>
-                <Button variant="outline" onClick={() => navigate("/register")}>
+                <Button onClick={openLogin}>Войти</Button>
+                <Button variant="outline" onClick={openRegister}>
                   Регистрация
                 </Button>
               </div>

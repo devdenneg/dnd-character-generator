@@ -1,21 +1,18 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import {
-  UserPlus,
-  Mail,
-  Lock,
-  User,
-  AlertCircle,
-} from "lucide-react";
+import { UserPlus, Mail, Lock, User, AlertCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/utils/errorHandling";
 
-export function RegisterPage() {
-  const navigate = useNavigate();
+interface RegisterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSwitchToLogin: () => void;
+}
+
+export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps) {
   const { register } = useAuth();
 
   const [name, setName] = useState("");
@@ -35,15 +32,20 @@ export function RegisterPage() {
     }
 
     if (password.length < 6) {
-      setError("Пароль должен быть не менее 6 символов");
+      setError("Пароль должен содержать минимум 6 символов");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      await register(email, password, name || undefined, "player");
-      navigate("/");
+      await register(email, password, name);
+      onClose();
+      // Сбрасываем форму
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Ошибка регистрации"));
     } finally {
@@ -51,25 +53,27 @@ export function RegisterPage() {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      {/* Background */}
-      <div className="app-background" />
-      <div className="ambient-glow ambient-glow-1" />
-      <div className="ambient-glow ambient-glow-2" />
-
-      <Card className="w-full max-w-md relative z-10 bg-card/80 backdrop-blur-xl border-border/50">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <UserPlus className="w-8 h-8 text-white" />
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-modal-backdrop">
+      <div className="bg-card border border-border rounded-2xl max-w-md w-full animate-modal-content">
+        <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <UserPlus className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Регистрация</h2>
+              <p className="text-xs text-muted-foreground">Создайте аккаунт для сохранения персонажей</p>
+            </div>
           </div>
-          <CardTitle className="text-2xl">Регистрация</CardTitle>
-          <p className="text-muted-foreground text-sm mt-2">
-            Создайте аккаунт для сохранения персонажей
-          </p>
-        </CardHeader>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
 
-        <CardContent>
+        <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2 text-red-400 text-sm">
@@ -79,7 +83,7 @@ export function RegisterPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Имя (необязательно)</Label>
+              <Label htmlFor="name">Имя</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -89,12 +93,13 @@ export function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -110,13 +115,13 @@ export function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль *</Label>
+              <Label htmlFor="password">Пароль</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Минимум 6 символов"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
@@ -127,13 +132,13 @@ export function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Подтвердите пароль *</Label>
+              <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Повторите пароль"
+                  placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="pl-10"
@@ -149,25 +154,20 @@ export function RegisterPage() {
             >
               {isLoading ? "Регистрация..." : "Зарегистрироваться"}
             </Button>
+
+            <div className="text-center text-sm text-muted-foreground">
+              Уже есть аккаунт?{" "}
+              <button
+                type="button"
+                onClick={onSwitchToLogin}
+                className="text-primary hover:underline"
+              >
+                Войти
+              </button>
+            </div>
           </form>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            Уже есть аккаунт?{" "}
-            <Link to="/login" className="text-primary hover:underline">
-              Войти
-            </Link>
-          </div>
-
-          <div className="mt-4 text-center">
-            <Link
-              to="/"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              ← Вернуться на главную
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

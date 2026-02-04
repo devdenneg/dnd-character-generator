@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { roomsApi, charactersApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import type { CharacterEntity, RoomEntity } from "@/types/api";
 import { getErrorMessage } from "@/utils/errorHandling";
 
@@ -20,6 +21,7 @@ export function JoinRoomPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { openLogin, openRegister } = useAuthModal();
   const [room, setRoom] = useState<RoomWithMaster | null>(null);
   const [characters, setCharacters] = useState<CharacterEntity[]>([]);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>("");
@@ -108,8 +110,8 @@ export function JoinRoomPage() {
               Войдите в аккаунт, чтобы присоединиться к комнате
             </p>
             <div className="flex gap-3 justify-center">
-              <Button onClick={() => navigate("/login")}>Войти</Button>
-              <Button variant="outline" onClick={() => navigate("/register")}>
+              <Button onClick={openLogin}>Войти</Button>
+              <Button variant="outline" onClick={openRegister}>
                 Регистрация
               </Button>
             </div>
@@ -362,8 +364,8 @@ export function JoinRoomPage() {
                   {isJoining
                     ? "Присоединяюсь..."
                     : room.isActive
-                      ? "Присоединиться"
-                      : "Комната неактивна"}
+                    ? "Присоединиться"
+                    : "Комната неактивна"}
                 </Button>
               </form>
             </div>

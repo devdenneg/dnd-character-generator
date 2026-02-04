@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { LogIn, Mail, Lock, AlertCircle } from "lucide-react";
+import { LogIn, Mail, Lock, AlertCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/utils/errorHandling";
 
-export function LoginPage() {
-  const navigate = useNavigate();
+interface LoginModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSwitchToRegister: () => void;
+}
+
+export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) {
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -24,7 +27,10 @@ export function LoginPage() {
 
     try {
       await login(email, password);
-      navigate("/");
+      onClose();
+      // Сбрасываем форму
+      setEmail("");
+      setPassword("");
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Ошибка входа"));
     } finally {
@@ -32,25 +38,27 @@ export function LoginPage() {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      {/* Background */}
-      <div className="app-background" />
-      <div className="ambient-glow ambient-glow-1" />
-      <div className="ambient-glow ambient-glow-2" />
-
-      <Card className="w-full max-w-md relative z-10 bg-card/80 backdrop-blur-xl border-border/50">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <LogIn className="w-8 h-8 text-white" />
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-modal-backdrop">
+      <div className="bg-card border border-border rounded-2xl max-w-md w-full animate-modal-content">
+        <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between rounded-t-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <LogIn className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Вход в аккаунт</h2>
+              <p className="text-xs text-muted-foreground">Войдите, чтобы сохранять персонажей</p>
+            </div>
           </div>
-          <CardTitle className="text-2xl">Вход в аккаунт</CardTitle>
-          <p className="text-muted-foreground text-sm mt-2">
-            Войдите, чтобы сохранять персонажей
-          </p>
-        </CardHeader>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
 
-        <CardContent>
+        <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2 text-red-400 text-sm">
@@ -98,25 +106,20 @@ export function LoginPage() {
             >
               {isLoading ? "Вход..." : "Войти"}
             </Button>
+
+            <div className="text-center text-sm text-muted-foreground">
+              Нет аккаунта?{" "}
+              <button
+                type="button"
+                onClick={onSwitchToRegister}
+                className="text-primary hover:underline"
+              >
+                Зарегистрироваться
+              </button>
+            </div>
           </form>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            Нет аккаунта?{" "}
-            <Link to="/register" className="text-primary hover:underline">
-              Зарегистрироваться
-            </Link>
-          </div>
-
-          <div className="mt-4 text-center">
-            <Link
-              to="/"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              ← Вернуться на главную
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

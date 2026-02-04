@@ -13,11 +13,26 @@ export function EquipmentStep() {
 
   // Автоматически добавляем снаряжение при выборе класса и предыстории
   useEffect(() => {
-    const allEquipment: Equipment[] = [];
+    // Проверяем, есть ли уже снаряжение от предыстории или класса
+    const hasBackgroundEquipment = character.equipment.some(e => e.source === "background");
+    const hasClassEquipment = character.equipment.some(e => e.source === "class");
+
+    // Если снаряжение уже добавлено, не добавляем повторно
+    if (hasBackgroundEquipment && hasClassEquipment) {
+      // Инициализируем quantities из существующего снаряжения
+      const initialQuantities: Record<string, number> = {};
+      character.equipment.forEach((item) => {
+        initialQuantities[item.id] = item.quantity || 1;
+      });
+      setQuantities(initialQuantities);
+      return;
+    }
+
+    const allEquipment: Equipment[] = [...character.equipment];
     const initialQuantities: Record<string, number> = {};
 
-    // Добавляем снаряжение от предыстории
-    if (character.background?.equipment && Array.isArray(character.background.equipment)) {
+    // Добавляем снаряжение от предыстории, если его еще нет
+    if (!hasBackgroundEquipment && character.background?.equipment && Array.isArray(character.background.equipment)) {
       character.background.equipment.forEach((item) => {
         const quantity = item.quantity || 1;
         allEquipment.push({
@@ -29,8 +44,8 @@ export function EquipmentStep() {
       });
     }
 
-    // Добавляем снаряжение от класса
-    if (character.class?.equipment && Array.isArray(character.class.equipment)) {
+    // Добавляем снаряжение от класса, если его еще нет
+    if (!hasClassEquipment && character.class?.equipment && Array.isArray(character.class.equipment)) {
       character.class.equipment.forEach((item) => {
         const quantity = item.quantity || 1;
         allEquipment.push({
@@ -42,17 +57,19 @@ export function EquipmentStep() {
       });
     }
 
-    // Устанавливаем снаряжение
-    setEquipment(allEquipment);
-    setQuantities(initialQuantities);
+    // Устанавливаем снаряжение только если что-то изменилось
+    if (Object.keys(initialQuantities).length > 0) {
+      setEquipment(allEquipment);
+      setQuantities(initialQuantities);
+    }
 
     // Суммируем золото от класса и предыстории
     const classGold = character.class?.startingGold || 0;
     const backgroundGold = character.background?.startingGold || 0;
     const totalGold = classGold + backgroundGold;
 
-    // Устанавливаем кошелек только если у нас есть золото для установки
-    if (totalGold > 0) {
+    // Устанавливаем кошелек только если у нас есть золото для установки и его еще нет
+    if (totalGold > 0 && (character.wallet?.gold || 0) === 0) {
       setWallet({
         copper: 0,
         silver: 0,
@@ -61,7 +78,7 @@ export function EquipmentStep() {
         platinum: 0,
       });
     }
-  }, [character.class, character.background, setEquipment, setWallet]);
+  }, [character.class, character.background, character.equipment, character.wallet, setEquipment, setWallet]);
 
   // Разделяем снаряжение по источникам
   const backgroundEquipment = character.equipment.filter(

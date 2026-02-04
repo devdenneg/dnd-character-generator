@@ -2,6 +2,7 @@ import { User, Search, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useState } from "react";
 import createCharImage from "@/components/assets/createChar.jpg";
 import myCharImage from "@/components/assets/myChar.jpg";
@@ -141,6 +142,7 @@ const MENU_ITEMS: MenuItem[] = [
 
 export function HomePage({ onNavigate }: HomePageProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { openLogin, openRegister } = useAuthModal();
 
   // Секретная разблокировка для разработчика (7 кликов)
   const [devClickCounts, setDevClickCounts] = useState<Record<string, number>>(
@@ -238,14 +240,14 @@ export function HomePage({ onNavigate }: HomePageProps) {
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button
-                  onClick={() => onNavigate("register")}
+                  onClick={openRegister}
                   className="bg-gradient-to-r from-primary to-accent hover:opacity-90 px-6 py-3 text-base shadow-lg shadow-primary/20"
                 >
                   Создать аккаунт
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => onNavigate("login")}
+                  onClick={openLogin}
                   className="px-6 py-3 text-base border-primary/30 hover:border-primary hover:bg-primary/10"
                 >
                   Войти

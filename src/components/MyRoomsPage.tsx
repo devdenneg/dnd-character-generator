@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import { getErrorMessage } from "@/utils/errorHandling";
 
 interface Room {
@@ -31,6 +32,7 @@ interface Room {
 export function MyRoomsPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { openLogin, openRegister } = useAuthModal();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -70,7 +72,7 @@ export function MyRoomsPage() {
     try {
       await roomsApi.update(roomId, { isActive: !isActive });
       setRooms(
-        rooms.map((r) => (r.id === roomId ? { ...r, isActive: !isActive } : r)),
+        rooms.map((r) => (r.id === roomId ? { ...r, isActive: !isActive } : r))
       );
     } catch (err: unknown) {
       alert(getErrorMessage(err, "Не удалось изменить статус комнаты"));
@@ -89,8 +91,8 @@ export function MyRoomsPage() {
               Войдите в аккаунт для управления комнатами
             </p>
             <div className="flex gap-3 justify-center">
-              <Button onClick={() => navigate("/login")}>Войти</Button>
-              <Button variant="outline" onClick={() => navigate("/register")}>
+              <Button onClick={openLogin}>Войти</Button>
+              <Button variant="outline" onClick={openRegister}>
                 Регистрация
               </Button>
             </div>

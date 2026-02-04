@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import { charactersApi } from "@/api/client";
 import { useCharacterStore } from "@/store/characterStore";
 import type { CharacterEntity } from "@/types/api";
@@ -22,6 +23,7 @@ import { getErrorMessage } from "@/utils/errorHandling";
 export function MyCharactersPage() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { openLogin, openRegister } = useAuthModal();
   const { loadCharacter } = useCharacterStore();
 
   const [characters, setCharacters] = useState<CharacterEntity[]>([]);
@@ -132,10 +134,10 @@ export function MyCharactersPage() {
                   аккаунт
                 </p>
                 <div className="flex gap-3 justify-center">
-                  <Button onClick={() => navigate("/login")}>Войти</Button>
+                  <Button onClick={openLogin}>Войти</Button>
                   <Button
                     variant="outline"
-                    onClick={() => navigate("/register")}
+                    onClick={openRegister}
                   >
                     Регистрация
                   </Button>

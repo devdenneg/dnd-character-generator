@@ -326,11 +326,41 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         ...newBackgroundSkills,
       ];
 
+      // Обрабатываем снаряжение
+      const currentEquipment = state.character.equipment || [];
+      const oldBackgroundEquipment = state.character.background?.equipment || [];
+
+      // Удаляем снаряжение старой предыстории (по id)
+      const oldEquipmentIds = oldBackgroundEquipment.map(e => e.id);
+      const equipmentWithoutOldBackground = currentEquipment.filter(
+        (item) => !oldEquipmentIds.includes(item.id)
+      );
+
+      // Добавляем снаряжение новой предыстории
+      const newBackgroundEquipment = background?.equipment || [];
+      const updatedEquipment = [
+        ...equipmentWithoutOldBackground,
+        ...newBackgroundEquipment,
+      ];
+
+      // Обрабатываем золото
+      const currentWallet = state.character.wallet || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 };
+      const oldBackgroundGold = state.character.background?.startingGold || 0;
+      const newBackgroundGold = background?.startingGold || 0;
+
+      // Вычитаем старое золото и добавляем новое
+      const updatedWallet = {
+        ...currentWallet,
+        gold: Math.max(0, currentWallet.gold - oldBackgroundGold + newBackgroundGold),
+      };
+
       return {
         character: {
           ...state.character,
           background,
           skillProficiencies: updatedSkills,
+          equipment: updatedEquipment,
+          wallet: updatedWallet,
         },
       };
     }),

@@ -2,11 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { LogIn, LogOut, User, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import { ThemeSelector } from "@/components/ThemeSelector";
 
 export function Header() {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const { openLogin, openRegister } = useAuthModal();
 
   const handleLogout = async () => {
     await logout();
@@ -79,7 +81,7 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate("/login")}
+                  onClick={openLogin}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2"
                 >
                   <LogIn className="w-4 h-4" />
@@ -88,7 +90,7 @@ export function Header() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => navigate("/register")}
+                  onClick={openRegister}
                   className="bg-gradient-to-r from-primary to-accent hover:opacity-90 px-4 py-2"
                 >
                   <span className="md:hidden">Регистр.</span>
