@@ -1,4 +1,7 @@
-import { useBackendEquipment } from "@/api/hooks";
+import {
+  useBackendEquipmentMeta,
+  useBackendEquipmentByExternalId,
+} from "@/api/hooks";
 import { equipmentApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +22,7 @@ import {
   X,
   Search,
   Package,
+  Loader2,
 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -110,7 +114,8 @@ interface EquipmentPageProps {
 }
 
 export function EquipmentPage({ onBack }: EquipmentPageProps) {
-  const { data, error, refetch } = useBackendEquipment();
+  // Загружаем только мета-данные для списка
+  const { data: metaData, error, refetch } = useBackendEquipmentMeta();
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -121,15 +126,16 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
 
   // Текущий выбранный предмет определяется из URL
-  const selectedEquipment = useMemo(() => {
+  const selectedEquipmentExternalId = useMemo(() => {
     const hash = location.hash.replace("#", "");
-    if (!hash || !data?.data?.equipment) return null;
+    return hash || null;
+  }, [location.hash]);
 
-    const equipment = data.data.equipment.find(
-      (e: Equipment) => e.externalId === hash
-    );
-    return equipment?.id || null;
-  }, [location.hash, data]);
+  // Загружаем полные данные только для выбранного предмета по externalId
+  const { data: selectedItemData, isLoading: isLoadingItem } =
+    useBackendEquipmentByExternalId(selectedEquipmentExternalId || "");
+
+  const selectedEquipment = selectedItemData?.data?.equipment || null;
 
   // Отслеживаем изменения хеша для добавления в историю
   const prevHashRef = useRef<string>("");
@@ -140,7 +146,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
 
     // Если хеш изменился и оба не пустые, добавляем предыдущий в историю
     if (currentHash && prevHash && currentHash !== prevHash) {
-      setNavigationHistory(prev => {
+      setNavigationHistory((prev) => {
         // Проверяем, не возвращаемся ли мы назад
         if (prev.length > 0 && prev[prev.length - 1] === currentHash) {
           // Это возврат назад, удаляем из истории
@@ -157,7 +163,9 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
   // Обработка изменения выбранного предмета
   useEffect(() => {
     if (selectedEquipment) {
-      const element = document.getElementById(`equipment-${selectedEquipment}`);
+      const element = document.getElementById(
+        `equipment-${selectedEquipment.id}`
+      );
       if (element) {
         element.scrollIntoView({
           behavior: "smooth",
@@ -172,14 +180,15 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
   }, [selectedEquipment]);
 
   // Функция для открытия предмета
-  const openEquipment = (equipmentId: string) => {
-    const equipment = data?.data?.equipment?.find(
-      (e: Equipment) => e.id === equipmentId
-    );
-    if (!equipment) return;
+  const openEquipment = (externalId: string) => {
+    // Если уже открыт другой предмет, добавляем его в историю
+    const currentHash = location.hash.replace("#", "");
+    if (currentHash && currentHash !== externalId) {
+      setNavigationHistory((prev) => [...prev, currentHash]);
+    }
 
     // Обновляем URL
-    navigate(`${location.pathname}#${equipment.externalId}`, { replace: false });
+    navigate(`${location.pathname}#${externalId}`, { replace: false });
   };
 
   // Функция для возврата назад
@@ -187,7 +196,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
     if (navigationHistory.length === 0) return;
 
     const previousExternalId = navigationHistory[navigationHistory.length - 1];
-    setNavigationHistory(prev => prev.slice(0, -1));
+    setNavigationHistory((prev) => prev.slice(0, -1));
 
     // Переходим к предыдущему предмету
     navigate(`${location.pathname}#${previousExternalId}`, { replace: true });
@@ -303,8 +312,8 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
   const canEdit = user?.role === "master";
 
   const equipment = useMemo(
-    () => data?.data?.equipment || [],
-    [data?.data?.equipment]
+    () => metaData?.data?.equipment || [],
+    [metaData?.data?.equipment]
   );
 
   // Filter by category and search
@@ -325,9 +334,12 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
         (e: Equipment) =>
           e.nameRu.toLowerCase().includes(search) ||
           e.name.toLowerCase().includes(search) ||
-          (e.description && Array.isArray(e.description) && e.description.some((d: string) =>
-            typeof d === 'string' && d.toLowerCase().includes(search)
-          ))
+          (e.description &&
+            Array.isArray(e.description) &&
+            e.description.some(
+              (d: string) =>
+                typeof d === "string" && d.toLowerCase().includes(search)
+            ))
       );
     }
 
@@ -347,7 +359,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
       <div
         key={equip.id}
         id={`equipment-${equip.id}`}
-        onClick={() => openEquipment(equip.id)}
+        onClick={() => openEquipment(equip.externalId)}
         className="p-4 rounded-lg border cursor-pointer transition-all bg-card border-border hover:border-primary/50"
       >
         <div className="flex items-start gap-3">
@@ -505,9 +517,9 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
         )}
 
         {/* Slide-over Drawer for Equipment Details */}
-        {selectedEquipment && data?.data?.equipment && (
+        {selectedEquipmentExternalId && (
           <SlideOverDrawer
-            isOpen={!!selectedEquipment}
+            isOpen={!!selectedEquipmentExternalId}
             onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
@@ -524,34 +536,36 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
                     ← Назад
                   </Button>
                 )}
-                {(() => {
-                  const equip = data.data.equipment.find(
-                    (e: Equipment) => e.id === selectedEquipment
-                  );
-                  if (!equip) return null;
-                  const categoryInfo = getCategoryInfo(equip.category);
-                  const Icon = categoryInfo.icon;
-                  return <Icon className="w-5 h-5 text-primary" />;
-                })()}
-                <span>
-                  {data.data.equipment.find(
-                    (e: Equipment) => e.id === selectedEquipment
-                  )?.nameRu || "Снаряжение"}
-                </span>
+                {isLoadingItem ? (
+                  <>
+                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    <span>Загрузка...</span>
+                  </>
+                ) : selectedEquipment ? (
+                  <>
+                    {(() => {
+                      const categoryInfo = getCategoryInfo(
+                        selectedEquipment.category
+                      );
+                      const Icon = categoryInfo.icon;
+                      return <Icon className="w-5 h-5 text-primary" />;
+                    })()}
+                    <span>{selectedEquipment.nameRu || "Снаряжение"}</span>
+                  </>
+                ) : (
+                  <span>Снаряжение</span>
+                )}
               </div>
             }
             actions={
-              canEdit && (
+              canEdit &&
+              selectedEquipment &&
+              !isLoadingItem && (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      const equip = data.data.equipment.find(
-                        (e: Equipment) => e.id === selectedEquipment
-                      );
-                      if (equip) handleEditEquipment(equip);
-                    }}
+                    onClick={() => handleEditEquipment(selectedEquipment)}
                   >
                     <Pencil className="w-4 h-4" />
                   </Button>
@@ -560,11 +574,11 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
                     size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => {
-                      const equip = data.data.equipment.find(
-                        (e: Equipment) => e.id === selectedEquipment
-                      );
-                      if (equip && confirm(`Удалить "${equip.nameRu}"?`)) {
-                        deleteEquipmentMutation.mutate(equip.id);
+                      if (
+                        selectedEquipment &&
+                        confirm(`Удалить "${selectedEquipment.nameRu}"?`)
+                      ) {
+                        deleteEquipmentMutation.mutate(selectedEquipment.id);
                       }
                     }}
                   >
@@ -574,58 +588,58 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
               )
             }
           >
-            {(() => {
-              const equip = data.data.equipment.find(
-                (e: Equipment) => e.id === selectedEquipment
-              );
-              if (!equip) return null;
-
-              const categoryInfo = getCategoryInfo(equip.category);
-
-              return (
-                <div className="space-y-6">
-                  {/* Basic Info */}
-                  <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+            {isLoadingItem ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+            ) : selectedEquipment ? (
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground block mb-1">
+                        Категория
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {getCategoryInfo(selectedEquipment.category).label}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block mb-1">
+                        Стоимость
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {selectedEquipment.cost.quantity}{" "}
+                        {selectedEquipment.cost.unit}
+                      </span>
+                    </div>
+                    {selectedEquipment.weight !== undefined && (
                       <div>
                         <span className="text-muted-foreground block mb-1">
-                          Категория
+                          Вес
                         </span>
                         <span className="font-medium text-foreground">
-                          {categoryInfo.label}
+                          {selectedEquipment.weight} кг
                         </span>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground block mb-1">
-                          Стоимость
-                        </span>
-                        <span className="font-medium text-foreground">
-                          {equip.cost.quantity} {equip.cost.unit}
-                        </span>
-                      </div>
-                      {equip.weight !== undefined && (
-                        <div>
-                          <span className="text-muted-foreground block mb-1">
-                            Вес
-                          </span>
-                          <span className="font-medium text-foreground">
-                            {equip.weight} кг
-                          </span>
-                        </div>
-                      )}
-                      <div>
-                        <span className="text-muted-foreground block mb-1">
-                          Источник
-                        </span>
-                        <span className="font-medium text-foreground">
-                          {equip.source === "srd" ? "SRD" : "PHB 2024"}
-                        </span>
-                      </div>
+                    )}
+                    <div>
+                      <span className="text-muted-foreground block mb-1">
+                        Источник
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {selectedEquipment.source === "srd"
+                          ? "SRD"
+                          : "PHB 2024"}
+                      </span>
                     </div>
                   </div>
+                </div>
 
-                  {/* Weapon-specific info */}
-                  {equip.category === "weapon" && equip.damage && (
+                {/* Weapon-specific info */}
+                {selectedEquipment.category === "weapon" &&
+                  selectedEquipment.damage && (
                     <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
                       <h3 className="font-semibold text-foreground mb-3 text-sm">
                         Характеристики оружия
@@ -636,7 +650,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
                             Урон
                           </span>
                           <span className="font-medium text-foreground">
-                            {equip.damage.dice}
+                            {selectedEquipment.damage.dice}
                           </span>
                         </div>
                         <div>
@@ -644,88 +658,89 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
                             Тип урона
                           </span>
                           <span className="font-medium text-foreground">
-                            {equip.damage.type}
+                            {selectedEquipment.damage.type}
                           </span>
                         </div>
                       </div>
-                      {equip.properties && equip.properties.length > 0 && (
-                        <div className="mt-3">
-                          <span className="text-xs text-muted-foreground block mb-2">
-                            Свойства
-                          </span>
-                          <div className="flex flex-wrap gap-2">
-                            {equip.properties.map(
-                              (prop: string, idx: number) => (
-                                <span
-                                  key={idx}
-                                  className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
-                                >
-                                  {prop}
-                                </span>
-                              )
-                            )}
+                      {selectedEquipment.properties &&
+                        selectedEquipment.properties.length > 0 && (
+                          <div className="mt-3">
+                            <span className="text-xs text-muted-foreground block mb-2">
+                              Свойства
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedEquipment.properties.map(
+                                (prop: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
+                                  >
+                                    {prop}
+                                  </span>
+                                )
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   )}
 
-                  {/* Armor-specific info */}
-                  {equip.category === "armor" &&
-                    equip.armorClass !== undefined && (
-                      <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
-                        <h3 className="font-semibold text-foreground mb-3 text-sm">
-                          Характеристики доспеха
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                {/* Armor-specific info */}
+                {selectedEquipment.category === "armor" &&
+                  selectedEquipment.armorClass !== undefined && (
+                    <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
+                      <h3 className="font-semibold text-foreground mb-3 text-sm">
+                        Характеристики доспеха
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground block mb-1">
+                            Класс защиты (AC)
+                          </span>
+                          <span className="font-medium text-foreground">
+                            {selectedEquipment.armorClass}
+                          </span>
+                        </div>
+                        {selectedEquipment.armorType && (
                           <div>
                             <span className="text-muted-foreground block mb-1">
-                              Класс защиты (AC)
+                              Тип доспеха
                             </span>
                             <span className="font-medium text-foreground">
-                              {equip.armorClass}
+                              {
+                                ARMOR_TYPES.find(
+                                  (t) => t.value === selectedEquipment.armorType
+                                )?.label
+                              }
                             </span>
                           </div>
-                          {equip.armorType && (
-                            <div>
-                              <span className="text-muted-foreground block mb-1">
-                                Тип доспеха
-                              </span>
-                              <span className="font-medium text-foreground">
-                                {
-                                  ARMOR_TYPES.find(
-                                    (t) => t.value === equip.armorType
-                                  )?.label
-                                }
-                              </span>
-                            </div>
-                          )}
-                          {equip.maxDexBonus !== undefined && (
-                            <div>
-                              <span className="text-muted-foreground block mb-1">
-                                Макс. бонус Ловкости
-                              </span>
-                              <span className="font-medium text-foreground">
-                                {equip.maxDexBonus}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        )}
+                        {selectedEquipment.maxDexBonus !== undefined && (
+                          <div>
+                            <span className="text-muted-foreground block mb-1">
+                              Макс. бонус Ловкости
+                            </span>
+                            <span className="font-medium text-foreground">
+                              {selectedEquipment.maxDexBonus}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                  {/* Description */}
-                  {equip.description && equip.description.length > 0 && (
+                {/* Description */}
+                {selectedEquipment.description &&
+                  selectedEquipment.description.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-foreground mb-2 text-sm">
                         Описание
                       </h3>
-                      {parseEquipmentDescription(equip.description)}
+                      {parseEquipmentDescription(selectedEquipment.description)}
                     </div>
                   )}
-                </div>
-              );
-            })()}
+              </div>
+            ) : null}
           </SlideOverDrawer>
         )}
       </div>

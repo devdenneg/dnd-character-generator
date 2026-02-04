@@ -71,6 +71,28 @@ export async function list(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+// Get races meta (without description and traits) - for list view
+export async function listMeta(req: AuthenticatedRequest, res: Response) {
+  try {
+    const source = req.query.source as string | undefined;
+    const races = await getAllRaces(source);
+
+    // Remove description and traits to reduce payload size
+    const racesMeta = races.map(({ description, traits, ...rest }) => rest);
+
+    res.status(200).json({
+      success: true,
+      data: { races: racesMeta },
+    });
+  } catch (error) {
+    console.error("List races meta error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function search(req: AuthenticatedRequest, res: Response) {
   try {
     const query = req.query.q as string;

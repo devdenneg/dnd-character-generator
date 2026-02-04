@@ -1,4 +1,4 @@
-import { useBackendBackgrounds, useBackendEquipment } from "@/api/hooks";
+import { useBackendBackgroundsMeta, useBackendEquipmentMeta, useBackendBackground } from "@/api/hooks";
 import { backgroundsApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,7 +139,7 @@ interface BackgroundsPageProps {
 }
 
 export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
-  const { data, isLoading, error, refetch } = useBackendBackgrounds();
+  const { data, isLoading, error, refetch } = useBackendBackgroundsMeta();
   const { user } = useAuth();
   const location = useLocation();
   const [selectedBackground, setSelectedBackground] = useState<string | null>(
@@ -169,9 +169,8 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
     }
   }, [location.hash, data]);
 
-  // Load equipment from backend
-  const { data: equipmentData } = useBackendEquipment();
-  const allEquipment = equipmentData?.data?.equipment || [];
+  // Load full background data when selected
+  const { data: selectedBackgroundData, isLoading: isLoadingSelectedBackground } = useBackendBackground(selectedBackground || "");
 
   const [editingBackground, setEditingBackground] =
     useState<BackgroundFormData>({
@@ -197,6 +196,10 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   const [newTool, setNewTool] = useState("");
   const [equipmentSearchQuery, setEquipmentSearchQuery] = useState("");
   const [equipmentCategoryFilter, setEquipmentCategoryFilter] = useState<string>("all");
+
+  // Load equipment from backend only when needed (in edit/create mode)
+  const { data: equipmentData } = useBackendEquipmentMeta(undefined, isCreateModalOpen || isEditModalOpen);
+  const allEquipment = equipmentData?.data?.equipment || [];
 
   // Create background mutation
   const createBackgroundMutation = useMutation({
@@ -307,6 +310,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
       equipment: [...editingBackground.equipment, { equipmentId: idToAdd, quantity: 1 }],
     });
     setSelectedEquipmentId("");
+    setEquipmentSearchQuery("");
   };
 
   const handleRemoveEquipment = (equipmentId: string) => {
@@ -515,25 +519,23 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
         </div>
 
         {/* Slide-over Drawer for Background Details */}
-        {selectedBackground && data?.data?.backgrounds && (
+        {selectedBackground && (
           <SlideOverDrawer
             isOpen={!!selectedBackground}
             onClose={() => setSelectedBackground(null)}
             title={
               <div className="flex items-center gap-3">
                 {(() => {
-                  const bg = data.data.backgrounds.find(
-                    (b: Background) => b.id === selectedBackground
-                  );
+                  const bg = selectedBackgroundData?.data?.background ||
+                    data?.data?.backgrounds?.find((b: Background) => b.id === selectedBackground);
                   const Icon = bg
                     ? BACKGROUND_ICONS[bg.externalId] || BookOpen
                     : BookOpen;
                   return <Icon className="w-5 h-5 text-primary" />;
                 })()}
                 <span>
-                  {data.data.backgrounds.find(
-                    (b: Background) => b.id === selectedBackground
-                  )?.nameRu || "Предыстория"}
+                  {(selectedBackgroundData?.data?.background ||
+                    data?.data?.backgrounds?.find((b: Background) => b.id === selectedBackground))?.nameRu || "Предыстория"}
                 </span>
               </div>
             }
@@ -544,9 +546,8 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      const bg = data.data.backgrounds.find(
-                        (b: Background) => b.id === selectedBackground
-                      );
+                      const bg = selectedBackgroundData?.data?.background ||
+                        data?.data?.backgrounds?.find((b: Background) => b.id === selectedBackground);
                       if (bg) handleEditBackground(bg);
                     }}
                   >
@@ -557,9 +558,8 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                     size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => {
-                      const bg = data.data.backgrounds.find(
-                        (b: Background) => b.id === selectedBackground
-                      );
+                      const bg = selectedBackgroundData?.data?.background ||
+                        data?.data?.backgrounds?.find((b: Background) => b.id === selectedBackground);
                       if (
                         bg &&
                         confirm(
@@ -577,9 +577,15 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
             }
           >
             {(() => {
-              const background = data.data.backgrounds.find(
-                (b: Background) => b.id === selectedBackground
-              );
+              if (isLoadingSelectedBackground) {
+                return (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                );
+              }
+
+              const background = selectedBackgroundData?.data?.background;
               if (!background) return null;
 
               return (

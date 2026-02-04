@@ -73,6 +73,28 @@ export async function list(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+// Get backgrounds meta (without description) - for list view
+export async function listMeta(req: AuthenticatedRequest, res: Response) {
+  try {
+    const source = req.query.source as string | undefined;
+    const backgrounds = await getAllBackgrounds(source);
+
+    // Remove description to reduce payload size
+    const backgroundsMeta = backgrounds.map(({ description, ...rest }) => rest);
+
+    res.status(200).json({
+      success: true,
+      data: { backgrounds: backgroundsMeta },
+    });
+  } catch (error) {
+    console.error("List backgrounds meta error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function search(req: AuthenticatedRequest, res: Response) {
   try {
     const query = req.query.q as string;

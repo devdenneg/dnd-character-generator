@@ -81,6 +81,28 @@ export async function list(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+// Get equipment meta (without descriptions) - for list view
+export async function listMeta(req: AuthenticatedRequest, res: Response) {
+  try {
+    const source = req.query.source as string | undefined;
+    const equipment = await getAllEquipment(source);
+
+    // Remove descriptions to reduce payload size
+    const equipmentMeta = equipment.map(({ description, ...rest }) => rest);
+
+    res.status(200).json({
+      success: true,
+      data: { equipment: equipmentMeta },
+    });
+  } catch (error) {
+    console.error("List equipment meta error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function search(req: AuthenticatedRequest, res: Response) {
   try {
     const query = req.query.q as string;

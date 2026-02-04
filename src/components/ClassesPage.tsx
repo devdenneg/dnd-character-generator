@@ -1,4 +1,4 @@
-import { useBackendClasses, useBackendEquipment } from "@/api/hooks";
+import { useBackendClassesMeta, useBackendClassByExternalId, useBackendEquipmentMeta } from "@/api/hooks";
 import { classesApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,13 +24,14 @@ import {
   Swords,
   Backpack,
   Wand2,
+  Loader2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import type { ElementType } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import type { AbilityName } from "@/types/character";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Types
 interface ClassFeature {
@@ -273,42 +274,31 @@ interface ClassesPageProps {
 }
 
 export function ClassesPage({ onBack }: ClassesPageProps) {
-  const { data, isLoading, error, refetch } = useBackendClasses();
+  // Загружаем только мета-данные для списка
+  const { data: metaData, isLoading, error, refetch } = useBackendClassesMeta();
   const { user } = useAuth();
   const location = useLocation();
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [viewTab, setViewTab] = useState("overview");
   const [activeTab, setActiveTab] = useState("basic");
 
-  // Load equipment from backend
-  const { data: equipmentData } = useBackendEquipment();
-  const allEquipment = equipmentData?.data?.equipment || [];
-
-  // Handle hash navigation
-  useEffect(() => {
+  // Текущий выбранный класс определяется из URL
+  const selectedClassExternalId = useMemo(() => {
     const hash = location.hash.replace("#", "");
-    if (hash) {
-      setTimeout(() => {
-        const cls = data?.data?.classes?.find(
-          (c: CharacterClass) => c.externalId === hash
-        );
-        if (cls) {
-          setSelectedClass(cls.id);
-          const classElement = document.getElementById(`class-${cls.id}`);
-          if (classElement) {
-            classElement.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-            classElement.classList.add("ring-2", "ring-primary");
-            setTimeout(() => {
-              classElement.classList.remove("ring-2", "ring-primary");
-            }, 2000);
-          }
-        }
-      }, 100);
-    }
-  }, [location.hash, data]);
+    return hash || null;
+  }, [location.hash]);
+
+  // Загружаем полные данные только для выбранного класса
+  const { data: selectedClassData, isLoading: isLoadingClass } = useBackendClassByExternalId(
+    selectedClassExternalId || ""
+  );
+
+  const selectedClass = selectedClassData?.data?.class || null;
+
+  // Функция для закрытия drawer
+  const closeDrawer = () => {
+    navigate(location.pathname, { replace: true });
+  };
   const [editingClass, setEditingClass] = useState<ClassFormData>({
     externalId: "",
     name: "",
@@ -335,6 +325,10 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Загружаем мета-данные снаряжения только когда открыто модальное окно создания/редактирования
+  const { data: equipmentData } = useBackendEquipmentMeta(undefined, isCreateModalOpen || isEditModalOpen);
+  const allEquipment = equipmentData?.data?.equipment || [];
   const [newFeature, setNewFeature] = useState<
     Pick<ClassFeature, "name" | "nameRu" | "description" | "level">
   >({
@@ -364,7 +358,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
-      setSelectedClass(null);
+      closeDrawer();
       resetCreateForm();
     },
   });
@@ -375,7 +369,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
-      setSelectedClass(null);
+      closeDrawer();
       resetCreateForm();
     },
   });
@@ -570,7 +564,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     );
   }
 
-  const classes = data?.data?.classes || [];
+  const classes = metaData?.data?.classes || [];
 
   return (
     <>
@@ -609,7 +603,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
               <button
                 key={cls.id + index}
                 id={`class-${cls.id}`}
-                onClick={() => setSelectedClass(cls.id)}
+                onClick={() => navigate(`${location.pathname}#${cls.externalId}`)}
                 className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
               >
                 <div className="flex items-start gap-3">
@@ -633,12 +627,6 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
                         {cls.primaryAbility.join(", ")}
                       </span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                        {cls.features.length} черт
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                        {cls.subclasses.length} подклассов
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -648,40 +636,37 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
         </div>
 
         {/* Slide-over Drawer for Class Details */}
-        {selectedClass && data?.data?.classes && (
+        {selectedClassExternalId && (
           <SlideOverDrawer
-            isOpen={!!selectedClass}
-            onClose={() => setSelectedClass(null)}
+            isOpen={!!selectedClassExternalId}
+            onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
-                {(() => {
-                  const cls = data.data.classes.find(
-                    (c: CharacterClass) => c.id === selectedClass
-                  );
-                  const Icon = cls
-                    ? CLASS_ICONS[cls.externalId] || Shield
-                    : Shield;
-                  return <Icon className="w-5 h-5 text-primary" />;
-                })()}
-                <span>
-                  {data.data.classes.find(
-                    (c: CharacterClass) => c.id === selectedClass
-                  )?.nameRu || "Класс"}
-                </span>
+                {isLoadingClass ? (
+                  <>
+                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    <span>Загрузка...</span>
+                  </>
+                ) : selectedClass ? (
+                  <>
+                    {(() => {
+                      const Icon = CLASS_ICONS[selectedClass.externalId] || Shield;
+                      return <Icon className="w-5 h-5 text-primary" />;
+                    })()}
+                    <span>{selectedClass.nameRu || "Класс"}</span>
+                  </>
+                ) : (
+                  <span>Класс</span>
+                )}
               </div>
             }
             actions={
-              canEdit && (
+              canEdit && selectedClass && !isLoadingClass && (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      const cls = data.data.classes.find(
-                        (c: CharacterClass) => c.id === selectedClass
-                      );
-                      if (cls) handleEditClass(cls);
-                    }}
+                    onClick={() => handleEditClass(selectedClass)}
                   >
                     <Pencil className="w-4 h-4" />
                   </Button>
@@ -690,16 +675,13 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                     size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => {
-                      const cls = data.data.classes.find(
-                        (c: CharacterClass) => c.id === selectedClass
-                      );
                       if (
-                        cls &&
+                        selectedClass &&
                         confirm(
-                          `Вы уверены, что хотите удалить класс "${cls.nameRu}"?`
+                          `Вы уверены, что хотите удалить класс "${selectedClass.nameRu}"?`
                         )
                       ) {
-                        deleteClassMutation.mutate(selectedClass);
+                        deleteClassMutation.mutate(selectedClass.id);
                       }
                     }}
                   >
@@ -709,17 +691,18 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
               )
             }
           >
-            {(() => {
-              const cls = data.data.classes.find(
-                (c: CharacterClass) => c.id === selectedClass
-              );
-              if (!cls) return null;
+            {isLoadingClass ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+            ) : selectedClass ? (
+              (() => {
+                const cls = selectedClass;
+                const hasSpellcasting = !!cls.spellcasting;
+                const hasSubclasses = cls.subclasses.length > 0;
 
-              const hasSpellcasting = !!cls.spellcasting;
-              const hasSubclasses = cls.subclasses.length > 0;
-
-              return (
-                <div className="space-y-4">
+                return (
+                  <div className="space-y-4">
                   {/* Tabs */}
                   <Tabs
                     value={viewTab}
@@ -1110,7 +1093,8 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                   </Tabs>
                 </div>
               );
-            })()}
+            })()
+            ) : null}
           </SlideOverDrawer>
         )}
 

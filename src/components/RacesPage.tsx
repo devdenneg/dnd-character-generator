@@ -1,4 +1,4 @@
-import { useBackendRaces } from "@/api/hooks";
+import { useBackendRacesMeta, useBackendRaceByExternalId } from "@/api/hooks";
 import { racesApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +19,13 @@ import {
   Trash2,
   Save,
   X,
+  Loader2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import type { ElementType } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Types
 interface RaceTrait {
@@ -86,36 +87,29 @@ interface RacesPageProps {
 }
 
 export function RacesPage({ onBack }: RacesPageProps) {
-  const { data, isLoading, error, refetch } = useBackendRaces();
+  // Загружаем только мета-данные для списка
+  const { data: metaData, isLoading, error, refetch } = useBackendRacesMeta();
   const { user } = useAuth();
   const location = useLocation();
-  const [selectedRace, setSelectedRace] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Handle hash navigation
-  useEffect(() => {
+  // Текущая выбранная раса определяется из URL
+  const selectedRaceExternalId = useMemo(() => {
     const hash = location.hash.replace("#", "");
-    if (hash) {
-      // Use setTimeout to ensure the race list is loaded first
-      setTimeout(() => {
-        const race = data?.data?.races?.find(
-          (r: Race) => r.externalId === hash
-        );
-        if (race) {
-          setSelectedRace(race.id);
-          // Scroll to the race element if it exists in the list
-          const raceElement = document.getElementById(`race-${race.id}`);
-          if (raceElement) {
-            raceElement.scrollIntoView({ behavior: "smooth", block: "center" });
-            // Highlight the element
-            raceElement.classList.add("ring-2", "ring-primary");
-            setTimeout(() => {
-              raceElement.classList.remove("ring-2", "ring-primary");
-            }, 2000);
-          }
-        }
-      }, 100);
-    }
-  }, [location.hash, data]);
+    return hash || null;
+  }, [location.hash]);
+
+  // Загружаем полные данные только для выбранной расы
+  const { data: selectedRaceData, isLoading: isLoadingRace } = useBackendRaceByExternalId(
+    selectedRaceExternalId || ""
+  );
+
+  const selectedRace = selectedRaceData?.data?.race || null;
+
+  // Функция для закрытия drawer
+  const closeDrawer = () => {
+    navigate(location.pathname, { replace: true });
+  };
   const [editingRace, setEditingRace] = useState<RaceFormData>({
     externalId: "",
     name: "",
@@ -153,7 +147,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
-      setSelectedRace(null);
+      closeDrawer();
       resetCreateForm();
     },
   });
@@ -164,7 +158,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
-      setSelectedRace(null);
+      closeDrawer();
       resetCreateForm();
     },
   });
@@ -317,7 +311,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
     );
   }
 
-  const races = data?.data?.races || [];
+  const races = metaData?.data?.races || [];
 
   return (
     <>
@@ -356,7 +350,7 @@ export function RacesPage({ onBack }: RacesPageProps) {
               <button
                 key={race.id + index}
                 id={`race-${race.id}`}
-                onClick={() => setSelectedRace(race.id)}
+                onClick={() => navigate(`${location.pathname}#${race.externalId}`)}
                 className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
               >
                 <div className="flex items-start gap-3">
@@ -396,39 +390,37 @@ export function RacesPage({ onBack }: RacesPageProps) {
         </div>
 
         {/* Slide-over Drawer for Race Details */}
-        {selectedRace && data?.data?.races && (
+        {selectedRaceExternalId && (
           <SlideOverDrawer
-            isOpen={!!selectedRace}
-            onClose={() => setSelectedRace(null)}
+            isOpen={!!selectedRaceExternalId}
+            onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
-                {(() => {
-                  const race = data.data.races.find(
-                    (r: Race) => r.id === selectedRace
-                  );
-                  const Icon = race
-                    ? RACE_ICONS[race.externalId] || Users
-                    : Users;
-                  return <Icon className="w-5 h-5 text-primary" />;
-                })()}
-                <span>
-                  {data.data.races.find((r: Race) => r.id === selectedRace)
-                    ?.nameRu || "Раса"}
-                </span>
+                {isLoadingRace ? (
+                  <>
+                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    <span>Загрузка...</span>
+                  </>
+                ) : selectedRace ? (
+                  <>
+                    {(() => {
+                      const Icon = RACE_ICONS[selectedRace.externalId] || Users;
+                      return <Icon className="w-5 h-5 text-primary" />;
+                    })()}
+                    <span>{selectedRace.nameRu || "Раса"}</span>
+                  </>
+                ) : (
+                  <span>Раса</span>
+                )}
               </div>
             }
             actions={
-              canEdit && (
+              canEdit && selectedRace && !isLoadingRace && (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      const race = data.data.races.find(
-                        (r: Race) => r.id === selectedRace
-                      );
-                      if (race) handleEditRace(race);
-                    }}
+                    onClick={() => handleEditRace(selectedRace)}
                   >
                     <Pencil className="w-4 h-4" />
                   </Button>
@@ -437,11 +429,8 @@ export function RacesPage({ onBack }: RacesPageProps) {
                     size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => {
-                      const race = data.data.races.find(
-                        (r: Race) => r.id === selectedRace
-                      );
-                      if (race && confirm(`Удалить расу "${race.nameRu}"?`)) {
-                        deleteRaceMutation.mutate(selectedRace);
+                      if (selectedRace && confirm(`Удалить расу "${selectedRace.nameRu}"?`)) {
+                        deleteRaceMutation.mutate(selectedRace.id);
                       }
                     }}
                   >
@@ -451,77 +440,74 @@ export function RacesPage({ onBack }: RacesPageProps) {
               )
             }
           >
-            {(() => {
-              const race = data.data.races.find(
-                (r: Race) => r.id === selectedRace
-              );
-              if (!race) return null;
+            {isLoadingRace ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+            ) : selectedRace ? (
+              <div className="space-y-6">
+                {/* Description */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">
+                    Описание
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {selectedRace.description}
+                  </p>
+                </div>
 
-              return (
-                <div className="space-y-6">
-                  {/* Description */}
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2">
-                      Описание
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {race.description}
-                    </p>
+                {/* Basic Stats */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                    <span className="text-muted-foreground text-xs block mb-1">
+                      Скорость
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {selectedRace.speed} фт
+                    </span>
                   </div>
-
-                  {/* Basic Stats */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                      <span className="text-muted-foreground text-xs block mb-1">
-                        Скорость
-                      </span>
-                      <span className="font-medium text-foreground">
-                        {race.speed} фт
-                      </span>
-                    </div>
-                    <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
-                      <span className="text-muted-foreground text-xs block mb-1">
-                        Размер
-                      </span>
-                      <span className="font-medium text-foreground">
-                        {race.size === "Medium"
-                          ? "Средний"
-                          : race.size === "Small"
-                          ? "Малый"
-                          : "Большой"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Traits */}
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3">
-                      Черты расы
-                    </h3>
-                    <div className="space-y-3">
-                      {(race.traits as RaceTrait[])?.map((trait: RaceTrait) => (
-                        <div
-                          key={trait.id}
-                          className="p-4 rounded-xl bg-muted/30 border border-border/30"
-                        >
-                          <div className="mb-1">
-                            <h5 className="font-medium text-foreground text-sm">
-                              {trait.nameRu}
-                            </h5>
-                            <span className="text-xs text-muted-foreground/70">
-                              {trait.name}
-                            </span>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {trait.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
+                    <span className="text-muted-foreground text-xs block mb-1">
+                      Размер
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {selectedRace.size === "Medium"
+                        ? "Средний"
+                        : selectedRace.size === "Small"
+                        ? "Малый"
+                        : "Большой"}
+                    </span>
                   </div>
                 </div>
-              );
-            })()}
+
+                {/* Traits */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">
+                    Черты расы
+                  </h3>
+                  <div className="space-y-3">
+                    {(selectedRace.traits as RaceTrait[])?.map((trait: RaceTrait) => (
+                      <div
+                        key={trait.id}
+                        className="p-4 rounded-xl bg-muted/30 border border-border/30"
+                      >
+                        <div className="mb-1">
+                          <h5 className="font-medium text-foreground text-sm">
+                            {trait.nameRu}
+                          </h5>
+                          <span className="text-xs text-muted-foreground/70">
+                            {trait.name}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {trait.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </SlideOverDrawer>
         )}
 

@@ -181,6 +181,13 @@ export const roomsApi = {
 
 // Races API
 export const racesApi = {
+  // Получить список рас (только мета, без описаний и traits)
+  listMeta: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/races/meta", { params });
+    return response.data;
+  },
+
   list: async (source?: string) => {
     const params = source ? { source } : {};
     const response = await apiClient.get("/races", { params });
@@ -244,6 +251,13 @@ export const racesApi = {
 
 // Classes API
 export const classesApi = {
+  // Получить список классов (только мета, без описаний, features и subclasses)
+  listMeta: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/classes/meta", { params });
+    return response.data;
+  },
+
   list: async (source?: string) => {
     const params = source ? { source } : {};
     const response = await apiClient.get("/classes", { params });
@@ -355,6 +369,13 @@ export const classesApi = {
 
 // Backgrounds API
 export const backgroundsApi = {
+  // Получить список предысторий (только мета, без описаний)
+  listMeta: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/backgrounds/meta", { params });
+    return response.data;
+  },
+
   list: async (source?: string) => {
     const params = source ? { source } : {};
     const response = await apiClient.get("/backgrounds", { params });
@@ -495,6 +516,13 @@ export const spellsApi = {
 
 // Equipment API
 export const equipmentApi = {
+  // Получить список снаряжения (только мета, без описаний)
+  listMeta: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/equipment/meta", { params });
+    return response.data;
+  },
+
   list: async (source?: string) => {
     const params = source ? { source } : {};
     const response = await apiClient.get("/equipment", { params });

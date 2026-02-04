@@ -127,6 +127,30 @@ export async function list(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+// Get classes meta (without description, features, and subclasses) - for list view
+export async function listMeta(req: AuthenticatedRequest, res: Response) {
+  try {
+    const source = req.query.source as string | undefined;
+    const classes = await getAllClasses(source);
+
+    // Remove description, features, and subclasses to reduce payload size
+    const classesMeta = classes.map(
+      ({ description, features, subclasses, ...rest }) => rest
+    );
+
+    res.status(200).json({
+      success: true,
+      data: { classes: classesMeta },
+    });
+  } catch (error) {
+    console.error("List classes meta error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function search(req: AuthenticatedRequest, res: Response) {
   try {
     const query = req.query.q as string;

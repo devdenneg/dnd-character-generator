@@ -225,14 +225,17 @@ export function useFeature(index: string) {
 // Backend API hooks for custom data (PHB 2024)
 export const backendQueryKeys = {
   races: ["backend", "races"] as const,
+  racesMeta: ["backend", "races", "meta"] as const,
   racesBySource: (source: string) => ["backend", "races", "source", source] as const,
   race: (id: string) => ["backend", "race", id] as const,
   raceByExternalId: (externalId: string) => ["backend", "race", "external", externalId] as const,
   classes: ["backend", "classes"] as const,
+  classesMeta: ["backend", "classes", "meta"] as const,
   classesBySource: (source: string) => ["backend", "classes", "source", source] as const,
   class: (id: string) => ["backend", "class", id] as const,
   classByExternalId: (externalId: string) => ["backend", "class", "external", externalId] as const,
   backgrounds: ["backend", "backgrounds"] as const,
+  backgroundsMeta: ["backend", "backgrounds", "meta"] as const,
   backgroundsBySource: (source: string) => ["backend", "backgrounds", "source", source] as const,
   background: (id: string) => ["backend", "background", id] as const,
   backgroundByExternalId: (externalId: string) => ["backend", "background", "external", externalId] as const,
@@ -243,12 +246,23 @@ export const backendQueryKeys = {
   spell: (id: string) => ["backend", "spell", id] as const,
   spellByExternalId: (externalId: string) => ["backend", "spell", "external", externalId] as const,
   equipment: ["backend", "equipment"] as const,
+  equipmentMeta: ["backend", "equipment", "meta"] as const,
   equipmentBySource: (source: string) => ["backend", "equipment", "source", source] as const,
   equipmentItem: (id: string) => ["backend", "equipment", id] as const,
   equipmentByExternalId: (externalId: string) => ["backend", "equipment", "external", externalId] as const,
 };
 
 // Races (from backend - PHB 2024 data)
+// Получить только мета-данные (без описаний и traits) - для списка
+export function useBackendRacesMeta(source?: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.racesMeta,
+    queryFn: () => racesApi.listMeta(source),
+    staleTime: 5 * 60 * 1000, // 5 минут
+  });
+}
+
+// Получить полные данные (с описаниями и traits) - для редактирования
 export function useBackendRaces(source?: string) {
   return useQuery({
     queryKey: source ? backendQueryKeys.racesBySource(source) : backendQueryKeys.races,
@@ -263,7 +277,7 @@ export function useBackendRace(id: string) {
     queryKey: backendQueryKeys.race(id),
     queryFn: () => racesApi.get(id),
     enabled: !!id,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 }
 
@@ -272,11 +286,21 @@ export function useBackendRaceByExternalId(externalId: string) {
     queryKey: backendQueryKeys.raceByExternalId(externalId),
     queryFn: () => racesApi.getByExternalId(externalId),
     enabled: !!externalId,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 }
 
 // Classes (from backend - PHB 2024 data)
+// Получить только мета-данные (без описаний, features и subclasses) - для списка
+export function useBackendClassesMeta(source?: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.classesMeta,
+    queryFn: () => classesApi.listMeta(source),
+    staleTime: 5 * 60 * 1000, // 5 минут
+  });
+}
+
+// Получить полные данные (с описаниями, features и subclasses) - для редактирования
 export function useBackendClasses(source?: string) {
   return useQuery({
     queryKey: source ? backendQueryKeys.classesBySource(source) : backendQueryKeys.classes,
@@ -291,7 +315,7 @@ export function useBackendClass(id: string) {
     queryKey: backendQueryKeys.class(id),
     queryFn: () => classesApi.get(id),
     enabled: !!id,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 }
 
@@ -300,11 +324,21 @@ export function useBackendClassByExternalId(externalId: string) {
     queryKey: backendQueryKeys.classByExternalId(externalId),
     queryFn: () => classesApi.getByExternalId(externalId),
     enabled: !!externalId,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 }
 
 // Backgrounds (from backend - PHB 2024 data)
+// Получить только мета-данные (без описаний) - для списка
+export function useBackendBackgroundsMeta(source?: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.backgroundsMeta,
+    queryFn: () => backgroundsApi.listMeta(source),
+    staleTime: 5 * 60 * 1000, // 5 минут
+  });
+}
+
+// Получить полные данные (с описаниями) - для редактирования
 export function useBackendBackgrounds(source?: string) {
   return useQuery({
     queryKey: source ? backendQueryKeys.backgroundsBySource(source) : backendQueryKeys.backgrounds,
@@ -319,7 +353,7 @@ export function useBackendBackground(id: string) {
     queryKey: backendQueryKeys.background(id),
     queryFn: () => backgroundsApi.get(id),
     enabled: !!id,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 }
 
@@ -328,7 +362,7 @@ export function useBackendBackgroundByExternalId(externalId: string) {
     queryKey: backendQueryKeys.backgroundByExternalId(externalId),
     queryFn: () => backgroundsApi.getByExternalId(externalId),
     enabled: !!externalId,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 }
 
@@ -372,6 +406,17 @@ export function useBackendSpellsByClass(classId: string, source?: string) {
 }
 
 // Equipment (from backend)
+// Получить только мета-данные (без описаний) - для списка
+export function useBackendEquipmentMeta(source?: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: backendQueryKeys.equipmentMeta,
+    queryFn: () => equipmentApi.listMeta(source),
+    staleTime: 5 * 60 * 1000, // 5 минут
+    enabled,
+  });
+}
+
+// Получить полные данные (с описаниями) - для редактирования
 export function useBackendEquipment(source?: string) {
   return useQuery({
     queryKey: source ? backendQueryKeys.equipmentBySource(source) : backendQueryKeys.equipment,
@@ -381,20 +426,22 @@ export function useBackendEquipment(source?: string) {
   });
 }
 
+// Получить конкретный предмет по ID
 export function useBackendEquipmentItem(id: string) {
   return useQuery({
     queryKey: backendQueryKeys.equipmentItem(id),
     queryFn: () => equipmentApi.get(id),
     enabled: !!id,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 }
 
+// Получить конкретный предмет по externalId
 export function useBackendEquipmentByExternalId(externalId: string) {
   return useQuery({
     queryKey: backendQueryKeys.equipmentByExternalId(externalId),
     queryFn: () => equipmentApi.getByExternalId(externalId),
     enabled: !!externalId,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 }
