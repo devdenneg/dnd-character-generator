@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield,
   Heart,
@@ -577,6 +577,14 @@ export function CharacterSheet() {
   const { character, getStats } = useCharacterStore();
   const stats = getStats();
 
+  // Debug: проверяем снаряжение
+  useEffect(() => {
+    console.log('🔍 CharacterSheet - Equipment:', character.equipment);
+    character.equipment?.forEach((item, index) => {
+      console.log(`  [${index}] ${item.nameRu} - quantity: ${item.quantity || 'undefined'}`);
+    });
+  }, [character.equipment]);
+
   const ABILITIES: AbilityName[] = [
     "strength",
     "dexterity",
@@ -1020,7 +1028,7 @@ export function CharacterSheet() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {character.equipment
               .filter((e) => e.category === "weapon" && e.damage)
-              .map((weapon) => {
+              .map((weapon, index) => {
                 const isFinesse =
                   weapon.properties?.some((p) =>
                     p.toLowerCase().includes("фехтовальное")
@@ -1031,11 +1039,13 @@ export function CharacterSheet() {
                   ) || false;
                 const sourceLabel =
                   weapon.source === "class" ? "Класс" : "Предыстория";
+                const quantity = weapon.quantity || 1;
+                const weaponName = quantity > 1 ? `${weapon.nameRu} ×${quantity}` : weapon.nameRu;
 
                 return (
                   <WeaponCard
-                    key={weapon.id}
-                    name={weapon.nameRu}
+                    key={`${weapon.id}-${index}`}
+                    name={weaponName}
                     damage={weapon.damage!.dice}
                     damageType={weapon.damage!.type}
                     attackBonus={getWeaponAttackBonus(!isRanged, isFinesse)}
