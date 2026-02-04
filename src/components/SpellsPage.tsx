@@ -1,4 +1,7 @@
-import { useBackendSpells } from "@/api/hooks";
+import {
+  useBackendSpellsMeta,
+  useBackendSpellByExternalId,
+} from "@/api/hooks";
 import { spellsApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,11 +18,14 @@ import {
   X,
   Wand2,
   Search,
+  Loader2,
 } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { parseEquipmentDescription } from "@/utils/descriptionParser";
+import type { DescriptionItem } from "@/types/character";
 
 // Types
 interface Spell {
@@ -33,7 +39,7 @@ interface Spell {
   range: string;
   components: string;
   duration: string;
-  description: string;
+  description: DescriptionItem[];
   classes: string[];
   source: string;
 }
@@ -48,7 +54,7 @@ interface SpellFormData {
   range: string;
   components: string;
   duration: string;
-  description: string;
+  description: DescriptionItem[];
   classes: string[];
   source: string;
 }
@@ -97,40 +103,174 @@ interface SpellsPageProps {
   onBack?: () => void;
 }
 
+// Component to render description items
+function DescriptionRenderer({ items }: { items: DescriptionItem[] }) {
+  return (
+    <div className="space-y-3">
+      {items.map((item, index) => {
+        if (typeof item === "string") {
+          // Парсим строку с тегами
+          return (
+            <div key={index}>
+              {parseEquipmentDescription(item)}
+            </div>
+          );
+        }
+
+        if (item.type === "list") {
+          const ListTag = item.attrs.type === "ordered" ? "ol" : "ul";
+          return (
+            <ListTag
+              key={index}
+              className={`text-sm text-muted-foreground leading-relaxed space-y-1 ${
+                item.attrs.type === "ordered" ? "list-decimal" : "list-disc"
+              } list-inside pl-4`}
+            >
+              {item.content.map((listItem, i) => (
+                <li key={i}>{parseEquipmentDescription(listItem)}</li>
+              ))}
+            </ListTag>
+          );
+        }
+
+        if (item.type === "table") {
+          return (
+            <div key={index} className="overflow-x-auto">
+              {item.caption && (
+                <p className="text-sm font-semibold text-foreground mb-2">
+                  {item.caption}
+                </p>
+              )}
+              <table className="w-full text-sm border-collapse border border-border">
+                <thead>
+                  <tr className="bg-muted/50">
+                    {item.colLabels.map((label, i) => (
+                      <th
+                        key={i}
+                        className={`border border-border px-3 py-2 font-semibold text-foreground ${item.colStyles[i] || ""}`}
+                      >
+                        {label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {item.rows.map((row, i) => (
+                    <tr key={i} className="hover:bg-muted/30">
+                      {row.map((cell, j) => (
+                        <td
+                          key={j}
+                          className={`border border-border px-3 py-2 text-muted-foreground ${item.colStyles[j] || ""}`}
+                        >
+                          {parseEquipmentDescription(cell)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+
+        return null;
+      })}
+    </div>
+  );
+}
+
 export function SpellsPage({ onBack }: SpellsPageProps) {
-  const { data, error, refetch } = useBackendSpells();
+  // Загружаем только мета-данные для списка
+  const { data: metaData, error, refetch } = useBackendSpellsMeta();
   const { user } = useAuth();
   const location = useLocation();
-  const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [selectedLevel, setSelectedLevel] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Handle hash navigation
-  useEffect(() => {
+  // История навигации - храним externalId заклинаний
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+
+  // Текущее выбранное заклинание определяется из URL
+  const selectedSpellExternalId = useMemo(() => {
     const hash = location.hash.replace("#", "");
-    if (hash) {
-      setTimeout(() => {
-        const spell = data?.data?.spells?.find(
-          (s: Spell) => s.externalId === hash
-        );
-        if (spell) {
-          setSelectedSpell(spell.id);
-          setSelectedLevel(spell.level);
-          const spellElement = document.getElementById(`spell-${spell.id}`);
-          if (spellElement) {
-            spellElement.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-            spellElement.classList.add("ring-2", "ring-primary");
-            setTimeout(() => {
-              spellElement.classList.remove("ring-2", "ring-primary");
-            }, 2000);
-          }
+    return hash || null;
+  }, [location.hash]);
+
+  // Загружаем полные данные только для выбранного заклинания по externalId
+  const { data: selectedSpellData, isLoading: isLoadingSpell } =
+    useBackendSpellByExternalId(selectedSpellExternalId || "");
+
+  const selectedSpell = selectedSpellData?.data?.spell || null;
+
+  // Отслеживаем изменения хеша для добавления в историю
+  const prevHashRef = useRef<string>("");
+
+  useEffect(() => {
+    const currentHash = location.hash.replace("#", "");
+    const prevHash = prevHashRef.current;
+
+    // Если хеш изменился и оба не пустые, добавляем предыдущий в историю
+    if (currentHash && prevHash && currentHash !== prevHash) {
+      setNavigationHistory((prev) => {
+        // Проверяем, не возвращаемся ли мы назад
+        if (prev.length > 0 && prev[prev.length - 1] === currentHash) {
+          // Это возврат назад, удаляем из истории
+          return prev.slice(0, -1);
         }
-      }, 100);
+        // Это переход вперед, добавляем в историю
+        return [...prev, prevHash];
+      });
     }
-  }, [location.hash, data]);
+
+    prevHashRef.current = currentHash;
+  }, [location.hash]);
+
+  // Обработка изменения выбранного заклинания
+  useEffect(() => {
+    if (selectedSpell) {
+      const element = document.getElementById(`spell-${selectedSpell.id}`);
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        element.classList.add("ring-2", "ring-primary");
+        setTimeout(() => {
+          element.classList.remove("ring-2", "ring-primary");
+        }, 2000);
+      }
+    }
+  }, [selectedSpell]);
+
+  // Функция для открытия заклинания
+  const openSpell = (externalId: string) => {
+    // Если уже открыто другое заклинание, добавляем его в историю
+    const currentHash = location.hash.replace("#", "");
+    if (currentHash && currentHash !== externalId) {
+      setNavigationHistory((prev) => [...prev, currentHash]);
+    }
+
+    // Обновляем URL
+    navigate(`${location.pathname}#${externalId}`, { replace: false });
+  };
+
+  // Функция для возврата назад
+  const goBack = () => {
+    if (navigationHistory.length === 0) return;
+
+    const previousExternalId = navigationHistory[navigationHistory.length - 1];
+    setNavigationHistory((prev) => prev.slice(0, -1));
+
+    // Переходим к предыдущему заклинанию
+    navigate(`${location.pathname}#${previousExternalId}`, { replace: true });
+  };
+
+  // Функция для закрытия drawer
+  const closeDrawer = () => {
+    setNavigationHistory([]);
+    navigate(location.pathname, { replace: true });
+  };
   const [editingSpell, setEditingSpell] = useState<SpellFormData>({
     externalId: "",
     name: "",
@@ -141,7 +281,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     range: "60 футов",
     components: "В, С",
     duration: "Мгновенная",
-    description: "",
+    description: [],
     classes: [],
     source: "phb2024",
   });
@@ -165,7 +305,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
-      setSelectedSpell(null);
+      closeDrawer();
       resetCreateForm();
     },
   });
@@ -176,7 +316,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
-      setSelectedSpell(null);
+      closeDrawer();
       resetCreateForm();
     },
   });
@@ -192,7 +332,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
       range: "60 футов",
       components: "В, С",
       duration: "Мгновенная",
-      description: "",
+      description: [],
       classes: [],
       source: "phb2024",
     });
@@ -226,7 +366,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
       !editingSpell.externalId ||
       !editingSpell.name ||
       !editingSpell.nameRu ||
-      !editingSpell.description
+      !editingSpell.description.length
     ) {
       alert("Пожалуйста, заполните все обязательные поля");
       return;
@@ -240,8 +380,12 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     if (isCreateModalOpen) {
       createSpellMutation.mutate(editingSpell);
     } else {
+      if (!selectedSpell) {
+        alert("Заклинание не выбрано");
+        return;
+      }
       updateSpellMutation.mutate({
-        id: selectedSpell!,
+        id: selectedSpell.id,
         data: editingSpell,
       });
     }
@@ -264,37 +408,58 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
   const canEdit = user?.role === "master";
 
-  const spells = useMemo(() => data?.data?.spells || [], [data?.data?.spells]);
+  const spells = useMemo(
+    () => metaData?.data?.spells || [],
+    [metaData?.data?.spells]
+  );
 
-  // Группируем заклинания по уровням
-  const spellsByLevel: Record<number, Spell[]> = useMemo(() => {
-    const byLevel: Record<number, Spell[]> = {};
-    for (let i = 0; i <= 9; i++) {
-      byLevel[i] = spells.filter((spell: Spell) => spell.level === i);
-    }
-    return byLevel;
-  }, [spells]);
-
-  // Получаем заклинания выбранного уровня с учетом поиска
-  const currentLevelSpells = useMemo(() => {
-    const levelSpells = spellsByLevel[selectedLevel] || [];
-    if (!searchTerm.trim()) return levelSpells;
+  // Filter by search
+  const filteredSpells = useMemo(() => {
+    if (!searchTerm.trim()) return spells;
 
     const search = searchTerm.toLowerCase();
-    return levelSpells.filter(
-      (spell: Spell) =>
+    return spells.filter((spell: Spell) => {
+      return (
         spell.nameRu.toLowerCase().includes(search) ||
         spell.name.toLowerCase().includes(search) ||
-        spell.description.toLowerCase().includes(search)
-    );
-  }, [spellsByLevel, selectedLevel, searchTerm]);
+        spell.school.toLowerCase().includes(search)
+      );
+    });
+  }, [spells, searchTerm]);
+
+  // Группируем отфильтрованные заклинания по уровням
+  const filteredSpellsByLevel: Record<number, Spell[]> = useMemo(() => {
+    const byLevel: Record<number, Spell[]> = {};
+    for (let i = 0; i <= 9; i++) {
+      byLevel[i] = filteredSpells.filter((spell: Spell) => spell.level === i);
+    }
+    return byLevel;
+  }, [filteredSpells]);
+
+  // Автоматически переключаем на первый уровень с результатами при поиске
+  useEffect(() => {
+    if (searchTerm.trim() && filteredSpells.length > 0) {
+      // Находим первый уровень с результатами
+      for (let i = 0; i <= 9; i++) {
+        if (filteredSpellsByLevel[i].length > 0) {
+          setSelectedLevel(i);
+          break;
+        }
+      }
+    }
+  }, [searchTerm, filteredSpells, filteredSpellsByLevel]);
+
+  // Получаем заклинания выбранного уровня
+  const currentLevelSpells = useMemo(() => {
+    return filteredSpellsByLevel[selectedLevel] || [];
+  }, [filteredSpellsByLevel, selectedLevel]);
 
   const renderSpellCard = (spell: Spell) => {
     return (
       <div
         key={spell.id}
         id={`spell-${spell.id}`}
-        onClick={() => setSelectedSpell(spell.id)}
+        onClick={() => openSpell(spell.externalId)}
         className="p-4 rounded-lg border cursor-pointer transition-all bg-card border-border hover:border-primary/50"
       >
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -352,7 +517,10 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                   Заклинания
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {spells.length} заклинаний
+                  {searchTerm.trim()
+                    ? `${filteredSpells.length} из ${spells.length} заклинаний`
+                    : `${spells.length} заклинаний`
+                  }
                 </p>
               </div>
             </div>
@@ -389,7 +557,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               <Sparkles className="w-3 h-3" />
               Заговоры
               <span className="ml-1 text-xs opacity-70">
-                ({spellsByLevel[0]?.length || 0})
+                ({filteredSpellsByLevel[0]?.length || 0})
               </span>
             </Button>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => (
@@ -401,7 +569,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               >
                 {level} ур.
                 <span className="ml-1 text-xs opacity-70">
-                  ({spellsByLevel[level]?.length || 0})
+                  ({filteredSpellsByLevel[level]?.length || 0})
                 </span>
               </Button>
             ))}
@@ -430,31 +598,52 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
         )}
 
         {/* Slide-over Drawer for Spell Details */}
-        {selectedSpell && data?.data?.spells && (
+        {selectedSpellExternalId && (
           <SlideOverDrawer
-            isOpen={!!selectedSpell}
-            onClose={() => setSelectedSpell(null)}
+            isOpen={!!selectedSpellExternalId}
+            onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
-                <Wand2 className="w-5 h-5 text-primary" />
-                <span>
-                  {data.data.spells.find((s: Spell) => s.id === selectedSpell)
-                    ?.nameRu || "Заклинание"}
-                </span>
+                {navigationHistory.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goBack();
+                    }}
+                    className="mr-2"
+                  >
+                    ← Назад
+                  </Button>
+                )}
+                {isLoadingSpell ? (
+                  <>
+                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    <span>Загрузка...</span>
+                  </>
+                ) : selectedSpell ? (
+                  <>
+                    <Wand2 className="w-5 h-5 text-primary" />
+                    <span>{selectedSpell.nameRu || "Заклинание"}</span>
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-5 h-5 text-primary" />
+                    <span>Заклинание</span>
+                  </>
+                )}
               </div>
             }
             actions={
-              canEdit && (
+              canEdit &&
+              selectedSpell &&
+              !isLoadingSpell && (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      const spell = data.data.spells.find(
-                        (s: Spell) => s.id === selectedSpell
-                      );
-                      if (spell) handleEditSpell(spell);
-                    }}
+                    onClick={() => handleEditSpell(selectedSpell)}
                   >
                     <Pencil className="w-4 h-4" />
                   </Button>
@@ -463,14 +652,11 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                     size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => {
-                      const spell = data.data.spells.find(
-                        (s: Spell) => s.id === selectedSpell
-                      );
                       if (
-                        spell &&
-                        confirm(`Удалить заклинание "${spell.nameRu}"?`)
+                        selectedSpell &&
+                        confirm(`Удалить заклинание "${selectedSpell.nameRu}"?`)
                       ) {
-                        deleteSpellMutation.mutate(spell.id);
+                        deleteSpellMutation.mutate(selectedSpell.id);
                       }
                     }}
                   >
@@ -480,17 +666,12 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               )
             }
           >
-            {(() => {
-              const spell = data.data.spells.find(
-                (s: Spell) => s.id === selectedSpell
-              );
-              if (!spell) return null;
-
-              const levelLabel =
-                spell.level === 0 ? "Заговор" : `${spell.level} уровень`;
-
-              return (
-                <div className="space-y-6">
+            {isLoadingSpell ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+            ) : selectedSpell ? (
+              <div className="space-y-6">
                   {/* Basic Info */}
                   <div className="p-4 rounded-xl bg-muted/30 border border-border/30">
                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -499,7 +680,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                           Уровень
                         </span>
                         <span className="font-medium text-foreground">
-                          {levelLabel}
+                          {selectedSpell.level === 0 ? "Заговор" : `${selectedSpell.level} уровень`}
                         </span>
                       </div>
                       <div>
@@ -507,7 +688,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                           Школа магии
                         </span>
                         <span className="font-medium text-foreground">
-                          {spell.school}
+                          {selectedSpell.school}
                         </span>
                       </div>
                       <div>
@@ -515,7 +696,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                           Время накладывания
                         </span>
                         <span className="font-medium text-foreground">
-                          {spell.castingTime}
+                          {selectedSpell.castingTime}
                         </span>
                       </div>
                       <div>
@@ -523,7 +704,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                           Дистанция
                         </span>
                         <span className="font-medium text-foreground">
-                          {spell.range}
+                          {selectedSpell.range}
                         </span>
                       </div>
                       <div>
@@ -531,7 +712,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                           Компоненты
                         </span>
                         <span className="font-medium text-foreground">
-                          {spell.components}
+                          {selectedSpell.components}
                         </span>
                       </div>
                       <div>
@@ -539,7 +720,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                           Длительность
                         </span>
                         <span className="font-medium text-foreground">
-                          {spell.duration}
+                          {selectedSpell.duration}
                         </span>
                       </div>
                     </div>
@@ -550,9 +731,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                     <h3 className="font-semibold text-foreground mb-2">
                       Описание
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {spell.description}
-                    </p>
+                    <DescriptionRenderer items={selectedSpell.description} />
                   </div>
 
                   {/* Classes */}
@@ -561,24 +740,26 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                       Доступно классам
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {spell.classes.map((classId: string) => {
-                        const classInfo = AVAILABLE_CLASSES.find(
-                          (c) => c.id === classId
-                        );
-                        return (
+                      {selectedSpell.classes
+                        .map((classId: string) => {
+                          const classInfo = AVAILABLE_CLASSES.find(
+                            (c) => c.id === classId
+                          );
+                          return classInfo ? { classId, classInfo } : null;
+                        })
+                        .filter(Boolean)
+                        .map((item: any) => (
                           <span
-                            key={classId}
+                            key={item.classId}
                             className="text-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20"
                           >
-                            {classInfo?.name || classId}
+                            {item.classInfo.name}
                           </span>
-                        );
-                      })}
+                        ))}
                     </div>
                   </div>
                 </div>
-              );
-            })()}
+            ) : null}
           </SlideOverDrawer>
         )}
       </div>
@@ -774,19 +955,28 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="description">Описание *</Label>
+                <Label htmlFor="description">Описание (JSON) *</Label>
                 <Textarea
                   id="description"
-                  value={editingSpell.description}
-                  onChange={(e) =>
-                    setEditingSpell({
-                      ...editingSpell,
-                      description: e.target.value,
-                    })
-                  }
-                  placeholder="Описание заклинания..."
-                  rows={4}
+                  value={JSON.stringify(editingSpell.description, null, 2)}
+                  onChange={(e) => {
+                    try {
+                      const parsed = JSON.parse(e.target.value);
+                      setEditingSpell({
+                        ...editingSpell,
+                        description: parsed,
+                      });
+                    } catch (err) {
+                      // Invalid JSON, don't update
+                    }
+                  }}
+                  placeholder='["Описание заклинания..."]'
+                  rows={8}
+                  className="font-mono text-xs"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Формат: массив строк, списков или таблиц в JSON
+                </p>
               </div>
 
               {/* Classes */}

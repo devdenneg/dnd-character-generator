@@ -240,6 +240,7 @@ export const backendQueryKeys = {
   background: (id: string) => ["backend", "background", id] as const,
   backgroundByExternalId: (externalId: string) => ["backend", "background", "external", externalId] as const,
   spells: ["backend", "spells"] as const,
+  spellsMeta: ["backend", "spells", "meta"] as const,
   spellsBySource: (source: string) => ["backend", "spells", "source", source] as const,
   spellsByClass: (classId: string, source?: string) =>
     source ? ["backend", "spells", "class", classId, "source", source] as const : ["backend", "spells", "class", classId] as const,
@@ -367,6 +368,16 @@ export function useBackendBackgroundByExternalId(externalId: string) {
 }
 
 // Spells (from backend - PHB 2024 data)
+// Получить только мета-данные (без описаний) - для списка
+export function useBackendSpellsMeta(source?: string) {
+  return useQuery({
+    queryKey: source ? backendQueryKeys.spellsBySource(source) : backendQueryKeys.spells,
+    queryFn: () => spellsApi.listMeta(source),
+    staleTime: 5 * 60 * 1000, // 5 минут
+  });
+}
+
+// Получить полные данные (с описаниями) - для редактирования
 export function useBackendSpells(source?: string) {
   return useQuery({
     queryKey: source ? backendQueryKeys.spellsBySource(source) : backendQueryKeys.spells,

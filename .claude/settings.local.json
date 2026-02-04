@@ -25,7 +25,18 @@
       "Bash(npm run lint:*)",
       "Bash(npx prisma db push:*)",
       "Bash(npx tsc --noEmit)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(npx tsx src/scripts/seed-spells.ts)",
+      "Bash(npx tsx:*)",
+      "Bash(npx prisma db execute:*)",
+      "Bash(psql:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(NODE_OPTIONS=\"--no-warnings\" npx tsx:*)",
+      "Bash(npx tsc seed-spells.ts --outDir . --module commonjs --esModuleInterop --resolveJsonModule --skipLibCheck)",
+      "Bash(npm run type-check)",
+      "Bash(jq:*)",
+      "Bash(pkill:*)",
+      "Bash(xargs kill:*)"
     ]
   }
 }

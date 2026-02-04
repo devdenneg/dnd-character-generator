@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
 import {
   getAllSpells,
+  getAllSpellsMeta,
   getSpellById,
   getSpellByExternalId,
   getSpellsByClass,
@@ -13,6 +14,28 @@ import {
 } from "../services/spellService";
 
 // Validation schemas
+const listContentSchema = z.object({
+  type: z.literal("list"),
+  attrs: z.object({
+    type: z.enum(["unordered", "ordered"]),
+  }),
+  content: z.array(z.string()),
+});
+
+const tableContentSchema = z.object({
+  type: z.literal("table"),
+  caption: z.string().optional(),
+  colLabels: z.array(z.string()),
+  colStyles: z.array(z.string()),
+  rows: z.array(z.array(z.string())),
+});
+
+const descriptionItemSchema = z.union([
+  z.string(),
+  listContentSchema,
+  tableContentSchema,
+]);
+
 const createSpellSchema = z.object({
   externalId: z.string().min(1, "External ID is required"),
   name: z.string().min(1, "Name is required"),
@@ -23,7 +46,7 @@ const createSpellSchema = z.object({
   range: z.string().min(1, "Range is required"),
   components: z.string().min(1, "Components are required"),
   duration: z.string().min(1, "Duration is required"),
-  description: z.string().min(1, "Description is required"),
+  description: z.array(descriptionItemSchema).min(1, "Description is required"),
   classes: z.array(z.string().min(1, "Class name is required")),
   source: z.enum(["srd", "phb2024"]).optional().default("phb2024"),
 });
@@ -38,12 +61,30 @@ const updateSpellSchema = z.object({
   range: z.string().min(1).optional(),
   components: z.string().min(1).optional(),
   duration: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
+  description: z.array(descriptionItemSchema).optional(),
   classes: z.array(z.string().min(1)).optional(),
   source: z.enum(["srd", "phb2024"]).optional(),
 });
 
 // Public endpoints - no authentication required
+export async function listMeta(req: AuthenticatedRequest, res: Response) {
+  try {
+    const source = req.query.source as string | undefined;
+    const spells = await getAllSpellsMeta(source);
+
+    res.status(200).json({
+      success: true,
+      data: { spells },
+    });
+  } catch (error) {
+    console.error("List spells meta error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function list(req: AuthenticatedRequest, res: Response) {
   try {
     const source = req.query.source as string | undefined;

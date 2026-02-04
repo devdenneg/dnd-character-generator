@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { useBackendSpellsByClass } from "@/api/hooks";
+import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import type { Spell } from "@/types/character";
 
 export function SpellsStep() {
@@ -314,9 +315,13 @@ export function SpellsStep() {
                     {spell.duration}
                   </p>
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-3">
-                  {spell.description}
-                </p>
+                <div className="text-xs text-muted-foreground line-clamp-3">
+                  {parseEquipmentDescription(
+                    spell.description
+                      .filter(item => typeof item === 'string')
+                      .slice(0, 1) // Показываем только первый параграф для превью
+                  )}
+                </div>
               </CardContent>
             </Card>
           );

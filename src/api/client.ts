@@ -7,6 +7,7 @@ import type {
 } from "@/types/api";
 import type { StartingEquipment } from "@/types/equipment";
 import type { SpellcastingConfig } from "@/types/spellcasting";
+import type { DescriptionItem } from "@/types/character";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -445,6 +446,13 @@ export const backgroundsApi = {
 
 // Spells API
 export const spellsApi = {
+  // Получить список заклинаний (только мета, без описаний)
+  listMeta: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/spells/meta", { params });
+    return response.data;
+  },
+
   list: async (source?: string) => {
     const params = source ? { source } : {};
     const response = await apiClient.get("/spells", { params });
@@ -479,7 +487,7 @@ export const spellsApi = {
     range: string;
     components: string;
     duration: string;
-    description: string;
+    description: DescriptionItem[];
     classes: string[];
     source?: string;
   }) => {
@@ -499,7 +507,7 @@ export const spellsApi = {
       range?: string;
       components?: string;
       duration?: string;
-      description?: string;
+      description?: DescriptionItem[];
       classes?: string[];
       source?: string;
     }

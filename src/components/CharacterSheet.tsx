@@ -28,13 +28,14 @@ import {
   TooltipCalcRow,
   TooltipHighlight,
 } from "@/components/ui/tooltip";
+import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import { useCharacterStore } from "@/store/characterStore";
 import {
   getSkillNameRu,
   getAbilityNameRu,
   getAbilityAbbr,
 } from "@/data/translations/ru";
-import type { AbilityName } from "@/types/character";
+import type { AbilityName, DescriptionItem } from "@/types/character";
 
 // Пояснения для характеристик
 const ABILITY_EXPLANATIONS: Record<string, string> = {
@@ -458,7 +459,7 @@ function SpellCard({
     range: string;
     components: string;
     duration: string;
-    description: string;
+    description: string | DescriptionItem[]; // Can be string or DescriptionItem[]
   };
   isCantrip: boolean;
   spellSaveDC: number;
@@ -536,7 +537,19 @@ function SpellCard({
 
           {/* Описание */}
           <div className="text-sm text-muted-foreground leading-relaxed mb-4">
-            {spell.description}
+            {Array.isArray(spell.description) ? (
+              <div className="space-y-2">
+                {spell.description.map((item, index) => {
+                  if (typeof item === 'string') {
+                    return <div key={index}>{parseEquipmentDescription(item)}</div>;
+                  }
+                  // Для списков и таблиц можно добавить специальную обработку
+                  return <div key={index}>{parseEquipmentDescription(JSON.stringify(item))}</div>;
+                })}
+              </div>
+            ) : (
+              parseEquipmentDescription(String(spell.description))
+            )}
           </div>
 
           {/* Подсказка по использованию */}
@@ -545,20 +558,33 @@ function SpellCard({
               Как использовать:
             </p>
             <ul className="space-y-1 text-muted-foreground">
-              {spell.description.toLowerCase().includes("спасбросок") && (
-                <li>
-                  • Цель совершает спасбросок против СЛ{" "}
-                  <strong className="text-purple-400">{spellSaveDC}</strong>
-                </li>
-              )}
-              {spell.description.toLowerCase().includes("атак") && (
-                <li>
-                  • Бросок атаки заклинанием: 1d20{" "}
-                  <strong className="text-purple-400">
-                    {formatModifier(spellAttackBonus)}
-                  </strong>
-                </li>
-              )}
+              {(() => {
+                const descriptionText = Array.isArray(spell.description)
+                  ? spell.description
+                      .map(item => typeof item === 'string' ? item : JSON.stringify(item))
+                      .join(' ')
+                      .toLowerCase()
+                  : String(spell.description).toLowerCase();
+
+                return (
+                  <>
+                    {descriptionText.includes("спасбросок") && (
+                      <li>
+                        • Цель совершает спасбросок против СЛ{" "}
+                        <strong className="text-purple-400">{spellSaveDC}</strong>
+                      </li>
+                    )}
+                    {descriptionText.includes("атак") && (
+                      <li>
+                        • Бросок атаки заклинанием: 1d20{" "}
+                        <strong className="text-purple-400">
+                          {formatModifier(spellAttackBonus)}
+                        </strong>
+                      </li>
+                    )}
+                  </>
+                );
+              })()}
               {isCantrip && (
                 <li>• Заговор — можно использовать неограниченно, без ячеек</li>
               )}

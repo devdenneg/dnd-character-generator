@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import type { DescriptionItem } from '@/types/character';
 
 /**
  * Парсит описание снаряжения с тегами формата {@tag content}
@@ -323,7 +324,7 @@ export function parseEquipmentDescription(description: string | string[] | undef
  * Парсит описание в простой текст (без HTML/React элементов)
  * Полезно для экспорта в PDF или текстовые форматы
  */
-export function parseDescriptionToPlainText(description: string | string[] | undefined): string {
+export function parseDescriptionToPlainText(description: string | string[] | DescriptionItem[] | undefined): string {
   if (!description) {
     return '';
   }
@@ -331,7 +332,24 @@ export function parseDescriptionToPlainText(description: string | string[] | und
   const lines = Array.isArray(description) ? description : [description];
 
   return lines
-    .map(line => {
+    .map(item => {
+      // Если это объект (ListContent или TableContent), преобразуем в строку
+      if (typeof item === 'object' && item !== null) {
+        if ('type' in item) {
+          if (item.type === 'list') {
+            return item.content.join('\n');
+          } else if (item.type === 'table') {
+            // Простое представление таблицы
+            const header = item.colLabels.join(' | ');
+            const rows = item.rows.map(row => row.join(' | ')).join('\n');
+            return `${header}\n${rows}`;
+          }
+        }
+        return '';
+      }
+
+      // Обработка строки
+      const line = String(item);
       // Рекурсивно удаляем все теги, оставляя только содержимое
       let result = line;
       let prevResult = '';

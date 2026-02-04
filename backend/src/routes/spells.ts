@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authMiddleware } from "../middleware/authMiddleware";
 import {
   list,
+  listMeta,
   getOne,
   getByExternalId,
   getByClass,
@@ -13,6 +14,7 @@ import {
 const router = Router();
 
 // Public endpoints - no authentication required for reading
+router.get("/meta", listMeta);
 router.get("/", list);
 router.get("/class/:classId", getByClass);
 router.get("/external/:externalId", getByExternalId);

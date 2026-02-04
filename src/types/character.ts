@@ -1,5 +1,24 @@
 // D&D 5e (2024) Character Types
 
+// Types for spell description content
+export interface ListContent {
+  type: "list";
+  attrs: {
+    type: "unordered" | "ordered";
+  };
+  content: string[];
+}
+
+export interface TableContent {
+  type: "table";
+  caption?: string;
+  colLabels: string[];
+  colStyles: string[];
+  rows: string[][];
+}
+
+export type DescriptionItem = string | ListContent | TableContent;
+
 export interface AbilityScores {
   strength: number;
   dexterity: number;
@@ -127,7 +146,7 @@ export interface Spell {
   range: string;
   components: string;
   duration: string;
-  description: string;
+  description: DescriptionItem[];
   classes: string[];
 }
 

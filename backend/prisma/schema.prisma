@@ -239,7 +239,7 @@ model Spell {
   range       String
   components  String
   duration    String
-  description String   @db.Text
+  description Json     // Array of description paragraphs (can include strings and table objects)
   classes     String[] // Array of class IDs that can use this spell
   source      String   @default("phb2024")
   createdAt   DateTime @default(now())

@@ -1,6 +1,27 @@
 import prisma from "../db";
+import { Prisma } from "@prisma/client";
+
+// Types for description content
+export interface ListContent {
+  type: "list";
+  attrs: {
+    type: "unordered" | "ordered";
+  };
+  content: string[];
+}
+
+export interface TableContent {
+  type: "table";
+  caption?: string;
+  colLabels: string[];
+  colStyles: string[];
+  rows: string[][];
+}
+
+export type DescriptionItem = string | ListContent | TableContent;
 
 export interface SpellInput {
+  id?: string;
   externalId: string;
   name: string;
   nameRu: string;
@@ -10,7 +31,7 @@ export interface SpellInput {
   range: string;
   components: string;
   duration: string;
-  description: string;
+  description: DescriptionItem[];
   classes: string[];
   source?: string;
 }
@@ -18,6 +39,32 @@ export interface SpellInput {
 export async function getAllSpells(source?: string) {
   const spells = await prisma.spell.findMany({
     where: source ? { source } : undefined,
+    orderBy: [{ level: "asc" }, { name: "asc" }],
+  });
+
+  return spells;
+}
+
+// Get only meta data (without description) for list view
+export async function getAllSpellsMeta(source?: string) {
+  const spells = await prisma.spell.findMany({
+    where: source ? { source } : undefined,
+    select: {
+      id: true,
+      externalId: true,
+      name: true,
+      nameRu: true,
+      level: true,
+      school: true,
+      castingTime: true,
+      range: true,
+      components: true,
+      duration: true,
+      classes: true,
+      source: true,
+      createdAt: true,
+      updatedAt: true,
+    },
     orderBy: [{ level: "asc" }, { name: "asc" }],
   });
 
@@ -66,7 +113,7 @@ export async function createSpell(input: SpellInput) {
       range: input.range,
       components: input.components,
       duration: input.duration,
-      description: input.description,
+      description: input.description as Prisma.JsonArray,
       classes: input.classes,
       source: input.source || "phb2024",
     },
@@ -89,7 +136,7 @@ export async function createManySpells(inputs: SpellInput[]) {
           range: input.range,
           components: input.components,
           duration: input.duration,
-          description: input.description,
+          description: input.description as Prisma.JsonArray,
           classes: input.classes,
           source: input.source || "phb2024",
         },
@@ -113,7 +160,7 @@ export async function updateSpell(id: string, input: Partial<SpellInput>) {
       ...(input.range && { range: input.range }),
       ...(input.components && { components: input.components }),
       ...(input.duration && { duration: input.duration }),
-      ...(input.description && { description: input.description }),
+      ...(input.description && { description: input.description as Prisma.JsonArray }),
       ...(input.classes && { classes: input.classes }),
       ...(input.source && { source: input.source }),
     },
@@ -146,7 +193,6 @@ export async function searchSpells(query: string) {
       OR: [
         { name: { contains: query, mode: "insensitive" } },
         { nameRu: { contains: query, mode: "insensitive" } },
-        { description: { contains: query, mode: "insensitive" } },
         { school: { contains: query, mode: "insensitive" } },
       ],
     },
