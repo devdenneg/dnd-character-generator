@@ -40,7 +40,8 @@ export interface CharacterClassInput {
   source: string;
   features: ClassFeatureInput[];
   subclasses: SubclassInput[];
-  startingEquipment?: StartingEquipment;
+  equipmentIds?: string[]; // Array of equipment IDs
+  startingGold?: number;
   spellcasting?: SpellcastingConfig;
 }
 
@@ -59,11 +60,19 @@ export async function getAllClasses(source?: string) {
           },
         },
       },
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
     },
     orderBy: [{ source: "asc" }, { name: "asc" }],
   });
 
-  return classes;
+  return classes.map((cls) => ({
+    ...cls,
+    equipment: cls.equipment.map((e) => e.equipment),
+  }));
 }
 
 export async function getClassById(id: string) {
@@ -81,10 +90,20 @@ export async function getClassById(id: string) {
           },
         },
       },
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
     },
   });
 
-  return classData;
+  if (!classData) return null;
+
+  return {
+    ...classData,
+    equipment: classData.equipment.map((e) => e.equipment),
+  };
 }
 
 export async function getClassByExternalId(externalId: string) {
@@ -102,10 +121,20 @@ export async function getClassByExternalId(externalId: string) {
           },
         },
       },
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
     },
   });
 
-  return classData;
+  if (!classData) return null;
+
+  return {
+    ...classData,
+    equipment: classData.equipment.map((e) => e.equipment),
+  };
 }
 
 export async function createClass(input: CharacterClassInput) {
@@ -124,7 +153,7 @@ export async function createClass(input: CharacterClassInput) {
       skillCount: input.skillCount,
       subclassLevel: input.subclassLevel,
       source: input.source,
-      startingEquipment: input.startingEquipment,
+      startingGold: input.startingGold || 0,
       spellcasting: input.spellcasting,
       features: {
         create: input.features,
@@ -141,6 +170,15 @@ export async function createClass(input: CharacterClassInput) {
           },
         })),
       },
+      equipment: input.equipmentIds
+        ? {
+            create: input.equipmentIds.map((equipmentId) => ({
+              equipment: {
+                connect: { id: equipmentId },
+              },
+            })),
+          }
+        : undefined,
     },
     include: {
       features: {
@@ -154,10 +192,18 @@ export async function createClass(input: CharacterClassInput) {
           },
         },
       },
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
     },
   });
 
-  return classData;
+  return {
+    ...classData,
+    equipment: classData.equipment.map((e) => e.equipment),
+  };
 }
 
 export async function createManyClasses(inputs: CharacterClassInput[]) {
@@ -178,7 +224,7 @@ export async function createManyClasses(inputs: CharacterClassInput[]) {
           skillCount: input.skillCount,
           subclassLevel: input.subclassLevel,
           source: input.source,
-          startingEquipment: input.startingEquipment,
+          startingGold: input.startingGold || 0,
           spellcasting: input.spellcasting,
           features: {
             create: input.features,
@@ -195,6 +241,15 @@ export async function createManyClasses(inputs: CharacterClassInput[]) {
               },
             })),
           },
+          equipment: input.equipmentIds
+            ? {
+                create: input.equipmentIds.map((equipmentId) => ({
+                  equipment: {
+                    connect: { id: equipmentId },
+                  },
+                })),
+              }
+            : undefined,
         },
         include: {
           features: {
@@ -208,12 +263,20 @@ export async function createManyClasses(inputs: CharacterClassInput[]) {
               },
             },
           },
+          equipment: {
+            include: {
+              equipment: true,
+            },
+          },
         },
       })
     )
   );
 
-  return results;
+  return results.map((cls) => ({
+    ...cls,
+    equipment: cls.equipment.map((e) => e.equipment),
+  }));
 }
 
 export async function updateClass(
@@ -252,6 +315,13 @@ export async function updateClass(
     });
   }
 
+  // Delete old equipment relations if provided
+  if (input.equipmentIds) {
+    await prisma.classEquipment.deleteMany({
+      where: { classId: id },
+    });
+  }
+
   const updateData: any = {};
 
   if (input.externalId !== undefined) updateData.externalId = input.externalId;
@@ -274,8 +344,8 @@ export async function updateClass(
   if (input.subclassLevel !== undefined)
     updateData.subclassLevel = input.subclassLevel;
   if (input.source !== undefined) updateData.source = input.source;
-  if (input.startingEquipment !== undefined)
-    updateData.startingEquipment = input.startingEquipment;
+  if (input.startingGold !== undefined)
+    updateData.startingGold = input.startingGold;
   if (input.spellcasting !== undefined)
     updateData.spellcasting = input.spellcasting;
   if (input.features) {
@@ -297,6 +367,15 @@ export async function updateClass(
       })),
     };
   }
+  if (input.equipmentIds) {
+    updateData.equipment = {
+      create: input.equipmentIds.map((equipmentId) => ({
+        equipment: {
+          connect: { id: equipmentId },
+        },
+      })),
+    };
+  }
 
   const classData = await prisma.characterClass.update({
     where: { id },
@@ -313,10 +392,18 @@ export async function updateClass(
           },
         },
       },
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
     },
   });
 
-  return classData;
+  return {
+    ...classData,
+    equipment: classData.equipment.map((e) => e.equipment),
+  };
 }
 
 export async function deleteClass(id: string) {

@@ -1,4 +1,4 @@
-import { useBackendClasses } from "@/api/hooks";
+import { useBackendClasses, useBackendEquipment } from "@/api/hooks";
 import { classesApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +60,7 @@ interface Subclass {
 }
 
 interface EquipmentItemBase {
+  id: string;
   externalId: string;
   name: string;
   nameRu: string;
@@ -117,7 +118,9 @@ interface CharacterClass {
   source: string;
   features: ClassFeature[];
   subclasses: Subclass[];
-  startingEquipment?: StartingEquipment;
+  equipment?: EquipmentItem[];
+  startingGold?: number;
+  startingEquipment?: StartingEquipment; // Keep for backward compatibility
   spellcasting?: Spellcasting;
 }
 
@@ -137,7 +140,9 @@ interface ClassFormData {
   source: string;
   features: ClassFeature[];
   subclasses: Subclass[];
-  startingEquipment?: StartingEquipment;
+  equipmentIds?: string[];
+  startingGold?: number;
+  startingEquipment?: StartingEquipment; // Keep for backward compatibility
   spellcasting?: Spellcasting;
 }
 
@@ -258,333 +263,6 @@ function MultiSelect({ label, options, selected, onChange }: MultiSelectProps) {
   );
 }
 
-// Equipment Display Component for showing item details
-interface EquipmentDisplayProps {
-  item: EquipmentItem;
-}
-
-function EquipmentDisplay({ item }: EquipmentDisplayProps) {
-  return (
-    <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h5 className="font-medium text-foreground text-sm">
-            {item.nameRu || item.name}
-          </h5>
-          {item.nameRu && item.name && (
-            <span className="text-xs text-muted-foreground/70">
-              {item.name}
-            </span>
-          )}
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            {item.category === "weapon" && (
-              <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                Оружие
-              </span>
-            )}
-            {item.category === "armor" && (
-              <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                Доспех
-              </span>
-            )}
-            {(item.category === "gear" ||
-              item.category === "tool" ||
-              item.category === "pack") && (
-              <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                {item.category === "gear"
-                  ? "Снаряжение"
-                  : item.category === "tool"
-                  ? "Инструмент"
-                  : "Набор"}
-              </span>
-            )}
-            <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-              {item.cost.quantity} {item.cost.unit}
-            </span>
-            {item.weight !== undefined && (
-              <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                {item.weight} кг
-              </span>
-            )}
-          </div>
-
-          {/* Weapon details */}
-          {item.category === "weapon" && item.damage && (
-            <div className="text-xs text-muted-foreground mt-1">
-              Урон: {item.damage.dice} ({item.damage.type})
-              {item.properties && item.properties.length > 0 && (
-                <span> • Свойства: {item.properties.join(", ")}</span>
-              )}
-            </div>
-          )}
-
-          {/* Armor details */}
-          {item.category === "armor" && (
-            <div className="text-xs text-muted-foreground mt-1">
-              AC: {item.armorClass} • Тип: {item.armorType}
-              {item.maxDexBonus !== undefined &&
-                ` • Макс. бонус Ловкости: ${item.maxDexBonus}`}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Equipment Editor Component for different item types
-interface EquipmentEditorProps {
-  item: EquipmentItem;
-  index: number;
-  onUpdate: (index: number, updates: Partial<EquipmentItem>) => void;
-  onRemove: (index: number) => void;
-}
-
-function EquipmentEditor({
-  item,
-  index,
-  onUpdate,
-  onRemove,
-}: EquipmentEditorProps) {
-  return (
-    <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-3">
-      <div className="flex items-start justify-between">
-        <h6 className="font-medium text-foreground text-sm">
-          {item.category === "weapon" && "Оружие"}
-          {item.category === "armor" && "Доспех"}
-          {item.category === "gear" && "Снаряжение"}
-          {item.category === "tool" && "Инструмент"}
-          {item.category === "pack" && "Набор"}
-          {" #" + (index + 1)}
-        </h6>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive hover:text-destructive p-1"
-          onClick={() => onRemove(index)}
-        >
-          <X className="w-3 h-3" />
-        </Button>
-      </div>
-
-      {/* Common Fields */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-2">
-          <Label htmlFor={`equip-name-${index}`}>Название (английский) *</Label>
-          <Input
-            id={`equip-name-${index}`}
-            value={item.name}
-            onChange={(e) => onUpdate(index, { name: e.target.value })}
-            placeholder="Например: Longsword"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`equip-nameRu-${index}`}>Название (русский)</Label>
-          <Input
-            id={`equip-nameRu-${index}`}
-            value={item.nameRu}
-            onChange={(e) => onUpdate(index, { nameRu: e.target.value })}
-            placeholder="Например: Длинный меч"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-2">
-          <Label htmlFor={`equip-weight-${index}`}>Вес (кг)</Label>
-          <Input
-            id={`equip-weight-${index}`}
-            type="number"
-            step="0.1"
-            value={item.weight || ""}
-            onChange={(e) =>
-              onUpdate(index, {
-                weight: parseFloat(e.target.value) || undefined,
-              })
-            }
-            placeholder="0"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`equip-category-${index}`}>Категория</Label>
-          <div className="px-3 py-2 rounded-md bg-muted text-sm text-muted-foreground">
-            {item.category === "weapon" && "Оружие"}
-            {item.category === "armor" && "Доспех"}
-            {item.category === "gear" && "Снаряжение"}
-            {item.category === "tool" && "Инструмент"}
-            {item.category === "pack" && "Набор"}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-2">
-          <Label htmlFor={`equip-qty-${index}`}>Количество</Label>
-          <Input
-            id={`equip-qty-${index}`}
-            type="number"
-            value={item.cost.quantity}
-            onChange={(e) =>
-              onUpdate(index, {
-                cost: { ...item.cost, quantity: parseInt(e.target.value) || 0 },
-              })
-            }
-            placeholder="1"
-            min="0"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`equip-currency-${index}`}>Валюта</Label>
-          <Select
-            id={`equip-currency-${index}`}
-            value={item.cost.unit}
-            placeholder="Валюта"
-            onChange={(e) =>
-              onUpdate(index, {
-                cost: { ...item.cost, unit: e.target.value },
-              })
-            }
-            options={[
-              { value: "cp", label: "cp (медь)" },
-              { value: "sp", label: "sp (серебро)" },
-              { value: "ep", label: "ep (электрум)" },
-              { value: "gp", label: "gp (золото)" },
-              { value: "pp", label: "pp (платина)" },
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* Weapon-specific fields */}
-      {item.category === "weapon" && (
-        <>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-2">
-              <Label htmlFor={`weapon-dice-${index}`}>Урон (кубик)</Label>
-              <Input
-                id={`weapon-dice-${index}`}
-                value={item.damage.dice}
-                onChange={(e) =>
-                  onUpdate(index, {
-                    damage: { ...item.damage, dice: e.target.value },
-                  })
-                }
-                placeholder="1d8"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor={`weapon-type-${index}`}>Тип урона</Label>
-              <Input
-                id={`weapon-type-${index}`}
-                value={item.damage.type}
-                onChange={(e) =>
-                  onUpdate(index, {
-                    damage: { ...item.damage, type: e.target.value },
-                  })
-                }
-                placeholder="рубящий"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`weapon-props-${index}`}>
-              Свойства (через запятую)
-            </Label>
-            <Input
-              id={`weapon-props-${index}`}
-              value={item.properties?.join(", ") || ""}
-              onChange={(e) =>
-                onUpdate(index, {
-                  properties: e.target.value
-                    .split(",")
-                    .map((p) => p.trim())
-                    .filter(Boolean),
-                })
-              }
-              placeholder="Лёгкое, Метательное (20/60)"
-            />
-          </div>
-        </>
-      )}
-
-      {/* Armor-specific fields */}
-      {item.category === "armor" && (
-        <>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-2">
-              <Label htmlFor={`armor-ac-${index}`}>Класс защиты (AC)</Label>
-              <Input
-                id={`armor-ac-${index}`}
-                type="number"
-                value={item.armorClass}
-                onChange={(e) =>
-                  onUpdate(index, {
-                    armorClass: parseInt(e.target.value) || 10,
-                  })
-                }
-                placeholder="10"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor={`armor-type-${index}`}>Тип доспеха</Label>
-              <Select
-                id={`armor-type-${index}`}
-                value={item.armorType}
-                placeholder="Тип доспеха"
-                onChange={(e) =>
-                  onUpdate(index, {
-                    armorType: e.target.value as
-                      | "light"
-                      | "medium"
-                      | "heavy"
-                      | "shield",
-                  })
-                }
-                options={[
-                  { value: "light", label: "Лёгкий" },
-                  { value: "medium", label: "Средний" },
-                  { value: "heavy", label: "Тяжёлый" },
-                  { value: "shield", label: "Щит" },
-                ]}
-              />
-            </div>
-          </div>
-
-          {item.armorType !== "shield" && (
-            <div className="space-y-2">
-              <Label htmlFor={`armor-dex-${index}`}>Макс. бонус Ловкости</Label>
-              <Input
-                id={`armor-dex-${index}`}
-                type="number"
-                value={item.maxDexBonus || ""}
-                onChange={(e) =>
-                  onUpdate(index, {
-                    maxDexBonus: e.target.value
-                      ? parseInt(e.target.value)
-                      : undefined,
-                  })
-                }
-                placeholder="Оставьте пустым для без ограничений"
-              />
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Gear-specific fields */}
-      {(item.category === "gear" ||
-        item.category === "tool" ||
-        item.category === "pack") && (
-        <div className="text-xs text-muted-foreground p-3 rounded-md bg-muted/50">
-          Для этого типа снаряжения достаточно указать название, вес и
-          стоимость.
-        </div>
-      )}
-    </div>
-  );
-}
-
 interface ClassesPageProps {
   onBack?: () => void;
 }
@@ -596,6 +274,10 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [viewTab, setViewTab] = useState("overview");
   const [activeTab, setActiveTab] = useState("basic");
+
+  // Load equipment from backend
+  const { data: equipmentData } = useBackendEquipment();
+  const allEquipment = equipmentData?.data?.equipment || [];
 
   // Handle hash navigation
   useEffect(() => {
@@ -638,6 +320,8 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     source: "phb2024",
     features: [],
     subclasses: [],
+    equipmentIds: [],
+    startingGold: 0,
     startingEquipment: {
       equipment: [],
       gold: 0,
@@ -654,9 +338,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     description: "",
     level: 1,
   });
-  const [newEquipmentCategory, setNewEquipmentCategory] = useState<
-    "weapon" | "armor" | "gear"
-  >("weapon");
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState("");
 
   // Create class mutation
   const createClassMutation = useMutation({
@@ -739,6 +421,8 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
       source: cls.source,
       features: cls.features,
       subclasses: cls.subclasses,
+      equipmentIds: cls.equipment?.map((e) => e.id) || [],
+      startingGold: cls.startingGold || 0,
       startingEquipment: cls.startingEquipment || {
         equipment: [],
         gold: 0,
@@ -796,98 +480,21 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     });
   };
 
-  const handleAddEquipmentItem = () => {
-    if (!editingClass.startingEquipment) {
-      setEditingClass({
-        ...editingClass,
-        startingEquipment: {
-          equipment: [],
-          gold: 0,
-        },
-      });
-      return;
-    }
-
-    let newItem: EquipmentItem;
-
-    switch (newEquipmentCategory) {
-      case "weapon":
-        newItem = {
-          externalId: `weapon-${Date.now()}`,
-          name: "",
-          nameRu: "",
-          category: "weapon",
-          cost: { quantity: 0, unit: "gp" },
-          damage: { dice: "1d8", type: "рубящий" },
-          properties: [],
-          source: "class",
-        };
-        break;
-      case "armor":
-        newItem = {
-          externalId: `armor-${Date.now()}`,
-          name: "",
-          nameRu: "",
-          category: "armor",
-          cost: { quantity: 0, unit: "gp" },
-          armorClass: 10,
-          armorType: "light",
-          source: "class",
-        };
-        break;
-      case "gear":
-        newItem = {
-          externalId: `gear-${Date.now()}`,
-          name: "",
-          nameRu: "",
-          category: "gear",
-          cost: { quantity: 0, unit: "gp" },
-          source: "class",
-        };
-        break;
-    }
-
+  // Functions for managing equipment from database
+  const handleAddEquipmentFromDB = () => {
+    if (!selectedEquipmentId) return;
+    if (editingClass.equipmentIds?.includes(selectedEquipmentId)) return;
     setEditingClass({
       ...editingClass,
-      startingEquipment: {
-        ...editingClass.startingEquipment,
-        equipment: [...editingClass.startingEquipment.equipment, newItem],
-      },
+      equipmentIds: [...(editingClass.equipmentIds || []), selectedEquipmentId],
     });
+    setSelectedEquipmentId("");
   };
 
-  const handleRemoveEquipmentItem = (index: number) => {
-    if (!editingClass.startingEquipment) return;
-
+  const handleRemoveEquipmentFromDB = (equipmentId: string) => {
     setEditingClass({
       ...editingClass,
-      startingEquipment: {
-        ...editingClass.startingEquipment,
-        equipment: editingClass.startingEquipment.equipment.filter(
-          (_, i) => i !== index
-        ),
-      },
-    });
-  };
-
-  const handleUpdateEquipmentItem = (
-    index: number,
-    updates: Partial<EquipmentItem>
-  ) => {
-    if (!editingClass.startingEquipment) return;
-
-    const updatedEquipment = [...editingClass.startingEquipment.equipment];
-    const currentItem = updatedEquipment[index];
-
-    // Merge updates with current item while preserving type
-    updatedEquipment[index] = { ...currentItem, ...updates } as EquipmentItem;
-
-    setEditingClass({
-      ...editingClass,
-      startingEquipment: {
-        ...editingClass.startingEquipment,
-        equipment: updatedEquipment,
-      },
+      equipmentIds: (editingClass.equipmentIds || []).filter((id) => id !== equipmentId),
     });
   };
 
@@ -1312,32 +919,36 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
 
                     {/* Equipment Tab */}
                     <TabsContent value="equipment" className="mt-4 space-y-3">
-                      {cls.startingEquipment ? (
-                        <>
-                          {cls.startingEquipment.gold > 0 && (
-                            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-                              <span className="font-medium text-foreground text-sm">
-                                🪙 {cls.startingEquipment.gold} gp
-                              </span>
+                      {/* Starting Gold */}
+                      {cls.startingGold && cls.startingGold > 0 && (
+                        <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                          <span className="font-medium text-foreground text-sm">
+                            🪙 {cls.startingGold} gp
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Equipment from database */}
+                      {cls.equipment && cls.equipment.length > 0 ? (
+                        <div className="space-y-2">
+                          {cls.equipment.map((item: EquipmentItem) => (
+                            <div
+                              key={item.id}
+                              className="p-2 rounded bg-muted/30 border border-border/30"
+                            >
+                              <div className="text-sm font-medium">
+                                {item.nameRu || item.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {item.cost.quantity} {item.cost.unit}
+                                {item.weight && ` • ${item.weight} кг`}
+                              </div>
                             </div>
-                          )}
-                          {cls.startingEquipment.equipment.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-8">
-                              Нет снаряжения
-                            </p>
-                          ) : (
-                            <div className="space-y-2">
-                              {cls.startingEquipment.equipment.map(
-                                (item: EquipmentItem, index: number) => (
-                                  <EquipmentDisplay key={index} item={item} />
-                                )
-                              )}
-                            </div>
-                          )}
-                        </>
+                          ))}
+                        </div>
                       ) : (
                         <p className="text-sm text-muted-foreground text-center py-8">
-                          Снаряжение не указано
+                          Нет снаряжения
                         </p>
                       )}
                     </TabsContent>
@@ -2042,134 +1653,86 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       Начальное снаряжение
                     </Label>
                     <span className="text-sm text-muted-foreground">
-                      {editingClass.startingEquipment?.equipment.length || 0}{" "}
-                      {(editingClass.startingEquipment?.equipment.length ||
-                        0) === 1
+                      {editingClass.equipmentIds?.length || 0}{" "}
+                      {(editingClass.equipmentIds?.length || 0) === 1
                         ? "предмет"
-                        : (editingClass.startingEquipment?.equipment.length ||
-                            0) > 1 &&
-                          (editingClass.startingEquipment?.equipment.length ||
-                            0) < 5
+                        : (editingClass.equipmentIds?.length || 0) > 1 &&
+                          (editingClass.equipmentIds?.length || 0) < 5
                         ? "предмета"
                         : "предметов"}
                     </span>
                   </div>
 
-                  {/* Gold */}
-                  <div className="p-5 rounded-xl bg-muted/30 border border-border/30">
-                    <div className="space-y-2">
-                      <Label htmlFor="gold" className="text-sm">
-                        Начальное золото (gp)
-                      </Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="gold"
-                          type="number"
-                          value={editingClass.startingEquipment?.gold || 0}
-                          onChange={(e) =>
-                            setEditingClass({
-                              ...editingClass,
-                              startingEquipment: {
-                                ...editingClass.startingEquipment,
-                                equipment:
-                                  editingClass.startingEquipment?.equipment ||
-                                  [],
-                                gold: parseInt(e.target.value) || 0,
-                              },
-                            })
-                          }
-                          placeholder="0"
-                          min="0"
-                        />
-                        <div className="px-4 py-2 rounded-md bg-primary/10 text-primary text-sm font-medium flex items-center">
-                          gp
-                        </div>
-                      </div>
-                    </div>
+                  {/* Starting Gold */}
+                  <div className="space-y-2">
+                    <Label htmlFor="startingGold">Начальное золото (gp)</Label>
+                    <Input
+                      id="startingGold"
+                      type="number"
+                      value={editingClass.startingGold || 0}
+                      onChange={(e) =>
+                        setEditingClass({
+                          ...editingClass,
+                          startingGold: parseInt(e.target.value) || 0,
+                        })
+                      }
+                      min="0"
+                    />
                   </div>
 
-                  {/* Add New Equipment Item */}
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm mb-2 block">
-                        Выберите тип снаряжения для добавления
-                      </Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        <Button
-                          variant={
-                            newEquipmentCategory === "weapon"
-                              ? "default"
-                              : "outline"
-                          }
-                          onClick={() => setNewEquipmentCategory("weapon")}
-                          className="gap-2"
-                        >
-                          <Shield className="w-4 h-4" />
-                          Оружие
-                        </Button>
-                        <Button
-                          variant={
-                            newEquipmentCategory === "armor"
-                              ? "default"
-                              : "outline"
-                          }
-                          onClick={() => setNewEquipmentCategory("armor")}
-                          className="gap-2"
-                        >
-                          <Shield className="w-4 h-4" />
-                          Доспех
-                        </Button>
-                        <Button
-                          variant={
-                            newEquipmentCategory === "gear"
-                              ? "default"
-                              : "outline"
-                          }
-                          onClick={() => setNewEquipmentCategory("gear")}
-                          className="gap-2"
-                        >
-                          <Scroll className="w-4 h-4" />
-                          Снаряжение
-                        </Button>
-                      </div>
+                  {/* Equipment from Database */}
+                  <div className="space-y-2">
+                    <Label>Снаряжение из базы данных</Label>
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedEquipmentId}
+                        onChange={(e) => setSelectedEquipmentId(e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="">Выберите снаряжение</option>
+                        {allEquipment
+                          .filter((eq: EquipmentItem) => !editingClass.equipmentIds?.includes(eq.id))
+                          .map((eq: EquipmentItem) => (
+                            <option key={eq.id} value={eq.id}>
+                              {eq.nameRu || eq.name} ({eq.category})
+                            </option>
+                          ))}
+                      </select>
+                      <Button onClick={handleAddEquipmentFromDB} type="button" disabled={!selectedEquipmentId}>
+                        <Plus className="w-4 h-4" />
+                      </Button>
                     </div>
-
-                    <Button
-                      onClick={handleAddEquipmentItem}
-                      className="w-full gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Добавить{" "}
-                      {newEquipmentCategory === "weapon"
-                        ? "оружие"
-                        : newEquipmentCategory === "armor"
-                        ? "доспех"
-                        : "снаряжение"}
-                    </Button>
-                  </div>
-
-                  {/* Equipment Items List */}
-                  {editingClass.startingEquipment?.equipment &&
-                    editingClass.startingEquipment.equipment.length > 0 && (
-                      <div className="space-y-3">
-                        <h6 className="text-sm font-medium text-muted-foreground">
-                          Список снаряжения:
-                        </h6>
-                        <div className="space-y-3">
-                          {editingClass.startingEquipment.equipment.map(
-                            (item: EquipmentItem, index: number) => (
-                              <EquipmentEditor
-                                key={index}
-                                item={item}
-                                index={index}
-                                onUpdate={handleUpdateEquipmentItem}
-                                onRemove={handleRemoveEquipmentItem}
-                              />
-                            )
-                          )}
-                        </div>
+                    {editingClass.equipmentIds && editingClass.equipmentIds.length > 0 && (
+                      <div className="space-y-2 mt-2">
+                        {editingClass.equipmentIds.map((equipmentId) => {
+                          const equipment = allEquipment.find((e: EquipmentItem) => e.id === equipmentId);
+                          if (!equipment) return null;
+                          return (
+                            <div
+                              key={equipmentId}
+                              className="flex items-center justify-between p-2 rounded bg-muted"
+                            >
+                              <div className="flex-1">
+                                <div className="text-sm font-medium">
+                                  {equipment.nameRu || equipment.name}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {equipment.cost.quantity} {equipment.cost.unit}
+                                  {equipment.weight && ` • ${equipment.weight} кг`}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleRemoveEquipmentFromDB(equipmentId)}
+                                className="hover:text-destructive"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
+                  </div>
                 </TabsContent>
 
                 {/* TAB: Магия/Spellcasting */}

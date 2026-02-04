@@ -1,4 +1,4 @@
-import { useBackendBackgrounds } from "@/api/hooks";
+import { useBackendBackgrounds, useBackendEquipment } from "@/api/hooks";
 import { backgroundsApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
 
 // Types
+interface Equipment {
+  id: string;
+  externalId: string;
+  name: string;
+  nameRu: string;
+  category: string;
+  cost: { quantity: number; unit: string };
+  weight?: number;
+  source: string;
+}
+
 interface Background {
   id: string;
   externalId: string;
@@ -36,7 +47,7 @@ interface Background {
   skillProficiencies: string[];
   toolProficiencies: string[];
   languages: number;
-  equipment: string[];
+  equipment: Equipment[];
   startingGold: number;
   originFeat: string;
   abilityScoreIncrease: {
@@ -54,7 +65,7 @@ interface BackgroundFormData {
   skillProficiencies: string[];
   toolProficiencies: string[];
   languages: number;
-  equipment: string[];
+  equipmentIds: string[];
   startingGold: number;
   originFeat: string;
   abilityScoreIncrease: {
@@ -152,6 +163,11 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
       }, 100);
     }
   }, [location.hash, data]);
+
+  // Load equipment from backend
+  const { data: equipmentData } = useBackendEquipment();
+  const allEquipment = equipmentData?.data?.equipment || [];
+
   const [editingBackground, setEditingBackground] =
     useState<BackgroundFormData>({
       externalId: "",
@@ -161,7 +177,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
       skillProficiencies: [],
       toolProficiencies: [],
       languages: 0,
-      equipment: [],
+      equipmentIds: [],
       startingGold: 0,
       originFeat: "",
       abilityScoreIncrease: {
@@ -172,7 +188,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
     });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [newEquipment, setNewEquipment] = useState("");
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState("");
   const [newTool, setNewTool] = useState("");
 
   // Create background mutation
@@ -217,7 +233,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
       skillProficiencies: [],
       toolProficiencies: [],
       languages: 0,
-      equipment: [],
+      equipmentIds: [],
       startingGold: 0,
       originFeat: "",
       abilityScoreIncrease: {
@@ -242,7 +258,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
       skillProficiencies: background.skillProficiencies,
       toolProficiencies: background.toolProficiencies,
       languages: background.languages,
-      equipment: background.equipment,
+      equipmentIds: background.equipment.map((e) => e.id),
       startingGold: background.startingGold,
       originFeat: background.originFeat,
       abilityScoreIncrease: background.abilityScoreIncrease,
@@ -273,18 +289,19 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   };
 
   const handleAddEquipment = () => {
-    if (!newEquipment.trim()) return;
+    if (!selectedEquipmentId) return;
+    if (editingBackground.equipmentIds.includes(selectedEquipmentId)) return;
     setEditingBackground({
       ...editingBackground,
-      equipment: [...editingBackground.equipment, newEquipment.trim()],
+      equipmentIds: [...editingBackground.equipmentIds, selectedEquipmentId],
     });
-    setNewEquipment("");
+    setSelectedEquipmentId("");
   };
 
-  const handleRemoveEquipment = (index: number) => {
+  const handleRemoveEquipment = (equipmentId: string) => {
     setEditingBackground({
       ...editingBackground,
-      equipment: editingBackground.equipment.filter((_, i) => i !== index),
+      equipmentIds: editingBackground.equipmentIds.filter((id) => id !== equipmentId),
     });
   };
 
@@ -601,13 +618,24 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                         <h4 className="font-medium text-foreground mb-2">
                           Снаряжение
                         </h4>
-                        <ul className="text-sm text-muted-foreground space-y-1">
+                        <div className="space-y-2">
                           {background.equipment.map(
-                            (item: string, idx: number) => (
-                              <li key={idx}>• {item}</li>
+                            (item: Equipment) => (
+                              <div
+                                key={item.id}
+                                className="p-2 rounded bg-muted/30 border border-border/30"
+                              >
+                                <div className="text-sm font-medium">
+                                  {item.nameRu || item.name}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {item.cost.quantity} {item.cost.unit}
+                                  {item.weight && ` • ${item.weight} кг`}
+                                </div>
+                              </div>
                             )
                           )}
-                        </ul>
+                        </div>
                       </div>
                     )}
 
@@ -836,34 +864,52 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
               <div className="space-y-2">
                 <Label>Снаряжение</Label>
                 <div className="flex gap-2">
-                  <Input
-                    value={newEquipment}
-                    onChange={(e) => setNewEquipment(e.target.value)}
-                    placeholder="Священный символ"
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && handleAddEquipment()
-                    }
-                  />
-                  <Button onClick={handleAddEquipment} type="button">
+                  <select
+                    value={selectedEquipmentId}
+                    onChange={(e) => setSelectedEquipmentId(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Выберите снаряжение</option>
+                    {allEquipment
+                      .filter((eq: Equipment) => !editingBackground.equipmentIds.includes(eq.id))
+                      .map((eq: Equipment) => (
+                        <option key={eq.id} value={eq.id}>
+                          {eq.nameRu || eq.name}
+                        </option>
+                      ))}
+                  </select>
+                  <Button onClick={handleAddEquipment} type="button" disabled={!selectedEquipmentId}>
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
-                {editingBackground.equipment.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {editingBackground.equipment.map((item, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs px-2 py-1 rounded bg-muted flex items-center gap-1"
-                      >
-                        {item}
-                        <button
-                          onClick={() => handleRemoveEquipment(idx)}
-                          className="hover:text-destructive"
+                {editingBackground.equipmentIds.length > 0 && (
+                  <div className="space-y-2 mt-2">
+                    {editingBackground.equipmentIds.map((equipmentId) => {
+                      const equipment = allEquipment.find((e: Equipment) => e.id === equipmentId);
+                      if (!equipment) return null;
+                      return (
+                        <div
+                          key={equipmentId}
+                          className="flex items-center justify-between p-2 rounded bg-muted"
                         >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
+                          <div className="flex-1">
+                            <div className="text-sm font-medium">
+                              {equipment.nameRu || equipment.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {equipment.cost.quantity} {equipment.cost.unit}
+                              {equipment.weight && ` • ${equipment.weight} кг`}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveEquipment(equipmentId)}
+                            className="hover:text-destructive"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -375,7 +375,7 @@ export const backgroundsApi = {
     skillProficiencies: string[];
     toolProficiencies: string[];
     languages: number;
-    equipment: string[];
+    equipmentIds: string[];
     startingGold: number;
     originFeat: string;
     abilityScoreIncrease: {
@@ -398,7 +398,7 @@ export const backgroundsApi = {
       skillProficiencies?: string[];
       toolProficiencies?: string[];
       languages?: number;
-      equipment?: string[];
+      equipmentIds?: string[];
       startingGold?: number;
       originFeat?: string;
       abilityScoreIncrease?: {

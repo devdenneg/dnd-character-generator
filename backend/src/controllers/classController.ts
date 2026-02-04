@@ -74,7 +74,8 @@ const createClassSchema = z.object({
     .array(createClassFeatureSchema)
     .min(1, "Class must have at least one feature"),
   subclasses: z.array(createSubclassSchema),
-  startingEquipment: z.any().optional(),
+  equipmentIds: z.array(z.string()).optional(),
+  startingGold: z.number().int().min(0).optional(),
   spellcasting: spellcastingSchema,
 });
 
@@ -94,7 +95,8 @@ const updateClassSchema = z.object({
   source: z.enum(["srd", "phb2024"]).optional(),
   features: z.array(createClassFeatureSchema).optional(),
   subclasses: z.array(createSubclassSchema).optional(),
-  startingEquipment: z.any().optional(),
+  equipmentIds: z.array(z.string()).optional(),
+  startingGold: z.number().int().min(0).optional(),
   spellcasting: spellcastingSchema,
 });
 

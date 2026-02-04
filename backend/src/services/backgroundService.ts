@@ -8,7 +8,7 @@ export interface BackgroundInput {
   skillProficiencies: string[];
   toolProficiencies: string[];
   languages: number;
-  equipment: string[];
+  equipmentIds: string[]; // Array of equipment IDs instead of strings
   startingGold: number;
   originFeat: string;
   abilityScoreIncrease: {
@@ -21,26 +21,60 @@ export interface BackgroundInput {
 export async function getAllBackgrounds(source?: string) {
   const backgrounds = await prisma.background.findMany({
     where: source ? { source } : undefined,
+    include: {
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
+    },
     orderBy: [{ source: "asc" }, { name: "asc" }],
   });
 
-  return backgrounds;
+  return backgrounds.map((bg) => ({
+    ...bg,
+    equipment: bg.equipment.map((e) => e.equipment),
+  }));
 }
 
 export async function getBackgroundById(id: string) {
   const background = await prisma.background.findUnique({
     where: { id },
+    include: {
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
+    },
   });
 
-  return background;
+  if (!background) return null;
+
+  return {
+    ...background,
+    equipment: background.equipment.map((e) => e.equipment),
+  };
 }
 
 export async function getBackgroundByExternalId(externalId: string) {
   const background = await prisma.background.findUnique({
     where: { externalId },
+    include: {
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
+    },
   });
 
-  return background;
+  if (!background) return null;
+
+  return {
+    ...background,
+    equipment: background.equipment.map((e) => e.equipment),
+  };
 }
 
 export async function createBackground(input: BackgroundInput) {
@@ -53,15 +87,31 @@ export async function createBackground(input: BackgroundInput) {
       skillProficiencies: input.skillProficiencies,
       toolProficiencies: input.toolProficiencies,
       languages: input.languages,
-      equipment: input.equipment,
       startingGold: input.startingGold,
       originFeat: input.originFeat,
       abilityScoreIncrease: input.abilityScoreIncrease,
       source: input.source,
+      equipment: {
+        create: input.equipmentIds.map((equipmentId) => ({
+          equipment: {
+            connect: { id: equipmentId },
+          },
+        })),
+      },
+    },
+    include: {
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
     },
   });
 
-  return background;
+  return {
+    ...background,
+    equipment: background.equipment.map((e) => e.equipment),
+  };
 }
 
 export async function createManyBackgrounds(inputs: BackgroundInput[]) {
@@ -76,50 +126,94 @@ export async function createManyBackgrounds(inputs: BackgroundInput[]) {
           skillProficiencies: input.skillProficiencies,
           toolProficiencies: input.toolProficiencies,
           languages: input.languages,
-          equipment: input.equipment,
           startingGold: input.startingGold,
           originFeat: input.originFeat,
           abilityScoreIncrease: input.abilityScoreIncrease,
           source: input.source,
+          equipment: {
+            create: input.equipmentIds.map((equipmentId) => ({
+              equipment: {
+                connect: { id: equipmentId },
+              },
+            })),
+          },
+        },
+        include: {
+          equipment: {
+            include: {
+              equipment: true,
+            },
+          },
         },
       })
     )
   );
 
-  return results;
+  return results.map((bg) => ({
+    ...bg,
+    equipment: bg.equipment.map((e) => e.equipment),
+  }));
 }
 
 export async function updateBackground(
   id: string,
   input: Partial<BackgroundInput>
 ) {
+  // If equipment is being updated, delete old relations and create new ones
+  const updateData: any = {
+    ...(input.id && { externalId: input.id }),
+    ...(input.name && { name: input.name }),
+    ...(input.nameRu && { nameRu: input.nameRu }),
+    ...(input.description && { description: input.description }),
+    ...(input.skillProficiencies && {
+      skillProficiencies: input.skillProficiencies,
+    }),
+    ...(input.toolProficiencies && {
+      toolProficiencies: input.toolProficiencies,
+    }),
+    ...(input.languages !== undefined && { languages: input.languages }),
+    ...(input.startingGold !== undefined && {
+      startingGold: input.startingGold,
+    }),
+    ...(input.originFeat && { originFeat: input.originFeat }),
+    ...(input.abilityScoreIncrease && {
+      abilityScoreIncrease: input.abilityScoreIncrease,
+    }),
+    ...(input.source && { source: input.source }),
+  };
+
+  if (input.equipmentIds) {
+    // Delete existing equipment relations
+    await prisma.backgroundEquipment.deleteMany({
+      where: { backgroundId: id },
+    });
+
+    // Create new equipment relations
+    updateData.equipment = {
+      create: input.equipmentIds.map((equipmentId) => ({
+        equipment: {
+          connect: { id: equipmentId },
+        },
+      })),
+    };
+  }
+
   const background = await prisma.background.update({
     where: { id },
-    data: {
-      ...(input.id && { externalId: input.id }),
-      ...(input.name && { name: input.name }),
-      ...(input.nameRu && { nameRu: input.nameRu }),
-      ...(input.description && { description: input.description }),
-      ...(input.skillProficiencies && {
-        skillProficiencies: input.skillProficiencies,
-      }),
-      ...(input.toolProficiencies && {
-        toolProficiencies: input.toolProficiencies,
-      }),
-      ...(input.languages !== undefined && { languages: input.languages }),
-      ...(input.equipment && { equipment: input.equipment }),
-      ...(input.startingGold !== undefined && {
-        startingGold: input.startingGold,
-      }),
-      ...(input.originFeat && { originFeat: input.originFeat }),
-      ...(input.abilityScoreIncrease && {
-        abilityScoreIncrease: input.abilityScoreIncrease,
-      }),
-      ...(input.source && { source: input.source }),
+    data: updateData,
+    include: {
+      equipment: {
+        include: {
+          equipment: true,
+        },
+      },
     },
   });
 
-  return background;
+  return {
+    ...background,
+    equipment: background.equipment.map((e) => e.equipment),
+  };
 }
 
 export async function deleteBackground(id: string) {

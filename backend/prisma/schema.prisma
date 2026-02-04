@@ -149,12 +149,13 @@ model CharacterClass {
   subclassLevel   Int
   source          String   // "srd" or "phb2024"
   spellcasting    Json?    // Spellcasting data: { ability, cantripsKnown, spellsKnown, spellSlots }
+  startingGold    Int      @default(0) // Starting gold amount
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   features        ClassFeature[]
   subclasses      Subclass[]
-  startingEquipment Json? // Starting equipment with gold
+  equipment       ClassEquipment[]
 
   @@index([externalId])
   @@index([source])
@@ -214,13 +215,14 @@ model Background {
   skillProficiencies  String[] // Array of skill IDs
   toolProficiencies   String[] // Array of tool names
   languages           Int      // Number of additional languages
-  equipment           String[] // Array of equipment items
   startingGold        Int
   originFeat          String
   abilityScoreIncrease Json    // { options: string[], amount: number[] }
   source              String   // "phb2024", etc.
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+
+  equipment           BackgroundEquipment[]
 
   @@index([externalId])
   @@index([source])
@@ -266,7 +268,38 @@ model Equipment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  backgrounds BackgroundEquipment[]
+  classes     ClassEquipment[]
+
   @@index([externalId])
   @@index([category])
   @@index([source])
+}
+
+model BackgroundEquipment {
+  id           String     @id @default(uuid())
+  backgroundId String
+  equipmentId  String
+  createdAt    DateTime   @default(now())
+
+  background   Background @relation(fields: [backgroundId], references: [id], onDelete: Cascade)
+  equipment    Equipment  @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  @@unique([backgroundId, equipmentId])
+  @@index([backgroundId])
+  @@index([equipmentId])
+}
+
+model ClassEquipment {
+  id        String         @id @default(uuid())
+  classId   String
+  equipmentId String
+  createdAt DateTime       @default(now())
+
+  class     CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  equipment Equipment      @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, equipmentId])
+  @@index([classId])
+  @@index([equipmentId])
 }
