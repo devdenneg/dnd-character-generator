@@ -293,6 +293,8 @@ export const classesApi = {
         level: number;
       }>;
     }>;
+    equipment?: Array<{ equipmentId: string; quantity: number }>;
+    startingGold?: number;
     startingEquipment?: StartingEquipment;
     spellcasting?: SpellcastingConfig;
   }) => {
@@ -335,6 +337,8 @@ export const classesApi = {
           level: number;
         }>;
       }>;
+      equipment?: Array<{ equipmentId: string; quantity: number }>;
+      startingGold?: number;
       startingEquipment?: StartingEquipment;
       spellcasting?: SpellcastingConfig;
     }
@@ -375,7 +379,7 @@ export const backgroundsApi = {
     skillProficiencies: string[];
     toolProficiencies: string[];
     languages: number;
-    equipmentIds: string[];
+    equipment: Array<{ equipmentId: string; quantity: number }>;
     startingGold: number;
     originFeat: string;
     abilityScoreIncrease: {
@@ -398,7 +402,7 @@ export const backgroundsApi = {
       skillProficiencies?: string[];
       toolProficiencies?: string[];
       languages?: number;
-      equipmentIds?: string[];
+      equipment?: Array<{ equipmentId: string; quantity: number }>;
       startingGold?: number;
       originFeat?: string;
       abilityScoreIncrease?: {
