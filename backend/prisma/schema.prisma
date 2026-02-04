@@ -247,3 +247,26 @@ model Spell {
   @@index([level])
   @@index([source])
 }
+
+model Equipment {
+  id          String   @id @default(uuid())
+  externalId  String   @unique // ID from the frontend (e.g., "longsword-phb", "chain-mail-phb")
+  name        String
+  nameRu      String
+  category    String   // "weapon", "armor", "gear", "tool", "pack"
+  cost        Json     // { quantity: number, unit: string }
+  weight      Float?
+  source      String   // "PHB", "DMG", etc.
+  description Json     // Array of description strings
+  damage      Json?    // { dice: string, type: string }
+  armorClass  Int?
+  armorType   String?  // "light", "medium", "heavy", "shield"
+  maxDexBonus Int?
+  properties  String[] // Array of property strings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([externalId])
+  @@index([category])
+  @@index([source])
+}
