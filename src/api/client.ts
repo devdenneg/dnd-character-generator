@@ -489,6 +489,83 @@ export const spellsApi = {
   },
 };
 
+// Equipment API
+export const equipmentApi = {
+  list: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/equipment", { params });
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get(`/equipment/${id}`);
+    return response.data;
+  },
+
+  getByExternalId: async (externalId: string) => {
+    const response = await apiClient.get(`/equipment/external/${externalId}`);
+    return response.data;
+  },
+
+  create: async (data: {
+    externalId: string;
+    name: string;
+    nameRu: string;
+    category: string;
+    cost: {
+      quantity: number;
+      unit: string;
+    };
+    weight?: number;
+    source: string;
+    description: string[];
+    damage?: {
+      dice: string;
+      type: string;
+    };
+    armorClass?: number;
+    armorType?: string;
+    maxDexBonus?: number;
+    properties?: string[];
+  }) => {
+    const response = await apiClient.post("/equipment", data);
+    return response.data;
+  },
+
+  update: async (
+    id: string,
+    data: {
+      externalId?: string;
+      name?: string;
+      nameRu?: string;
+      category?: string;
+      cost?: {
+        quantity: number;
+        unit: string;
+      };
+      weight?: number;
+      source?: string;
+      description?: string[];
+      damage?: {
+        dice: string;
+        type: string;
+      };
+      armorClass?: number;
+      armorType?: string;
+      maxDexBonus?: number;
+      properties?: string[];
+    }
+  ) => {
+    const response = await apiClient.put(`/equipment/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/equipment/${id}`);
+    return response.data;
+  },
+};
+
 // Search API
 export const searchApi = {
   search: async (query: string) => {

@@ -8,6 +8,7 @@ import raceRoutes from "./routes/races";
 import classRoutes from "./routes/classes";
 import backgroundRoutes from "./routes/backgrounds";
 import spellRoutes from "./routes/spells";
+import equipmentRoutes from "./routes/equipment";
 import searchRoutes from "./routes/search";
 
 const app = express();
@@ -51,6 +52,7 @@ app.use("/api/races", raceRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/backgrounds", backgroundRoutes);
 app.use("/api/spells", spellRoutes);
+app.use("/api/equipment", equipmentRoutes);
 app.use("/api/search", searchRoutes);
 
 // 404 handler

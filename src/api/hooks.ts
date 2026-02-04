@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { dnd5eApi } from "./dnd5e";
-import { racesApi, classesApi, backgroundsApi, spellsApi } from "./client";
+import { racesApi, classesApi, backgroundsApi, spellsApi, equipmentApi } from "./client";
 
 // Query keys
 export const queryKeys = {
@@ -242,6 +242,10 @@ export const backendQueryKeys = {
     source ? ["backend", "spells", "class", classId, "source", source] as const : ["backend", "spells", "class", classId] as const,
   spell: (id: string) => ["backend", "spell", id] as const,
   spellByExternalId: (externalId: string) => ["backend", "spell", "external", externalId] as const,
+  equipment: ["backend", "equipment"] as const,
+  equipmentBySource: (source: string) => ["backend", "equipment", "source", source] as const,
+  equipmentItem: (id: string) => ["backend", "equipment", id] as const,
+  equipmentByExternalId: (externalId: string) => ["backend", "equipment", "external", externalId] as const,
 };
 
 // Races (from backend - PHB 2024 data)
@@ -364,5 +368,33 @@ export function useBackendSpellsByClass(classId: string, source?: string) {
     enabled: !!classId,
     staleTime: 0, // Always refetch to get latest data
     refetchOnMount: 'always', // Always fetch on component mount
+  });
+}
+
+// Equipment (from backend)
+export function useBackendEquipment(source?: string) {
+  return useQuery({
+    queryKey: source ? backendQueryKeys.equipmentBySource(source) : backendQueryKeys.equipment,
+    queryFn: () => equipmentApi.list(source),
+    staleTime: 0, // Always refetch to get latest data
+    refetchOnMount: 'always', // Always fetch on component mount
+  });
+}
+
+export function useBackendEquipmentItem(id: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.equipmentItem(id),
+    queryFn: () => equipmentApi.get(id),
+    enabled: !!id,
+    staleTime: Infinity,
+  });
+}
+
+export function useBackendEquipmentByExternalId(externalId: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.equipmentByExternalId(externalId),
+    queryFn: () => equipmentApi.getByExternalId(externalId),
+    enabled: !!externalId,
+    staleTime: Infinity,
   });
 }

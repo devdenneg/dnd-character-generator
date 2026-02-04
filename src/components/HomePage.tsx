@@ -29,7 +29,7 @@ interface SearchResult {
   id: string;
   name: string;
   nameRu: string;
-  type: "race" | "class" | "background" | "spell";
+  type: "race" | "class" | "background" | "spell" | "equipment";
   category: string;
 }
 
@@ -87,6 +87,14 @@ const MENU_ITEMS: MenuItem[] = [
     roles: ["player", "master"],
     inDevelopment: false,
     image: spellsImage,
+  },
+  {
+    id: "equipment",
+    title: "Снаряжение",
+    description: "Оружие, доспехи, инструменты и другое снаряжение",
+    gradient: "from-orange-500 to-amber-500",
+    roles: ["player", "master"],
+    inDevelopment: false,
   },
   // Скрытые пункты меню (временно закомментированы)
   /*
@@ -166,6 +174,9 @@ export function HomePage({ onNavigate }: HomePageProps) {
         break;
       case "spell":
         navigateTo = "spells";
+        break;
+      case "equipment":
+        navigateTo = "equipment";
         break;
     }
 
@@ -383,7 +394,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               Справочник
             </h2>
             <p className="text-muted-foreground text-sm mt-1">
-              Расы, классы, предыстории и заклинания
+              Расы, классы, предыстории, заклинания и снаряжение
             </p>
           </div>
         </div>
@@ -482,7 +493,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {visibleMenuItems
               .filter((item) =>
-                ["races", "classes", "backgrounds", "spells"].includes(item.id)
+                [
+                  "races",
+                  "classes",
+                  "backgrounds",
+                  "spells",
+                  "equipment",
+                ].includes(item.id)
               )
               .map((item, index) => {
                 const isDisabled =
