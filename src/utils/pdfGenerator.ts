@@ -38,6 +38,9 @@ const DAMAGE_TYPES_RU: Record<string, string> = {
 // Компактная карточка заклинания
 function generateCompactSpellCard(spell: Spell): string {
   const levelText = spell.level === 0 ? "Заговор" : `${spell.level} круг`;
+  // Парсим описание заклинания, удаляя теги
+  const description = parseDescriptionToPlainText(spell.description);
+
   return `
     <div class="spell-card">
       <div class="spell-header">
@@ -50,7 +53,7 @@ function generateCompactSpellCard(spell: Spell): string {
         <span>⏳ ${spell.duration}</span>
       </div>
       <div class="spell-components">📦 ${spell.components}</div>
-      <div class="spell-desc">${spell.description}</div>
+      <div class="spell-desc">${description}</div>
     </div>
   `;
 }
@@ -689,9 +692,9 @@ export function generateCharacterPDF(
           <div class="section" style="padding: 0;">
             <div class="feat-box">
               <div class="feat-title">★ ${feat.nameRu}</div>
-              <div class="feat-desc">${feat.description}</div>
+              <div class="feat-desc">${parseDescriptionToPlainText(feat.description)}</div>
               <ul class="feat-benefits">
-                ${feat.benefits.map((b) => `<li>${b}</li>`).join("")}
+                ${feat.benefits.map((b) => `<li>${parseDescriptionToPlainText(b)}</li>`).join("")}
               </ul>
             </div>
           </div>
@@ -711,7 +714,7 @@ export function generateCharacterPDF(
                   (trait) => `
                 <div class="trait-item">
                   <span class="trait-name">${trait.nameRu}:</span>
-                  <span class="trait-desc">${trait.description}</span>
+                  <span class="trait-desc">${parseDescriptionToPlainText(trait.description)}</span>
                 </div>
               `,
                 )
@@ -721,7 +724,7 @@ export function generateCharacterPDF(
         `
             : ""
         }
-        
+
         <!-- Умения класса -->
         ${
           classFeatures.length > 0
@@ -733,7 +736,7 @@ export function generateCharacterPDF(
                 (f) => `
               <div class="feature-item">
                 <div class="feature-name">${f.nameRu}</div>
-                <div class="feature-desc">${f.description}</div>
+                <div class="feature-desc">${parseDescriptionToPlainText(f.description)}</div>
               </div>
             `,
               )
@@ -777,7 +780,7 @@ export function generateCharacterPDF(
         ? `
       <div class="section full-width" style="margin-top: 4px;">
         <div class="section-title">Личность и история</div>
-        ${character.background?.description ? `<div class="background-desc">${character.background.description}</div>` : ""}
+        ${character.background?.description ? `<div class="background-desc">${parseDescriptionToPlainText(character.background.description)}</div>` : ""}
         <div class="personality-grid">
           ${character.personalityTraits ? `<div class="personality-item"><div class="personality-label">Черты характера</div><div class="personality-text">"${character.personalityTraits}"</div></div>` : ""}
           ${character.ideals ? `<div class="personality-item"><div class="personality-label">Идеалы</div><div class="personality-text">"${character.ideals}"</div></div>` : ""}
