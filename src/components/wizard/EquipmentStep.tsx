@@ -319,15 +319,21 @@ export function EquipmentStep() {
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {character.equipment.map((item, index) => (
-                <Badge
-                  key={item.id || index}
-                  variant="outline"
-                  className="cursor-pointer hover:bg-destructive/10"
-                >
-                  {item.nameRu || item.name}
-                </Badge>
-              ))}
+              {character.equipment.map((item, index) => {
+                const quantity = item.quantity || 1;
+                return (
+                  <Badge
+                    key={item.id || index}
+                    variant="outline"
+                    className="cursor-pointer hover:bg-destructive/10"
+                  >
+                    {item.nameRu || item.name}
+                    {quantity > 1 && (
+                      <span className="ml-1 text-xs opacity-70">×{quantity}</span>
+                    )}
+                  </Badge>
+                );
+              })}
             </div>
           )}
         </CardContent>
