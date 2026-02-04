@@ -6,6 +6,7 @@ import { useState } from "react";
 import createCharImage from "@/components/assets/createChar.jpg";
 import myCharImage from "@/components/assets/myChar.jpg";
 import racesImage from "@/components/assets/races.jpg";
+import equipImage from "@/components/assets/equip.jpg";
 import classesImage from "@/components/assets/classes.jpg";
 import backgroundsImage from "@/components/assets/backgrounds.jpg";
 import spellsImage from "@/components/assets/spells.jpg";
@@ -95,6 +96,7 @@ const MENU_ITEMS: MenuItem[] = [
     gradient: "from-orange-500 to-amber-500",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: equipImage,
   },
   // Скрытые пункты меню (временно закомментированы)
   /*

@@ -386,6 +386,8 @@
 html {
   scroll-behavior: smooth;
   min-height: 100%;
+  /* Резервируем место под скроллбар, чтобы контент не прыгал */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -398,6 +400,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* Резервируем место под скроллбар */
+  overflow-y: scroll;
 }
 
 /* Плавные переходы для элементов при смене темы */
