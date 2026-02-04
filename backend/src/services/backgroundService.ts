@@ -1,5 +1,10 @@
 import prisma from "../db";
 
+export interface EquipmentWithQuantity {
+  equipmentId: string;
+  quantity: number;
+}
+
 export interface BackgroundInput {
   id: string;
   name: string;
@@ -8,7 +13,7 @@ export interface BackgroundInput {
   skillProficiencies: string[];
   toolProficiencies: string[];
   languages: number;
-  equipmentIds: string[]; // Array of equipment IDs instead of strings
+  equipment: EquipmentWithQuantity[]; // Array of equipment with quantities
   startingGold: number;
   originFeat: string;
   abilityScoreIncrease: {
@@ -33,7 +38,10 @@ export async function getAllBackgrounds(source?: string) {
 
   return backgrounds.map((bg) => ({
     ...bg,
-    equipment: bg.equipment.map((e) => e.equipment),
+    equipment: bg.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   }));
 }
 
@@ -53,7 +61,10 @@ export async function getBackgroundById(id: string) {
 
   return {
     ...background,
-    equipment: background.equipment.map((e) => e.equipment),
+    equipment: background.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   };
 }
 
@@ -73,7 +84,10 @@ export async function getBackgroundByExternalId(externalId: string) {
 
   return {
     ...background,
-    equipment: background.equipment.map((e) => e.equipment),
+    equipment: background.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   };
 }
 
@@ -92,9 +106,10 @@ export async function createBackground(input: BackgroundInput) {
       abilityScoreIncrease: input.abilityScoreIncrease,
       source: input.source,
       equipment: {
-        create: input.equipmentIds.map((equipmentId) => ({
+        create: input.equipment.map((item) => ({
+          quantity: item.quantity,
           equipment: {
-            connect: { id: equipmentId },
+            connect: { id: item.equipmentId },
           },
         })),
       },
@@ -110,7 +125,10 @@ export async function createBackground(input: BackgroundInput) {
 
   return {
     ...background,
-    equipment: background.equipment.map((e) => e.equipment),
+    equipment: background.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   };
 }
 
@@ -131,9 +149,10 @@ export async function createManyBackgrounds(inputs: BackgroundInput[]) {
           abilityScoreIncrease: input.abilityScoreIncrease,
           source: input.source,
           equipment: {
-            create: input.equipmentIds.map((equipmentId) => ({
+            create: input.equipment.map((item) => ({
+              quantity: item.quantity,
               equipment: {
-                connect: { id: equipmentId },
+                connect: { id: item.equipmentId },
               },
             })),
           },
@@ -151,7 +170,10 @@ export async function createManyBackgrounds(inputs: BackgroundInput[]) {
 
   return results.map((bg) => ({
     ...bg,
-    equipment: bg.equipment.map((e) => e.equipment),
+    equipment: bg.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   }));
 }
 
@@ -182,17 +204,18 @@ export async function updateBackground(
     ...(input.source && { source: input.source }),
   };
 
-  if (input.equipmentIds) {
+  if (input.equipment) {
     // Delete existing equipment relations
     await prisma.backgroundEquipment.deleteMany({
       where: { backgroundId: id },
     });
 
-    // Create new equipment relations
+    // Create new equipment relations with quantities
     updateData.equipment = {
-      create: input.equipmentIds.map((equipmentId) => ({
+      create: input.equipment.map((item) => ({
+        quantity: item.quantity,
         equipment: {
-          connect: { id: equipmentId },
+          connect: { id: item.equipmentId },
         },
       })),
     };
@@ -212,7 +235,10 @@ export async function updateBackground(
 
   return {
     ...background,
-    equipment: background.equipment.map((e) => e.equipment),
+    equipment: background.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   };
 }
 

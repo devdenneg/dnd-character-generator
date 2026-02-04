@@ -17,6 +17,11 @@ const abilityScoreIncreaseSchema = z.object({
   amount: z.array(z.number()),
 });
 
+const equipmentWithQuantitySchema = z.object({
+  equipmentId: z.string(),
+  quantity: z.number().int().min(1).default(1),
+});
+
 const createBackgroundSchema = z.object({
   externalId: z.string().min(1, "External ID is required"),
   name: z.string().min(1, "Name is required"),
@@ -25,7 +30,7 @@ const createBackgroundSchema = z.object({
   skillProficiencies: z.array(z.string()),
   toolProficiencies: z.array(z.string()),
   languages: z.number().int().min(0),
-  equipmentIds: z.array(z.string()),
+  equipment: z.array(equipmentWithQuantitySchema),
   startingGold: z.number().int().min(0),
   originFeat: z.string(),
   abilityScoreIncrease: abilityScoreIncreaseSchema,
@@ -42,7 +47,7 @@ const updateBackgroundSchema = z.object({
   skillProficiencies: z.array(z.string()).optional(),
   toolProficiencies: z.array(z.string()).optional(),
   languages: z.number().int().min(0).optional(),
-  equipmentIds: z.array(z.string()).optional(),
+  equipment: z.array(equipmentWithQuantitySchema).optional(),
   startingGold: z.number().int().min(0).optional(),
   originFeat: z.string().optional(),
   abilityScoreIncrease: abilityScoreIncreaseSchema.optional(),
@@ -176,7 +181,7 @@ export async function create(req: AuthenticatedRequest, res: Response) {
       skillProficiencies: validatedData.skillProficiencies,
       toolProficiencies: validatedData.toolProficiencies,
       languages: validatedData.languages,
-      equipmentIds: validatedData.equipmentIds,
+      equipment: validatedData.equipment,
       startingGold: validatedData.startingGold,
       originFeat: validatedData.originFeat,
       abilityScoreIncrease: validatedData.abilityScoreIncrease,

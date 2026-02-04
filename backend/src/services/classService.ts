@@ -1,6 +1,11 @@
 import prisma from "../db";
 import type { StartingEquipment, SpellcastingConfig } from "../types/equipment";
 
+export interface EquipmentWithQuantity {
+  equipmentId: string;
+  quantity: number;
+}
+
 export interface ClassFeatureInput {
   name: string;
   nameRu: string;
@@ -40,7 +45,7 @@ export interface CharacterClassInput {
   source: string;
   features: ClassFeatureInput[];
   subclasses: SubclassInput[];
-  equipmentIds?: string[]; // Array of equipment IDs
+  equipment?: EquipmentWithQuantity[]; // Array of equipment with quantities
   startingGold?: number;
   spellcasting?: SpellcastingConfig;
 }
@@ -71,7 +76,10 @@ export async function getAllClasses(source?: string) {
 
   return classes.map((cls) => ({
     ...cls,
-    equipment: cls.equipment.map((e) => e.equipment),
+    equipment: cls.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   }));
 }
 
@@ -102,7 +110,10 @@ export async function getClassById(id: string) {
 
   return {
     ...classData,
-    equipment: classData.equipment.map((e) => e.equipment),
+    equipment: classData.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   };
 }
 
@@ -133,7 +144,10 @@ export async function getClassByExternalId(externalId: string) {
 
   return {
     ...classData,
-    equipment: classData.equipment.map((e) => e.equipment),
+    equipment: classData.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   };
 }
 
@@ -170,11 +184,12 @@ export async function createClass(input: CharacterClassInput) {
           },
         })),
       },
-      equipment: input.equipmentIds
+      equipment: input.equipment
         ? {
-            create: input.equipmentIds.map((equipmentId) => ({
+            create: input.equipment.map((item) => ({
+              quantity: item.quantity,
               equipment: {
-                connect: { id: equipmentId },
+                connect: { id: item.equipmentId },
               },
             })),
           }
@@ -202,7 +217,10 @@ export async function createClass(input: CharacterClassInput) {
 
   return {
     ...classData,
-    equipment: classData.equipment.map((e) => e.equipment),
+    equipment: classData.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   };
 }
 
@@ -241,11 +259,12 @@ export async function createManyClasses(inputs: CharacterClassInput[]) {
               },
             })),
           },
-          equipment: input.equipmentIds
+          equipment: input.equipment
             ? {
-                create: input.equipmentIds.map((equipmentId) => ({
+                create: input.equipment.map((item) => ({
+                  quantity: item.quantity,
                   equipment: {
-                    connect: { id: equipmentId },
+                    connect: { id: item.equipmentId },
                   },
                 })),
               }
@@ -275,7 +294,10 @@ export async function createManyClasses(inputs: CharacterClassInput[]) {
 
   return results.map((cls) => ({
     ...cls,
-    equipment: cls.equipment.map((e) => e.equipment),
+    equipment: cls.equipment.map((e) => ({
+      ...e.equipment,
+      quantity: e.quantity,
+    })),
   }));
 }
 
@@ -316,7 +338,7 @@ export async function updateClass(
   }
 
   // Delete old equipment relations if provided
-  if (input.equipmentIds) {
+  if (input.equipment) {
     await prisma.classEquipment.deleteMany({
       where: { classId: id },
     });
@@ -367,11 +389,12 @@ export async function updateClass(
       })),
     };
   }
-  if (input.equipmentIds) {
+  if (input.equipment) {
     updateData.equipment = {
-      create: input.equipmentIds.map((equipmentId) => ({
+      create: input.equipment.map((item) => ({
+        quantity: item.quantity,
         equipment: {
-          connect: { id: equipmentId },
+          connect: { id: item.equipmentId },
         },
       })),
     };

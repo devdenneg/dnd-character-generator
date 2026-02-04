@@ -280,6 +280,7 @@ model BackgroundEquipment {
   id           String     @id @default(uuid())
   backgroundId String
   equipmentId  String
+  quantity     Int        @default(1)
   createdAt    DateTime   @default(now())
 
   background   Background @relation(fields: [backgroundId], references: [id], onDelete: Cascade)
@@ -291,13 +292,14 @@ model BackgroundEquipment {
 }
 
 model ClassEquipment {
-  id        String         @id @default(uuid())
-  classId   String
+  id          String         @id @default(uuid())
+  classId     String
   equipmentId String
-  createdAt DateTime       @default(now())
+  quantity    Int            @default(1)
+  createdAt   DateTime       @default(now())
 
-  class     CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
-  equipment Equipment      @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  class       CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  equipment   Equipment      @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
 
   @@unique([classId, equipmentId])
   @@index([classId])

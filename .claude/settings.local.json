@@ -21,7 +21,9 @@
       "Bash(git add:*)",
       "Bash(npm ci)",
       "Bash(npm uninstall:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx prisma db push:*)"
     ]
   }
 }

@@ -1272,7 +1272,10 @@ export function CharacterSheet() {
             <div className="flex flex-wrap gap-1">
               {character.background.equipment.map((item, i) => (
                 <Badge key={i} variant="outline">
-                  {item}
+                  {item.nameRu || item.name}
+                  {item.quantity && item.quantity > 1 && (
+                    <span className="ml-1 text-xs opacity-70">×{item.quantity}</span>
+                  )}
                 </Badge>
               ))}
             </div>
@@ -1313,6 +1316,11 @@ export function CharacterSheet() {
                             {armorTypeLabel}
                           </span>
                         )}
+                        {armor.quantity && armor.quantity > 1 && (
+                          <span className="ml-1 text-xs opacity-70">
+                            ×{armor.quantity}
+                          </span>
+                        )}
                         <span className="text-xs opacity-70 ml-1">
                           [{sourceLabel}]
                         </span>
@@ -1333,6 +1341,9 @@ export function CharacterSheet() {
                   .map((item) => (
                     <Badge key={item.id} variant="outline">
                       {item.nameRu}
+                      {item.quantity && item.quantity > 1 && (
+                        <span className="ml-1 text-xs opacity-70">×{item.quantity}</span>
+                      )}
                     </Badge>
                   ))}
               </div>

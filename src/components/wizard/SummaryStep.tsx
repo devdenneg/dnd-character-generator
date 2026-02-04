@@ -14,40 +14,6 @@ import { CharacterSheet } from "@/components/CharacterSheet";
 import { generateCharacterPDF } from "@/utils/pdfGenerator";
 import { useAuth } from "@/contexts/AuthContext";
 import { charactersApi } from "@/api/client";
-import type { EquipmentItem } from "@/types/equipment";
-import { isWeapon, isArmor } from "@/types/equipment";
-import type { Equipment } from "@/types/character";
-
-// Функция для преобразования EquipmentItem в Equipment
-function transformEquipmentItem(item: EquipmentItem): Equipment {
-  const base: Equipment = {
-    id: item.externalId || item.name,
-    externalId: item.externalId,
-    name: item.name,
-    nameRu: item.nameRu,
-    category: item.category,
-    cost: item.cost,
-    weight: item.weight ?? 0,
-    source: "class",
-  };
-
-  if (isWeapon(item)) {
-    return {
-      ...base,
-      damage: item.damage,
-      properties: item.properties,
-    } as Equipment;
-  } else if (isArmor(item)) {
-    return {
-      ...base,
-      armorClass: item.armorClass,
-      armorType: item.armorType,
-      maxDexBonus: item.maxDexBonus,
-    } as Equipment;
-  }
-
-  return base;
-}
 
 export function SummaryStep() {
   const {
@@ -116,23 +82,15 @@ export function SummaryStep() {
 
       const characterData = getCharacterData();
 
-      // Transform data for backend validation
+      // Transform data for backend - equipment is already in correct format
       const transformedData = {
         ...characterData,
         class: characterData.class
           ? {
               ...characterData.class,
-              startingEquipment: characterData.class.startingEquipment
-                ? {
-                    ...characterData.class.startingEquipment,
-                    equipment: (
-                      characterData.class.startingEquipment
-                        .equipment as EquipmentItem[]
-                    ).map((item: EquipmentItem) =>
-                      transformEquipmentItem(item)
-                    ),
-                  }
-                : undefined,
+              // Equipment is now stored in equipment array, not startingEquipment
+              equipment: characterData.class.equipment || [],
+              startingGold: characterData.class.startingGold || 0,
               spellcasting: characterData.class.spellcasting || undefined,
             }
           : null,
@@ -142,11 +100,12 @@ export function SummaryStep() {
               externalId:
                 characterData.background.externalId ||
                 characterData.background.id,
+              // Equipment is now stored in equipment array
+              equipment: characterData.background.equipment || [],
             }
           : null,
-        equipment: (characterData.equipment as EquipmentItem[]).map((item) =>
-          transformEquipmentItem(item)
-        ),
+        // Equipment is already in correct format from store
+        equipment: characterData.equipment || [],
       };
 
       await charactersApi.create({

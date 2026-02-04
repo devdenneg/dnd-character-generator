@@ -61,7 +61,9 @@ export interface CharacterClass {
   features: ClassFeature[];
   subclasses: Subclass[];
   subclassLevel: number;
-  startingEquipment?: StartingEquipment; // Стартовое снаряжение с золотом
+  equipment?: Equipment[]; // Снаряжение из БД
+  startingGold?: number; // Стартовое золото
+  startingEquipment?: StartingEquipment; // Стартовое снаряжение с золотом (для обратной совместимости)
   spellcasting?: {
     ability: AbilityName;
     cantripsKnown: number[];
@@ -80,7 +82,7 @@ export interface Background {
   skillProficiencies: string[];
   toolProficiencies: string[];
   languages: number;
-  equipment: string[];
+  equipment: Equipment[]; // Снаряжение из БД (массив объектов Equipment)
   startingGold?: number; // Сумма золотых монет от предыстории
   originFeat?: string;
   abilityScoreIncrease: {
@@ -105,6 +107,7 @@ export interface Equipment {
   maxDexBonus?: number; // Максимальный бонус Ловкости (для средних и тяжёлых доспехов)
   properties?: string[];
   source?: "class" | "background"; // Источник снаряжения
+  quantity?: number; // Количество предметов
 }
 
 // Интерфейс для стартового снаряжения класса

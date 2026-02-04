@@ -1,59 +1,57 @@
-import { useEffect } from "react";
-import { Package, Info, Coins, Swords } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Package, Info, Coins, Swords, Plus, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import type { Equipment } from "@/types/character";
 import { t } from "@/data/translations/ru";
 
 export function EquipmentStep() {
   const { character, setEquipment, setWallet } = useCharacterStore();
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   // Автоматически добавляем снаряжение при выборе класса и предыстории
   useEffect(() => {
     const allEquipment: Equipment[] = [];
+    const initialQuantities: Record<string, number> = {};
 
     // Добавляем снаряжение от предыстории
-    if (character.background) {
-      character.background.equipment.forEach((itemName) => {
-        const bgEquipment: Equipment = {
-          id: `bg-${itemName.toLowerCase().replace(/\s+/g, "-")}`,
-          externalId: `bg-${itemName.toLowerCase().replace(/\s+/g, "-")}`,
-          name: itemName,
-          nameRu: itemName,
-          category: "gear" as const,
-          cost: { quantity: 0, unit: "gp" },
-          weight: 0,
+    if (character.background?.equipment && Array.isArray(character.background.equipment)) {
+      character.background.equipment.forEach((item) => {
+        const quantity = item.quantity || 1;
+        allEquipment.push({
+          ...item,
           source: "background",
-        };
-        allEquipment.push(bgEquipment);
+          quantity,
+        });
+        initialQuantities[item.id] = quantity;
       });
     }
 
     // Добавляем снаряжение от класса
-    if (character.class?.startingEquipment) {
-      character.class.startingEquipment.equipment.forEach((item) => {
+    if (character.class?.equipment && Array.isArray(character.class.equipment)) {
+      character.class.equipment.forEach((item) => {
+        const quantity = item.quantity || 1;
         allEquipment.push({
           ...item,
-          id:
-            item.externalId ||
-            item.id ||
-            `class-${item.name?.toLowerCase().replace(/\s+/g, "-")}`,
           source: "class",
+          quantity,
         });
+        initialQuantities[item.id] = quantity;
       });
     }
 
     // Устанавливаем снаряжение
     setEquipment(allEquipment);
+    setQuantities(initialQuantities);
 
     // Суммируем золото от класса и предыстории
-    const classGold = character.class?.startingEquipment?.gold || 0;
+    const classGold = character.class?.startingGold || 0;
     const backgroundGold = character.background?.startingGold || 0;
     const totalGold = classGold + backgroundGold;
 
-    // Устанавливаем кошелек только если у нас есть золото для установки И мы не на шаге снаряжения
-    // чтобы избежать циклических обновлений
+    // Устанавливаем кошелек только если у нас есть золото для установки
     if (totalGold > 0) {
       setWallet({
         copper: 0,
@@ -73,13 +71,30 @@ export function EquipmentStep() {
     (e) => e.source === "class"
   );
 
+  // Функция для изменения количества предмета
+  const updateQuantity = (itemId: string, delta: number) => {
+    const currentQuantity = quantities[itemId] || 1;
+    const newQuantity = Math.max(1, currentQuantity + delta);
+
+    setQuantities((prev) => ({
+      ...prev,
+      [itemId]: newQuantity,
+    }));
+
+    // Обновляем снаряжение в store
+    const updatedEquipment = character.equipment.map((item) =>
+      item.id === itemId ? { ...item, quantity: newQuantity } : item
+    );
+    setEquipment(updatedEquipment);
+  };
+
   const totalWeight = character.equipment.reduce(
-    (sum, item) => sum + item.weight,
+    (sum, item) => sum + (item.weight || 0) * (item.quantity || 1),
     0
   );
 
   // Получаем золото от каждого источника
-  const classGold = character.class?.startingEquipment?.gold || 0;
+  const classGold = character.class?.startingGold || 0;
   const backgroundGold = character.background?.startingGold || 0;
   const totalGold = character.wallet?.gold || 0;
 
@@ -122,20 +137,51 @@ export function EquipmentStep() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {backgroundEquipment.map((item, index) => (
                 <div
-                  key={index}
+                  key={item.id || index}
                   className="flex flex-col gap-1 p-2 bg-background/50 rounded"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{item.nameRu}</span>
+                    <span className="text-sm font-medium">{item.nameRu || item.name}</span>
                     <Badge variant="outline" className="text-xs">
                       Предыстория
                     </Badge>
                   </div>
-                  {item.cost && item.cost.quantity > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      {item.cost.quantity} {item.cost.unit}
-                    </span>
-                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      {item.cost && item.cost.quantity > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          {item.cost.quantity} {item.cost.unit}
+                        </span>
+                      )}
+                      {item.weight && (
+                        <span className="text-xs text-muted-foreground">
+                          Вес: {item.weight} кг × {quantities[item.id] || 1} = {((item.weight || 0) * (quantities[item.id] || 1)).toFixed(1)} кг
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => updateQuantity(item.id, -1)}
+                        disabled={(quantities[item.id] || 1) <= 1}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="text-sm font-medium min-w-[2ch] text-center">
+                        {quantities[item.id] || 1}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => updateQuantity(item.id, 1)}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -164,11 +210,11 @@ export function EquipmentStep() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {classEquipment.map((item, index) => (
                 <div
-                  key={index}
-                  className="flex flex-col gap-1 p-2 bg-background/50 rounded"
+                  key={item.id || index}
+                  className="flex flex-col gap-2 p-2 bg-background/50 rounded"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{item.nameRu}</span>
+                    <span className="text-sm font-medium">{item.nameRu || item.name}</span>
                     <Badge variant="default" className="text-xs">
                       Класс
                     </Badge>
@@ -185,7 +231,7 @@ export function EquipmentStep() {
                       )}
                     </div>
                   )}
-                  {item.category === "armor" && (
+                  {item.category === "armor" && item.armorClass && (
                     <div className="text-xs text-muted-foreground flex gap-2">
                       <span>КД: {item.armorClass}</span>
                       {item.armorType === "shield" ? (
@@ -203,11 +249,42 @@ export function EquipmentStep() {
                       )}
                     </div>
                   )}
-                  {item.cost && item.cost.quantity > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      {item.cost.quantity} {item.cost.unit}
-                    </span>
-                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      {item.cost && item.cost.quantity > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          {item.cost.quantity} {item.cost.unit}
+                        </span>
+                      )}
+                      {item.weight && (
+                        <span className="text-xs text-muted-foreground">
+                          Вес: {item.weight} кг × {quantities[item.id] || 1} = {((item.weight || 0) * (quantities[item.id] || 1)).toFixed(1)} кг
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => updateQuantity(item.id, -1)}
+                        disabled={(quantities[item.id] || 1) <= 1}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="text-sm font-medium min-w-[2ch] text-center">
+                        {quantities[item.id] || 1}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => updateQuantity(item.id, 1)}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -224,7 +301,7 @@ export function EquipmentStep() {
             </CardTitle>
             <div className="flex gap-2">
               <Badge variant="secondary">
-                Вес: {totalWeight.toFixed(1)} фунтов
+                Вес: {totalWeight.toFixed(1)} кг
               </Badge>
               {totalGold > 0 && (
                 <Badge variant="default" className="flex items-center gap-1">
@@ -244,11 +321,11 @@ export function EquipmentStep() {
             <div className="flex flex-wrap gap-2">
               {character.equipment.map((item, index) => (
                 <Badge
-                  key={index}
+                  key={item.id || index}
                   variant="outline"
                   className="cursor-pointer hover:bg-destructive/10"
                 >
-                  {item.nameRu}
+                  {item.nameRu || item.name}
                 </Badge>
               ))}
             </div>

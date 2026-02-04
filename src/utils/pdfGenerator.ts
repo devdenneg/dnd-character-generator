@@ -85,14 +85,26 @@ export function generateCharacterPDF(
   const hasSpells =
     character.cantripsKnown.length > 0 || character.spellsKnown.length > 0;
 
-  // Собираем всё снаряжение текстом
+  // Собираем всё снаряжение текстом с учетом количества
   const allEquipment: string[] = [];
   if (character.background?.equipment) {
-    allEquipment.push(...character.background.equipment);
+    allEquipment.push(...character.background.equipment.map(item => {
+      const qty = item.quantity && item.quantity > 1 ? ` ×${item.quantity}` : '';
+      return `${item.nameRu || item.name}${qty}`;
+    }));
   }
-  gear.forEach((g) => allEquipment.push(g.nameRu));
-  weapons.forEach((w) => allEquipment.push(w.nameRu));
-  armor.forEach((a) => allEquipment.push(a.nameRu));
+  gear.forEach((g) => {
+    const qty = g.quantity && g.quantity > 1 ? ` ×${g.quantity}` : '';
+    allEquipment.push(`${g.nameRu}${qty}`);
+  });
+  weapons.forEach((w) => {
+    const qty = w.quantity && w.quantity > 1 ? ` ×${w.quantity}` : '';
+    allEquipment.push(`${w.nameRu}${qty}`);
+  });
+  armor.forEach((a) => {
+    const qty = a.quantity && a.quantity > 1 ? ` ×${a.quantity}` : '';
+    allEquipment.push(`${a.nameRu}${qty}`);
+  });
 
   // Особенности класса 1 уровня
   const classFeatures =
@@ -610,10 +622,11 @@ export function generateCharacterPDF(
                     ? DAMAGE_TYPES_RU[weapon.damage.type.toLowerCase()] ||
                       weapon.damage.type
                     : "";
+                  const qtyText = weapon.quantity && weapon.quantity > 1 ? ` ×${weapon.quantity}` : '';
                   return `
                   <div class="weapon-card">
                     <div>
-                      <div class="weapon-name">${weapon.nameRu}</div>
+                      <div class="weapon-name">${weapon.nameRu}${qtyText}</div>
                       <div class="weapon-details">${damageTypeRu}</div>
                     </div>
                     <div style="text-align: right;">
@@ -637,7 +650,10 @@ export function generateCharacterPDF(
           <div class="section">
             <div class="section-title">Защита</div>
             <div class="armor-info">
-              ${armor.map((a) => `<strong>${a.nameRu}</strong> (КД ${a.armorClass}${a.id === "shield" ? " бонус" : ""})`).join(", ")}
+              ${armor.map((a) => {
+                const qtyText = a.quantity && a.quantity > 1 ? ` ×${a.quantity}` : '';
+                return `<strong>${a.nameRu}${qtyText}</strong> (КД ${a.armorClass}${a.id === "shield" ? " бонус" : ""})`;
+              }).join(", ")}
             </div>
           </div>
         `

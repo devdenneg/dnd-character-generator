@@ -124,6 +124,11 @@ interface CharacterClass {
   spellcasting?: Spellcasting;
 }
 
+interface EquipmentWithQuantity {
+  equipmentId: string;
+  quantity: number;
+}
+
 interface ClassFormData {
   externalId: string;
   name: string;
@@ -140,7 +145,7 @@ interface ClassFormData {
   source: string;
   features: ClassFeature[];
   subclasses: Subclass[];
-  equipmentIds?: string[];
+  equipment?: EquipmentWithQuantity[];
   startingGold?: number;
   startingEquipment?: StartingEquipment; // Keep for backward compatibility
   spellcasting?: Spellcasting;
@@ -320,7 +325,7 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     source: "phb2024",
     features: [],
     subclasses: [],
-    equipmentIds: [],
+    equipment: [],
     startingGold: 0,
     startingEquipment: {
       equipment: [],
@@ -339,6 +344,8 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
     level: 1,
   });
   const [selectedEquipmentId, setSelectedEquipmentId] = useState("");
+  const [equipmentSearchQuery, setEquipmentSearchQuery] = useState("");
+  const [equipmentCategoryFilter, setEquipmentCategoryFilter] = useState<string>("all");
 
   // Create class mutation
   const createClassMutation = useMutation({
@@ -421,7 +428,10 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
       source: cls.source,
       features: cls.features,
       subclasses: cls.subclasses,
-      equipmentIds: cls.equipment?.map((e) => e.id) || [],
+      equipment: cls.equipment?.map((e) => ({
+        equipmentId: e.id,
+        quantity: (e as any).quantity || 1,
+      })) || [],
       startingGold: cls.startingGold || 0,
       startingEquipment: cls.startingEquipment || {
         equipment: [],
@@ -481,12 +491,13 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
   };
 
   // Functions for managing equipment from database
-  const handleAddEquipmentFromDB = () => {
-    if (!selectedEquipmentId) return;
-    if (editingClass.equipmentIds?.includes(selectedEquipmentId)) return;
+  const handleAddEquipmentFromDB = (equipmentId?: string) => {
+    const idToAdd = equipmentId || selectedEquipmentId;
+    if (!idToAdd) return;
+    if (editingClass.equipment?.some(e => e.equipmentId === idToAdd)) return;
     setEditingClass({
       ...editingClass,
-      equipmentIds: [...(editingClass.equipmentIds || []), selectedEquipmentId],
+      equipment: [...(editingClass.equipment || []), { equipmentId: idToAdd, quantity: 1 }],
     });
     setSelectedEquipmentId("");
   };
@@ -494,7 +505,18 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
   const handleRemoveEquipmentFromDB = (equipmentId: string) => {
     setEditingClass({
       ...editingClass,
-      equipmentIds: (editingClass.equipmentIds || []).filter((id) => id !== equipmentId),
+      equipment: (editingClass.equipment || []).filter((e) => e.equipmentId !== equipmentId),
+    });
+  };
+
+  const handleUpdateEquipmentQuantity = (equipmentId: string, delta: number) => {
+    setEditingClass({
+      ...editingClass,
+      equipment: (editingClass.equipment || []).map((e) =>
+        e.equipmentId === equipmentId
+          ? { ...e, quantity: Math.max(1, e.quantity + delta) }
+          : e
+      ),
     });
   };
 
@@ -1653,11 +1675,11 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                       Начальное снаряжение
                     </Label>
                     <span className="text-sm text-muted-foreground">
-                      {editingClass.equipmentIds?.length || 0}{" "}
-                      {(editingClass.equipmentIds?.length || 0) === 1
+                      {editingClass.equipment?.length || 0}{" "}
+                      {(editingClass.equipment?.length || 0) === 1
                         ? "предмет"
-                        : (editingClass.equipmentIds?.length || 0) > 1 &&
-                          (editingClass.equipmentIds?.length || 0) < 5
+                        : (editingClass.equipment?.length || 0) > 1 &&
+                          (editingClass.equipment?.length || 0) < 5
                         ? "предмета"
                         : "предметов"}
                     </span>
@@ -1681,36 +1703,164 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                   </div>
 
                   {/* Equipment from Database */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Label>Снаряжение из базы данных</Label>
-                    <div className="flex gap-2">
-                      <select
-                        value={selectedEquipmentId}
-                        onChange={(e) => setSelectedEquipmentId(e.target.value)}
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value="">Выберите снаряжение</option>
-                        {allEquipment
-                          .filter((eq: EquipmentItem) => !editingClass.equipmentIds?.includes(eq.id))
-                          .map((eq: EquipmentItem) => (
-                            <option key={eq.id} value={eq.id}>
-                              {eq.nameRu || eq.name} ({eq.category})
-                            </option>
-                          ))}
-                      </select>
-                      <Button onClick={handleAddEquipmentFromDB} type="button" disabled={!selectedEquipmentId}>
-                        <Plus className="w-4 h-4" />
-                      </Button>
+
+                    {/* Search and Filter */}
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Поиск снаряжения..."
+                        value={equipmentSearchQuery}
+                        onChange={(e) => setEquipmentSearchQuery(e.target.value)}
+                      />
+
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={equipmentCategoryFilter === "all" ? "default" : "outline"}
+                          onClick={() => setEquipmentCategoryFilter("all")}
+                        >
+                          Все
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={equipmentCategoryFilter === "weapon" ? "default" : "outline"}
+                          onClick={() => setEquipmentCategoryFilter("weapon")}
+                        >
+                          Оружие
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={equipmentCategoryFilter === "armor" ? "default" : "outline"}
+                          onClick={() => setEquipmentCategoryFilter("armor")}
+                        >
+                          Доспехи
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={equipmentCategoryFilter === "gear" ? "default" : "outline"}
+                          onClick={() => setEquipmentCategoryFilter("gear")}
+                        >
+                          Снаряжение
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={equipmentCategoryFilter === "tool" ? "default" : "outline"}
+                          onClick={() => setEquipmentCategoryFilter("tool")}
+                        >
+                          Инструменты
+                        </Button>
+                      </div>
                     </div>
-                    {editingClass.equipmentIds && editingClass.equipmentIds.length > 0 && (
-                      <div className="space-y-2 mt-2">
-                        {editingClass.equipmentIds.map((equipmentId) => {
-                          const equipment = allEquipment.find((e: EquipmentItem) => e.id === equipmentId);
+
+                    {/* Equipment List */}
+                    <div className="max-h-64 overflow-y-auto border rounded-lg">
+                      {allEquipment
+                        .filter((eq: EquipmentItem) => {
+                          // Filter by category
+                          if (equipmentCategoryFilter !== "all" && eq.category !== equipmentCategoryFilter) {
+                            return false;
+                          }
+                          // Filter by search query
+                          if (equipmentSearchQuery) {
+                            const query = equipmentSearchQuery.toLowerCase();
+                            return (
+                              eq.name.toLowerCase().includes(query) ||
+                              eq.nameRu.toLowerCase().includes(query)
+                            );
+                          }
+                          // Don't show already selected items
+                          return !editingClass.equipment?.some(e => e.equipmentId === eq.id);
+                        })
+                        .map((eq: EquipmentItem) => (
+                          <button
+                            key={eq.id}
+                            type="button"
+                            onClick={() => {
+                              handleAddEquipmentFromDB(eq.id);
+                              setEquipmentSearchQuery("");
+                            }}
+                            className="w-full text-left p-3 hover:bg-muted/50 border-b last:border-b-0 transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-sm">
+                                  {eq.nameRu || eq.name}
+                                </div>
+                                {eq.nameRu && eq.name && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {eq.name}
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                  <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                                    {eq.category === "weapon" && "Оружие"}
+                                    {eq.category === "armor" && "Доспех"}
+                                    {eq.category === "gear" && "Снаряжение"}
+                                    {eq.category === "tool" && "Инструмент"}
+                                    {eq.category === "pack" && "Набор"}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {eq.cost.quantity} {eq.cost.unit}
+                                  </span>
+                                  {eq.weight && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {eq.weight} кг
+                                    </span>
+                                  )}
+                                </div>
+                                {/* Additional info for weapons */}
+                                {eq.category === "weapon" && eq.damage && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    Урон: {eq.damage.dice} ({eq.damage.type})
+                                  </div>
+                                )}
+                                {/* Additional info for armor */}
+                                {eq.category === "armor" && eq.armorClass && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    AC: {eq.armorClass} • {eq.armorType}
+                                  </div>
+                                )}
+                              </div>
+                              <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            </div>
+                          </button>
+                        ))}
+                      {allEquipment.filter((eq: EquipmentItem) => {
+                        if (equipmentCategoryFilter !== "all" && eq.category !== equipmentCategoryFilter) {
+                          return false;
+                        }
+                        if (equipmentSearchQuery) {
+                          const query = equipmentSearchQuery.toLowerCase();
+                          return (
+                            eq.name.toLowerCase().includes(query) ||
+                            eq.nameRu.toLowerCase().includes(query)
+                          );
+                        }
+                        return !editingClass.equipmentIds?.includes(eq.id);
+                      }).length === 0 && (
+                        <div className="p-4 text-center text-sm text-muted-foreground">
+                          Снаряжение не найдено
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Selected Equipment */}
+                    {editingClass.equipment && editingClass.equipment.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm">Выбранное снаряжение ({editingClass.equipment.length})</Label>
+                        {editingClass.equipment.map((item) => {
+                          const equipment = allEquipment.find((e: EquipmentItem) => e.id === item.equipmentId);
                           if (!equipment) return null;
                           return (
                             <div
-                              key={equipmentId}
-                              className="flex items-center justify-between p-2 rounded bg-muted"
+                              key={item.equipmentId}
+                              className="flex items-center justify-between p-2 rounded bg-muted gap-2"
                             >
                               <div className="flex-1">
                                 <div className="text-sm font-medium">
@@ -1718,15 +1868,42 @@ export function ClassesPage({ onBack }: ClassesPageProps) {
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {equipment.cost.quantity} {equipment.cost.unit}
-                                  {equipment.weight && ` • ${equipment.weight} кг`}
+                                  {equipment.weight && ` • ${equipment.weight} кг × ${item.quantity} = ${(equipment.weight * item.quantity).toFixed(1)} кг`}
                                 </div>
                               </div>
-                              <button
-                                onClick={() => handleRemoveEquipmentFromDB(equipmentId)}
-                                className="hover:text-destructive"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => handleUpdateEquipmentQuantity(item.equipmentId, -1)}
+                                    disabled={item.quantity <= 1}
+                                    type="button"
+                                  >
+                                    -
+                                  </Button>
+                                  <span className="text-sm font-medium min-w-[2ch] text-center">
+                                    {item.quantity}
+                                  </span>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => handleUpdateEquipmentQuantity(item.equipmentId, 1)}
+                                    type="button"
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                                <button
+                                  onClick={() => handleRemoveEquipmentFromDB(item.equipmentId)}
+                                  className="hover:text-destructive"
+                                  type="button"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
