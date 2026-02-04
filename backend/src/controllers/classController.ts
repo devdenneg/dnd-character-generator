@@ -42,17 +42,25 @@ const spellcastingSchema = z
     ability: z.string().min(1, "Spellcasting ability is required"),
     cantripsKnown: z
       .array(z.number())
-      .length(20, "Cantrips known must have 20 values"),
+      .min(1, "Cantrips known must have at least 1 value")
+      .max(20, "Cantrips known must have at most 20 values"),
     spellsKnown: z
       .array(z.number())
-      .length(20, "Spells known must have 20 values")
+      .min(1, "Spells known must have at least 1 value")
+      .max(20, "Spells known must have at most 20 values")
       .optional(),
     spellSlots: z
       .array(z.array(z.number()))
-      .length(20, "Spell slots must have 20 character levels")
+      .min(1, "Spell slots must have at least 1 level")
+      .max(20, "Spell slots must have at most 20 character levels")
       .optional(),
   })
   .optional();
+
+const equipmentWithQuantitySchema = z.object({
+  equipmentId: z.string(),
+  quantity: z.number().int().min(1).default(1),
+});
 
 const createClassSchema = z.object({
   externalId: z.string().min(1, "External ID is required"),
@@ -74,7 +82,7 @@ const createClassSchema = z.object({
     .array(createClassFeatureSchema)
     .min(1, "Class must have at least one feature"),
   subclasses: z.array(createSubclassSchema),
-  equipmentIds: z.array(z.string()).optional(),
+  equipment: z.array(equipmentWithQuantitySchema).optional(),
   startingGold: z.number().int().min(0).optional(),
   spellcasting: spellcastingSchema,
 });
@@ -95,7 +103,7 @@ const updateClassSchema = z.object({
   source: z.enum(["srd", "phb2024"]).optional(),
   features: z.array(createClassFeatureSchema).optional(),
   subclasses: z.array(createSubclassSchema).optional(),
-  equipmentIds: z.array(z.string()).optional(),
+  equipment: z.array(equipmentWithQuantitySchema).optional(),
   startingGold: z.number().int().min(0).optional(),
   spellcasting: spellcastingSchema,
 });

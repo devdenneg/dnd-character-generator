@@ -23,7 +23,9 @@
       "Bash(npm uninstall:*)",
       "Bash(ls:*)",
       "Bash(npm run lint:*)",
-      "Bash(npx prisma db push:*)"
+      "Bash(npx prisma db push:*)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(lsof:*)"
     ]
   }
 }
