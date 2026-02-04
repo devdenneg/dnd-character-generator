@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import {
   Shield,
   Sword,
@@ -19,10 +20,10 @@ import {
   Search,
   Package,
 } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Types
 interface Equipment {
@@ -112,38 +113,91 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
   const { data, error, refetch } = useBackendEquipment();
   const { user } = useAuth();
   const location = useLocation();
-  const [selectedEquipment, setSelectedEquipment] = useState<string | null>(
-    null
-  );
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Handle hash navigation
-  useEffect(() => {
+  // История навигации - храним externalId предметов
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+
+  // Текущий выбранный предмет определяется из URL
+  const selectedEquipment = useMemo(() => {
     const hash = location.hash.replace("#", "");
-    if (hash) {
-      setTimeout(() => {
-        const equipment = data?.data?.equipment?.find(
-          (e: Equipment) => e.externalId === hash
-        );
-        if (equipment) {
-          setSelectedEquipment(equipment.id);
-          setSelectedCategory("all");
-          const element = document.getElementById(`equipment-${equipment.id}`);
-          if (element) {
-            element.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-            element.classList.add("ring-2", "ring-primary");
-            setTimeout(() => {
-              element.classList.remove("ring-2", "ring-primary");
-            }, 2000);
-          }
-        }
-      }, 100);
-    }
+    if (!hash || !data?.data?.equipment) return null;
+
+    const equipment = data.data.equipment.find(
+      (e: Equipment) => e.externalId === hash
+    );
+    return equipment?.id || null;
   }, [location.hash, data]);
+
+  // Отслеживаем изменения хеша для добавления в историю
+  const prevHashRef = useRef<string>("");
+
+  useEffect(() => {
+    const currentHash = location.hash.replace("#", "");
+    const prevHash = prevHashRef.current;
+
+    // Если хеш изменился и оба не пустые, добавляем предыдущий в историю
+    if (currentHash && prevHash && currentHash !== prevHash) {
+      setNavigationHistory(prev => {
+        // Проверяем, не возвращаемся ли мы назад
+        if (prev.length > 0 && prev[prev.length - 1] === currentHash) {
+          // Это возврат назад, удаляем из истории
+          return prev.slice(0, -1);
+        }
+        // Это переход вперед, добавляем в историю
+        return [...prev, prevHash];
+      });
+    }
+
+    prevHashRef.current = currentHash;
+  }, [location.hash]);
+
+  // Обработка изменения выбранного предмета
+  useEffect(() => {
+    if (selectedEquipment) {
+      const element = document.getElementById(`equipment-${selectedEquipment}`);
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        element.classList.add("ring-2", "ring-primary");
+        setTimeout(() => {
+          element.classList.remove("ring-2", "ring-primary");
+        }, 2000);
+      }
+    }
+  }, [selectedEquipment]);
+
+  // Функция для открытия предмета
+  const openEquipment = (equipmentId: string) => {
+    const equipment = data?.data?.equipment?.find(
+      (e: Equipment) => e.id === equipmentId
+    );
+    if (!equipment) return;
+
+    // Обновляем URL
+    navigate(`${location.pathname}#${equipment.externalId}`, { replace: false });
+  };
+
+  // Функция для возврата назад
+  const goBack = () => {
+    if (navigationHistory.length === 0) return;
+
+    const previousExternalId = navigationHistory[navigationHistory.length - 1];
+    setNavigationHistory(prev => prev.slice(0, -1));
+
+    // Переходим к предыдущему предмету
+    navigate(`${location.pathname}#${previousExternalId}`, { replace: true });
+  };
+
+  // Функция для закрытия drawer
+  const closeDrawer = () => {
+    setNavigationHistory([]);
+    navigate(location.pathname, { replace: true });
+  };
 
   const [editingEquipment, setEditingEquipment] = useState<EquipmentFormData>({
     externalId: "",
@@ -174,7 +228,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
-      setSelectedEquipment(null);
+      closeDrawer();
       resetCreateForm();
     },
   });
@@ -185,7 +239,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
     onSuccess: () => {
       refetch();
       setIsEditModalOpen(false);
-      setSelectedEquipment(null);
+      closeDrawer();
       resetCreateForm();
     },
   });
@@ -271,7 +325,9 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
         (e: Equipment) =>
           e.nameRu.toLowerCase().includes(search) ||
           e.name.toLowerCase().includes(search) ||
-          e.description.some((d: string) => d.toLowerCase().includes(search))
+          (e.description && Array.isArray(e.description) && e.description.some((d: string) =>
+            typeof d === 'string' && d.toLowerCase().includes(search)
+          ))
       );
     }
 
@@ -291,7 +347,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
       <div
         key={equip.id}
         id={`equipment-${equip.id}`}
-        onClick={() => setSelectedEquipment(equip.id)}
+        onClick={() => openEquipment(equip.id)}
         className="p-4 rounded-lg border cursor-pointer transition-all bg-card border-border hover:border-primary/50"
       >
         <div className="flex items-start gap-3">
@@ -452,9 +508,22 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
         {selectedEquipment && data?.data?.equipment && (
           <SlideOverDrawer
             isOpen={!!selectedEquipment}
-            onClose={() => setSelectedEquipment(null)}
+            onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
+                {navigationHistory.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goBack();
+                    }}
+                    className="mr-2"
+                  >
+                    ← Назад
+                  </Button>
+                )}
                 {(() => {
                   const equip = data.data.equipment.find(
                     (e: Equipment) => e.id === selectedEquipment
@@ -651,16 +720,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
                       <h3 className="font-semibold text-foreground mb-2 text-sm">
                         Описание
                       </h3>
-                      <div className="space-y-2">
-                        {equip.description.map((desc: string, idx: number) => (
-                          <p
-                            key={idx}
-                            className="text-sm text-muted-foreground leading-relaxed"
-                          >
-                            {desc}
-                          </p>
-                        ))}
-                      </div>
+                      {parseEquipmentDescription(equip.description)}
                     </div>
                   )}
                 </div>

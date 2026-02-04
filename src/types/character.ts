@@ -100,7 +100,7 @@ export interface Equipment {
   category: "weapon" | "armor" | "gear" | "tool" | "pack";
   cost: { quantity: number; unit: string };
   weight: number;
-  description?: string;
+  description?: string | string[]; // Может быть строкой или массивом строк
   damage?: { dice: string; type: string };
   armorClass?: number;
   armorType?: "light" | "medium" | "heavy" | "shield"; // Тип доспеха

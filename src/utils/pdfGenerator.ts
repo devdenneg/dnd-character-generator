@@ -2,6 +2,7 @@ import type { Character, CharacterStats, Spell } from "@/types/character";
 import type { AbilityName } from "@/types/character";
 import { getSkillNameRu, getAbilityNameRu } from "@/data/translations/ru";
 import { getFeatByName } from "@/data/phb2024/feats";
+import { parseDescriptionToPlainText } from "./descriptionParser";
 
 function formatMod(mod: number): string {
   return mod >= 0 ? `+${mod}` : `${mod}`;
