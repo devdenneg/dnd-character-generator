@@ -23,6 +23,7 @@ import {
   Search,
   Package,
   Loader2,
+  Filter,
 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -109,6 +110,17 @@ const ARMOR_TYPES = [
   { value: "shield", label: "Щит" },
 ];
 
+const WEAPON_PROPERTIES = [
+  { value: "лёгкое", label: "Лёгкое" },
+  { value: "метательное", label: "Метательное" },
+  { value: "фехтовальное", label: "Фехтовальное" },
+  { value: "двуручное", label: "Двуручное" },
+  { value: "универсальное", label: "Универсальное" },
+  { value: "досягаемость", label: "Досягаемость" },
+  { value: "перезарядка", label: "Перезарядка" },
+  { value: "боеприпасы", label: "Боеприпасы" },
+];
+
 interface EquipmentPageProps {
   onBack?: () => void;
 }
@@ -119,8 +131,32 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState("");
+
+  // Инициализируем состояние из URL параметров
+  const searchParams = new URLSearchParams(location.search);
+  const [selectedCategory, setSelectedCategory] = useState<string>(() =>
+    searchParams.get('category') || 'all'
+  );
+  const [searchTerm, setSearchTerm] = useState(() =>
+    searchParams.get('search') || ''
+  );
+  const [showFilters, setShowFilters] = useState(false);
+  const [minCost, setMinCost] = useState<number | undefined>(() => {
+    const cost = searchParams.get('minCost');
+    return cost ? parseInt(cost) : undefined;
+  });
+  const [maxCost, setMaxCost] = useState<number | undefined>(() => {
+    const cost = searchParams.get('maxCost');
+    return cost ? parseInt(cost) : undefined;
+  });
+  const [selectedArmorTypes, setSelectedArmorTypes] = useState<string[]>(() => {
+    const types = searchParams.get('armorTypes');
+    return types ? types.split(',') : [];
+  });
+  const [selectedWeaponProperties, setSelectedWeaponProperties] = useState<string[]>(() => {
+    const props = searchParams.get('weaponProps');
+    return props ? props.split(',') : [];
+  });
 
   // История навигации - храним externalId предметов
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
@@ -207,6 +243,74 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
     setNavigationHistory([]);
     navigate(location.pathname, { replace: true });
   };
+
+  // Синхронизация состояния с URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (selectedCategory !== 'all') {
+      params.set('category', selectedCategory);
+    }
+
+    if (searchTerm) {
+      params.set('search', searchTerm);
+    }
+
+    if (minCost !== undefined) {
+      params.set('minCost', minCost.toString());
+    }
+
+    if (maxCost !== undefined) {
+      params.set('maxCost', maxCost.toString());
+    }
+
+    if (selectedArmorTypes.length > 0) {
+      params.set('armorTypes', selectedArmorTypes.join(','));
+    }
+
+    if (selectedWeaponProperties.length > 0) {
+      params.set('weaponProps', selectedWeaponProperties.join(','));
+    }
+
+    const newSearch = params.toString();
+    const currentSearch = location.search.replace('?', '');
+
+    if (newSearch !== currentSearch) {
+      navigate({
+        pathname: location.pathname,
+        search: newSearch ? `?${newSearch}` : '',
+        hash: location.hash,
+      }, { replace: true });
+    }
+  }, [selectedCategory, searchTerm, minCost, maxCost, selectedArmorTypes, selectedWeaponProperties, navigate, location.pathname, location.hash, location.search]);
+
+  // Функции управления фильтрами
+  const toggleArmorType = (type: string) => {
+    setSelectedArmorTypes(prev =>
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
+  };
+
+  const toggleWeaponProperty = (prop: string) => {
+    setSelectedWeaponProperties(prev =>
+      prev.includes(prop) ? prev.filter(p => p !== prop) : [...prev, prop]
+    );
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setMinCost(undefined);
+    setMaxCost(undefined);
+    setSelectedArmorTypes([]);
+    setSelectedWeaponProperties([]);
+  };
+
+  const hasActiveFilters =
+    searchTerm.trim().length > 0 ||
+    minCost !== undefined ||
+    maxCost !== undefined ||
+    selectedArmorTypes.length > 0 ||
+    selectedWeaponProperties.length > 0;
 
   const [editingEquipment, setEditingEquipment] = useState<EquipmentFormData>({
     externalId: "",
@@ -316,7 +420,19 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
     [metaData?.data?.equipment]
   );
 
-  // Filter by category and search
+  // Convert cost to gold pieces for comparison
+  const convertToGp = (cost: { quantity: number; unit: string }): number => {
+    const rates: Record<string, number> = {
+      cp: 0.01,
+      sp: 0.1,
+      ep: 0.5,
+      gp: 1,
+      pp: 10,
+    };
+    return cost.quantity * (rates[cost.unit] || 1);
+  };
+
+  // Filter by category, search, cost, armor types, and weapon properties
   const filteredEquipment = useMemo(() => {
     let filtered = equipment;
 
@@ -343,8 +459,36 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
       );
     }
 
+    // Filter by cost range
+    if (minCost !== undefined || maxCost !== undefined) {
+      filtered = filtered.filter((e: Equipment) => {
+        const costInGp = convertToGp(e.cost);
+        if (minCost !== undefined && costInGp < minCost) return false;
+        if (maxCost !== undefined && costInGp > maxCost) return false;
+        return true;
+      });
+    }
+
+    // Filter by armor types
+    if (selectedArmorTypes.length > 0) {
+      filtered = filtered.filter((e: Equipment) =>
+        e.armorType && selectedArmorTypes.includes(e.armorType)
+      );
+    }
+
+    // Filter by weapon properties
+    if (selectedWeaponProperties.length > 0) {
+      filtered = filtered.filter((e: Equipment) =>
+        e.properties && e.properties.some(prop =>
+          selectedWeaponProperties.some(selected =>
+            prop.toLowerCase().includes(selected.toLowerCase())
+          )
+        )
+      );
+    }
+
     return filtered;
-  }, [equipment, selectedCategory, searchTerm]);
+  }, [equipment, selectedCategory, searchTerm, minCost, maxCost, selectedArmorTypes, selectedWeaponProperties]);
 
   // Get category info
   const getCategoryInfo = (category: string) => {
@@ -430,7 +574,10 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
                   Снаряжение
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {equipment.length} предметов
+                  {hasActiveFilters
+                    ? `${filteredEquipment.length} из ${equipment.length} предметов`
+                    : `${equipment.length} предметов`
+                  }
                 </p>
               </div>
             </div>
@@ -448,7 +595,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
           </div>
 
           {/* Search */}
-          <div className="relative">
+          <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Поиск снаряжения..."
@@ -457,6 +604,107 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
               className="pl-10"
             />
           </div>
+
+          {/* Filters Toggle */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={showFilters ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className="gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Фильтры
+              {hasActiveFilters && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
+                  {(minCost !== undefined ? 1 : 0) +
+                   (maxCost !== undefined ? 1 : 0) +
+                   selectedArmorTypes.length +
+                   selectedWeaponProperties.length}
+                </span>
+              )}
+            </Button>
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="gap-2"
+              >
+                <X className="w-4 h-4" />
+                Сбросить
+              </Button>
+            )}
+          </div>
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30">
+              <div className="space-y-4">
+                {/* Cost Range Filter */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Стоимость (в золотых)</h3>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="От"
+                      value={minCost ?? ''}
+                      onChange={(e) => setMinCost(e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-24"
+                      min="0"
+                    />
+                    <span className="self-center">—</span>
+                    <Input
+                      type="number"
+                      placeholder="До"
+                      value={maxCost ?? ''}
+                      onChange={(e) => setMaxCost(e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-24"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                {/* Armor Type Filter */}
+                {selectedCategory === 'armor' && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">Тип доспеха</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {ARMOR_TYPES.map((type) => (
+                        <Button
+                          key={type.value}
+                          variant={selectedArmorTypes.includes(type.value) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => toggleArmorType(type.value)}
+                        >
+                          {type.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weapon Properties Filter */}
+                {selectedCategory === 'weapon' && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">Свойства оружия</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {WEAPON_PROPERTIES.map((prop) => (
+                        <Button
+                          key={prop.value}
+                          variant={selectedWeaponProperties.includes(prop.value) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => toggleWeaponProperty(prop.value)}
+                        >
+                          {prop.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Category Tabs */}

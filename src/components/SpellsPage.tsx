@@ -19,6 +19,7 @@ import {
   Wand2,
   Search,
   Loader2,
+  Filter,
 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -185,11 +186,58 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [selectedLevel, setSelectedLevel] = useState<number>(0);
-  const [searchTerm, setSearchTerm] = useState("");
+
+  // Инициализируем состояние из URL параметров
+  const searchParams = new URLSearchParams(location.search);
+  const [selectedLevel, setSelectedLevel] = useState<number>(() => {
+    const level = searchParams.get('level');
+    return level ? parseInt(level) : 0;
+  });
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
+  const [selectedClasses, setSelectedClasses] = useState<string[]>(() => {
+    const classes = searchParams.get('classes');
+    return classes ? classes.split(',') : [];
+  });
+  const [selectedSchools, setSelectedSchools] = useState<string[]>(() => {
+    const schools = searchParams.get('schools');
+    return schools ? schools.split(',') : [];
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   // История навигации - храним externalId заклинаний
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+
+  // Синхронизация состояния с URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (selectedLevel !== 0) {
+      params.set('level', selectedLevel.toString());
+    }
+
+    if (searchTerm) {
+      params.set('search', searchTerm);
+    }
+
+    if (selectedClasses.length > 0) {
+      params.set('classes', selectedClasses.join(','));
+    }
+
+    if (selectedSchools.length > 0) {
+      params.set('schools', selectedSchools.join(','));
+    }
+
+    const newSearch = params.toString();
+    const currentSearch = location.search.replace('?', '');
+
+    if (newSearch !== currentSearch) {
+      navigate({
+        pathname: location.pathname,
+        search: newSearch ? `?${newSearch}` : '',
+        hash: location.hash,
+      }, { replace: true });
+    }
+  }, [selectedLevel, searchTerm, selectedClasses, selectedSchools, navigate, location.pathname, location.hash, location.search]);
 
   // Текущее выбранное заклинание определяется из URL
   const selectedSpellExternalId = useMemo(() => {
@@ -406,6 +454,30 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     }
   };
 
+  const toggleClassFilter = (classId: string) => {
+    setSelectedClasses(prev =>
+      prev.includes(classId)
+        ? prev.filter(c => c !== classId)
+        : [...prev, classId]
+    );
+  };
+
+  const toggleSchoolFilter = (school: string) => {
+    setSelectedSchools(prev =>
+      prev.includes(school)
+        ? prev.filter(s => s !== school)
+        : [...prev, school]
+    );
+  };
+
+  const clearFilters = () => {
+    setSelectedClasses([]);
+    setSelectedSchools([]);
+    setSearchTerm('');
+  };
+
+  const hasActiveFilters = selectedClasses.length > 0 || selectedSchools.length > 0 || searchTerm.trim().length > 0;
+
   const canEdit = user?.role === "master";
 
   const spells = useMemo(
@@ -413,19 +485,38 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     [metaData?.data?.spells]
   );
 
-  // Filter by search
+  // Filter by search, classes, and schools
   const filteredSpells = useMemo(() => {
-    if (!searchTerm.trim()) return spells;
+    let filtered = spells;
 
-    const search = searchTerm.toLowerCase();
-    return spells.filter((spell: Spell) => {
-      return (
-        spell.nameRu.toLowerCase().includes(search) ||
-        spell.name.toLowerCase().includes(search) ||
-        spell.school.toLowerCase().includes(search)
-      );
-    });
-  }, [spells, searchTerm]);
+    // Фильтр по поиску
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter((spell: Spell) => {
+        return (
+          spell.nameRu.toLowerCase().includes(search) ||
+          spell.name.toLowerCase().includes(search) ||
+          spell.school.toLowerCase().includes(search)
+        );
+      });
+    }
+
+    // Фильтр по классам
+    if (selectedClasses.length > 0) {
+      filtered = filtered.filter((spell: Spell) => {
+        return selectedClasses.some(classId => spell.classes.includes(classId));
+      });
+    }
+
+    // Фильтр по школам магии
+    if (selectedSchools.length > 0) {
+      filtered = filtered.filter((spell: Spell) => {
+        return selectedSchools.includes(spell.school);
+      });
+    }
+
+    return filtered;
+  }, [spells, searchTerm, selectedClasses, selectedSchools]);
 
   // Группируем отфильтрованные заклинания по уровням
   const filteredSpellsByLevel: Record<number, Spell[]> = useMemo(() => {
@@ -436,23 +527,21 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     return byLevel;
   }, [filteredSpells]);
 
-  // Автоматически переключаем на первый уровень с результатами при поиске
+  // Автоматически переключаем на вкладку "Поиск" при вводе текста или применении фильтров
   useEffect(() => {
-    if (searchTerm.trim() && filteredSpells.length > 0) {
-      // Находим первый уровень с результатами
-      for (let i = 0; i <= 9; i++) {
-        if (filteredSpellsByLevel[i].length > 0) {
-          setSelectedLevel(i);
-          break;
-        }
-      }
+    if (searchTerm.trim() || hasActiveFilters) {
+      setSelectedLevel(-1); // -1 для вкладки поиска
     }
-  }, [searchTerm, filteredSpells, filteredSpellsByLevel]);
+  }, [searchTerm, hasActiveFilters]);
 
-  // Получаем заклинания выбранного уровня
+  // Получаем заклинания выбранного уровня или результаты поиска
   const currentLevelSpells = useMemo(() => {
+    if (selectedLevel === -1) {
+      // Показываем все результаты поиска
+      return filteredSpells;
+    }
     return filteredSpellsByLevel[selectedLevel] || [];
-  }, [filteredSpellsByLevel, selectedLevel]);
+  }, [filteredSpellsByLevel, selectedLevel, filteredSpells]);
 
   const renderSpellCard = (spell: Spell) => {
     return (
@@ -517,7 +606,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                   Заклинания
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {searchTerm.trim()
+                  {searchTerm.trim() || hasActiveFilters
                     ? `${filteredSpells.length} из ${spells.length} заклинаний`
                     : `${spells.length} заклинаний`
                   }
@@ -534,7 +623,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
           </div>
 
           {/* Search */}
-          <div className="relative">
+          <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Поиск заклинаний..."
@@ -543,11 +632,95 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               className="pl-10"
             />
           </div>
+
+          {/* Filters Toggle */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={showFilters ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className="gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Фильтры
+              {hasActiveFilters && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
+                  {selectedClasses.length + selectedSchools.length}
+                </span>
+              )}
+            </Button>
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="gap-2"
+              >
+                <X className="w-4 h-4" />
+                Сбросить
+              </Button>
+            )}
+          </div>
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30">
+              <div className="space-y-4">
+                {/* Class Filter */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Классы</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {AVAILABLE_CLASSES.map((classOption) => (
+                      <Button
+                        key={classOption.id}
+                        variant={selectedClasses.includes(classOption.id) ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleClassFilter(classOption.id)}
+                      >
+                        {classOption.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* School Filter */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Школы магии</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {SCHOOLS.map((school) => (
+                      <Button
+                        key={school.value}
+                        variant={selectedSchools.includes(school.value) ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleSchoolFilter(school.value)}
+                      >
+                        {school.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
         <div className="mb-4 overflow-x-auto">
           <div className="flex gap-2 min-w-max pb-2">
+            {(searchTerm.trim() || hasActiveFilters) && (
+              <Button
+                variant={selectedLevel === -1 ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedLevel(-1)}
+                className="gap-1"
+              >
+                <Search className="w-3 h-3" />
+                Результаты поиска
+                <span className="ml-1 text-xs opacity-70">
+                  ({filteredSpells.length})
+                </span>
+              </Button>
+            )}
             <Button
               variant={selectedLevel === 0 ? "default" : "outline"}
               size="sm"
@@ -588,7 +761,9 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
               Ничего не найдено
             </h3>
             <p className="text-sm text-muted-foreground">
-              {searchTerm
+              {selectedLevel === -1
+                ? "Попробуйте изменить поисковый запрос"
+                : searchTerm
                 ? "Попробуйте изменить поисковый запрос"
                 : selectedLevel === 0
                 ? "Заговоры пока не загружены"

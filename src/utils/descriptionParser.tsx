@@ -131,9 +131,15 @@ function parseDescriptionLine(line: string): ParsedElement[] {
         break;
       }
 
-      case 'spell':
-        elements.push({ type: 'spell', content: tagContent });
+      case 'spell': {
+        // Формат: {@spell название} или {@spell название|externalId} или {@spell название|url:externalId}
+        const parts = tagContent.split('|');
+        const label = parts[0];
+        const urlPart = parts[1] || label.toLowerCase().replace(/\s+/g, '-');
+        const externalId = urlPart.replace('url:', ''); // Убираем префикс url: если есть
+        elements.push({ type: 'spell', label, url: externalId, content: label });
         break;
+      }
 
       case 'item': {
         // Формат: {@item название} или {@item название|url}
@@ -226,14 +232,25 @@ function renderElement(element: ParsedElement, index: number): React.ReactNode {
       );
 
     case 'spell':
-      // Пока без ссылки
+      // Ссылка на заклинание
+      if (element.url) {
+        return (
+          <Link
+            key={index}
+            to={`/spells#${element.url}`}
+            className="text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors"
+          >
+            {element.label || renderContent(element.content)}
+          </Link>
+        );
+      }
       return (
         <span
           key={index}
           className="text-purple-400 underline decoration-dotted underline-offset-2"
           title="Заклинание"
         >
-          {renderContent(element.content)}
+          {element.label || renderContent(element.content)}
         </span>
       );
 
