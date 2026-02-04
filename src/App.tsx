@@ -41,6 +41,7 @@ import { Button } from "@/components/ui/button";
 import { useCharacterStore } from "@/store/characterStore";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthModalProvider, useAuthModal } from "@/contexts/AuthModalContext";
+import { DiceRollProvider } from "@/contexts/DiceRollContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { TelegramProvider } from "@/contexts/TelegramContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -398,11 +399,13 @@ function App() {
         <TelegramProvider>
           <AuthProvider>
             <AuthModalProvider>
-              <SocketProvider>
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-              </SocketProvider>
+              <DiceRollProvider>
+                <SocketProvider>
+                  <BrowserRouter>
+                    <AppRoutes />
+                  </BrowserRouter>
+                </SocketProvider>
+              </DiceRollProvider>
             </AuthModalProvider>
           </AuthProvider>
         </TelegramProvider>

@@ -1,6 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import type { DescriptionItem } from '@/types/character';
+import React from "react";
+import { Link } from "react-router-dom";
+import type { DescriptionItem } from "@/types/character";
+import { RollButton } from "@/components/RollButton";
 
 /**
  * Парсит описание снаряжения с тегами формата {@tag content}
@@ -8,7 +9,18 @@ import type { DescriptionItem } from '@/types/character';
  */
 
 interface ParsedElement {
-  type: 'text' | 'bold' | 'italic' | 'br' | 'sub' | 'roll' | 'glossary' | 'spell' | 'item' | 'bestiary' | 'link';
+  type:
+    | "text"
+    | "bold"
+    | "italic"
+    | "br"
+    | "sub"
+    | "roll"
+    | "glossary"
+    | "spell"
+    | "item"
+    | "bestiary"
+    | "link";
   content?: string | ParsedElement[]; // Может содержать вложенные элементы
   url?: string;
   label?: string;
@@ -22,9 +34,9 @@ function findClosingBrace(str: string, startIndex: number): number {
   let index = startIndex;
 
   while (index < str.length && depth > 0) {
-    if (str[index] === '{') {
+    if (str[index] === "{") {
       depth++;
-    } else if (str[index] === '}') {
+    } else if (str[index] === "}") {
       depth--;
     }
     index++;
@@ -42,13 +54,13 @@ function parseDescriptionLine(line: string): ParsedElement[] {
 
   while (currentIndex < line.length) {
     // Ищем начало тега
-    const tagStart = line.indexOf('{@', currentIndex);
+    const tagStart = line.indexOf("{@", currentIndex);
 
     if (tagStart === -1) {
       // Больше тегов нет, добавляем оставшийся текст
       const remaining = line.substring(currentIndex);
       if (remaining) {
-        elements.push({ type: 'text', content: remaining });
+        elements.push({ type: "text", content: remaining });
       }
       break;
     }
@@ -56,14 +68,17 @@ function parseDescriptionLine(line: string): ParsedElement[] {
     // Добавляем текст перед тегом
     if (tagStart > currentIndex) {
       const textBefore = line.substring(currentIndex, tagStart);
-      elements.push({ type: 'text', content: textBefore });
+      elements.push({ type: "text", content: textBefore });
     }
 
     // Находим имя тега
-    const tagNameMatch = line.substring(tagStart).match(/^\{@([a-z]+)/);
+    const tagNameMatch = line.substring(tagStart).match(/^{@([a-z]+)/);
     if (!tagNameMatch) {
       // Невалидный тег, пропускаем
-      elements.push({ type: 'text', content: line.substring(tagStart, tagStart + 2) });
+      elements.push({
+        type: "text",
+        content: line.substring(tagStart, tagStart + 2),
+      });
       currentIndex = tagStart + 2;
       continue;
     }
@@ -72,13 +87,13 @@ function parseDescriptionLine(line: string): ParsedElement[] {
     const contentStart = tagStart + tagNameMatch[0].length;
 
     // Для тега {@br} нет содержимого
-    if (tagType === 'br') {
-      const brEnd = line.indexOf('}', contentStart);
+    if (tagType === "br") {
+      const brEnd = line.indexOf("}", contentStart);
       if (brEnd !== -1) {
-        elements.push({ type: 'br' });
+        elements.push({ type: "br" });
         currentIndex = brEnd + 1;
       } else {
-        elements.push({ type: 'text', content: line.substring(tagStart) });
+        elements.push({ type: "text", content: line.substring(tagStart) });
         break;
       }
       continue;
@@ -86,7 +101,10 @@ function parseDescriptionLine(line: string): ParsedElement[] {
 
     // Пропускаем пробелы после имени тега
     let contentStartAdjusted = contentStart;
-    while (contentStartAdjusted < line.length && line[contentStartAdjusted] === ' ') {
+    while (
+      contentStartAdjusted < line.length &&
+      line[contentStartAdjusted] === " "
+    ) {
       contentStartAdjusted++;
     }
 
@@ -95,7 +113,7 @@ function parseDescriptionLine(line: string): ParsedElement[] {
 
     if (tagEnd === -1) {
       // Не нашли закрывающую скобку
-      elements.push({ type: 'text', content: line.substring(tagStart) });
+      elements.push({ type: "text", content: line.substring(tagStart) });
       break;
     }
 
@@ -104,68 +122,85 @@ function parseDescriptionLine(line: string): ParsedElement[] {
 
     // Обрабатываем разные типы тегов
     switch (tagType) {
-      case 'b':
+      case "b":
         // Рекурсивно парсим содержимое для поддержки вложенных тегов
-        elements.push({ type: 'bold', content: parseDescriptionLine(tagContent) });
+        elements.push({
+          type: "bold",
+          content: parseDescriptionLine(tagContent),
+        });
         break;
 
-      case 'i':
-        elements.push({ type: 'italic', content: parseDescriptionLine(tagContent) });
+      case "i":
+        elements.push({
+          type: "italic",
+          content: parseDescriptionLine(tagContent),
+        });
         break;
 
-      case 'sub':
-        elements.push({ type: 'sub', content: parseDescriptionLine(tagContent) });
+      case "sub":
+        elements.push({
+          type: "sub",
+          content: parseDescriptionLine(tagContent),
+        });
         break;
 
-      case 'roll':
-        elements.push({ type: 'roll', content: tagContent });
+      case "roll":
+        elements.push({ type: "roll", content: tagContent });
         break;
 
-      case 'glossary': {
+      case "glossary": {
         // Формат: {@glossary термин|url:ссылка}
-        const parts = tagContent.split('|');
+        const parts = tagContent.split("|");
         const label = parts[0];
         const urlPart = parts[1];
-        const url = urlPart ? urlPart.replace('url:', '') : '';
-        elements.push({ type: 'glossary', label, url, content: label });
+        const url = urlPart ? urlPart.replace("url:", "") : "";
+        elements.push({ type: "glossary", label, url, content: label });
         break;
       }
 
-      case 'spell': {
+      case "spell": {
         // Формат: {@spell название} или {@spell название|externalId} или {@spell название|url:externalId}
-        const parts = tagContent.split('|');
+        const parts = tagContent.split("|");
         const label = parts[0];
-        const urlPart = parts[1] || label.toLowerCase().replace(/\s+/g, '-');
-        const externalId = urlPart.replace('url:', ''); // Убираем префикс url: если есть
-        elements.push({ type: 'spell', label, url: externalId, content: label });
+        const urlPart = parts[1] || label.toLowerCase().replace(/\s+/g, "-");
+        const externalId = urlPart.replace("url:", ""); // Убираем префикс url: если есть
+        elements.push({
+          type: "spell",
+          label,
+          url: externalId,
+          content: label,
+        });
         break;
       }
 
-      case 'item': {
+      case "item": {
         // Формат: {@item название} или {@item название|url}
-        const parts = tagContent.split('|');
+        const parts = tagContent.split("|");
         const label = parts[0];
-        const url = parts[1] ? parts[1].replace('url:', '') : '';
-        elements.push({ type: 'item', label, url, content: label });
+        const url = parts[1] ? parts[1].replace("url:", "") : "";
+        elements.push({ type: "item", label, url, content: label });
         break;
       }
 
-      case 'bestiary':
-        elements.push({ type: 'bestiary', content: tagContent });
+      case "bestiary":
+        elements.push({ type: "bestiary", content: tagContent });
         break;
 
-      case 'link': {
+      case "link": {
         // Формат: {@link текст|url}
-        const parts = tagContent.split('|');
+        const parts = tagContent.split("|");
         const label = parts[0];
-        const url = parts[1] || '';
-        elements.push({ type: 'link', label, url, content: label });
+        const url = parts[1] || "";
+        elements.push({ type: "link", label, url, content: label });
         break;
       }
 
       default:
         // Неизвестный тег - оставляем как текст
-        elements.push({ type: 'text', content: line.substring(tagStart, tagEnd + 1) });
+        elements.push({
+          type: "text",
+          content: line.substring(tagStart, tagEnd + 1),
+        });
     }
 
     currentIndex = tagEnd + 1;
@@ -177,10 +212,12 @@ function parseDescriptionLine(line: string): ParsedElement[] {
 /**
  * Рендерит содержимое элемента (строка или массив вложенных элементов)
  */
-function renderContent(content: string | ParsedElement[] | undefined): React.ReactNode {
+function renderContent(
+  content: string | ParsedElement[] | undefined
+): React.ReactNode {
   if (!content) return null;
 
-  if (typeof content === 'string') {
+  if (typeof content === "string") {
     return content;
   }
 
@@ -193,33 +230,37 @@ function renderContent(content: string | ParsedElement[] | undefined): React.Rea
  */
 function renderElement(element: ParsedElement, index: number): React.ReactNode {
   switch (element.type) {
-    case 'text':
+    case "text":
       return <span key={index}>{element.content as string}</span>;
 
-    case 'bold':
-      return <strong key={index} className="font-semibold text-foreground">{renderContent(element.content)}</strong>;
+    case "bold":
+      return (
+        <strong key={index} className="font-semibold text-foreground">
+          {renderContent(element.content)}
+        </strong>
+      );
 
-    case 'italic':
-      return <em key={index} className="italic">{renderContent(element.content)}</em>;
+    case "italic":
+      return (
+        <em key={index} className="italic">
+          {renderContent(element.content)}
+        </em>
+      );
 
-    case 'br':
+    case "br":
       return <br key={index} />;
 
-    case 'sub':
-      return <span key={index} className="text-xs opacity-75">{renderContent(element.content)}</span>;
-
-    case 'roll':
+    case "sub":
       return (
-        <span
-          key={index}
-          className="inline-flex items-center px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-mono text-sm cursor-help"
-          title="Формула броска кубиков"
-        >
+        <span key={index} className="text-xs opacity-75">
           {renderContent(element.content)}
         </span>
       );
 
-    case 'glossary':
+    case "roll":
+      return <RollButton key={index} formula={element.content as string} />;
+
+    case "glossary":
       // Пока без ссылки, так как глоссарий не готов
       return (
         <span
@@ -231,7 +272,7 @@ function renderElement(element: ParsedElement, index: number): React.ReactNode {
         </span>
       );
 
-    case 'spell':
+    case "spell":
       // Ссылка на заклинание
       if (element.url) {
         return (
@@ -254,7 +295,7 @@ function renderElement(element: ParsedElement, index: number): React.ReactNode {
         </span>
       );
 
-    case 'item':
+    case "item":
       // Ссылка на снаряжение - ГОТОВО!
       if (element.url) {
         return (
@@ -277,7 +318,7 @@ function renderElement(element: ParsedElement, index: number): React.ReactNode {
         </span>
       );
 
-    case 'bestiary':
+    case "bestiary":
       // Пока без ссылки
       return (
         <span
@@ -289,7 +330,7 @@ function renderElement(element: ParsedElement, index: number): React.ReactNode {
         </span>
       );
 
-    case 'link':
+    case "link":
       if (element.url) {
         return (
           <a
@@ -303,7 +344,11 @@ function renderElement(element: ParsedElement, index: number): React.ReactNode {
           </a>
         );
       }
-      return <span key={index}>{element.label || renderContent(element.content)}</span>;
+      return (
+        <span key={index}>
+          {element.label || renderContent(element.content)}
+        </span>
+      );
 
     default:
       return <span key={index}>{renderContent(element.content)}</span>;
@@ -315,7 +360,9 @@ function renderElement(element: ParsedElement, index: number): React.ReactNode {
  * @param description - строка или массив строк с описанием
  * @returns React элементы для отображения
  */
-export function parseEquipmentDescription(description: string | string[] | undefined): React.ReactNode {
+export function parseEquipmentDescription(
+  description: string | string[] | undefined
+): React.ReactNode {
   if (!description) {
     return null;
   }
@@ -328,8 +375,11 @@ export function parseEquipmentDescription(description: string | string[] | undef
       {lines.map((line, lineIndex) => {
         const elements = parseDescriptionLine(line);
         return (
-          <p key={lineIndex} className="text-sm text-muted-foreground leading-relaxed">
-            {elements.map((element, elementIndex) => renderElement(element, elementIndex))}
+          <p
+            key={lineIndex}
+            className="text-sm text-muted-foreground leading-relaxed"
+          >
+            {renderContent(elements)}
           </p>
         );
       })}
@@ -341,53 +391,55 @@ export function parseEquipmentDescription(description: string | string[] | undef
  * Парсит описание в простой текст (без HTML/React элементов)
  * Полезно для экспорта в PDF или текстовые форматы
  */
-export function parseDescriptionToPlainText(description: string | string[] | DescriptionItem[] | undefined): string {
+export function parseDescriptionToPlainText(
+  description: string | string[] | DescriptionItem[] | undefined
+): string {
   if (!description) {
-    return '';
+    return "";
   }
 
   const lines = Array.isArray(description) ? description : [description];
 
   return lines
-    .map(item => {
+    .map((item) => {
       // Если это объект (ListContent или TableContent), преобразуем в строку
-      if (typeof item === 'object' && item !== null) {
-        if ('type' in item) {
-          if (item.type === 'list') {
-            return item.content.join('\n');
-          } else if (item.type === 'table') {
+      if (typeof item === "object" && item !== null) {
+        if ("type" in item) {
+          if (item.type === "list") {
+            return item.content.join("\n");
+          } else if (item.type === "table") {
             // Простое представление таблицы
-            const header = item.colLabels.join(' | ');
-            const rows = item.rows.map(row => row.join(' | ')).join('\n');
+            const header = item.colLabels.join(" | ");
+            const rows = item.rows.map((row) => row.join(" | ")).join("\n");
             return `${header}\n${rows}`;
           }
         }
-        return '';
+        return "";
       }
 
       // Обработка строки
       const line = String(item);
       // Рекурсивно удаляем все теги, оставляя только содержимое
       let result = line;
-      let prevResult = '';
+      let prevResult = "";
 
       // Повторяем, пока есть изменения (для обработки вложенных тегов)
       while (result !== prevResult) {
         prevResult = result;
         result = result
-          .replace(/\{@br\}/g, '\n')
-          .replace(/\{@b\s+([^}]+)\}/g, '$1')
-          .replace(/\{@i\s+([^}]+)\}/g, '$1')
-          .replace(/\{@sub\s+([^}]+)\}/g, '$1')
-          .replace(/\{@roll\s+([^}]+)\}/g, '$1')
-          .replace(/\{@glossary\s+([^|}]+)(?:\|[^}]+)?\}/g, '$1')
-          .replace(/\{@spell\s+([^}]+)\}/g, '$1')
-          .replace(/\{@item\s+([^|}]+)(?:\|[^}]+)?\}/g, '$1')
-          .replace(/\{@bestiary\s+([^}]+)\}/g, '$1')
-          .replace(/\{@link\s+([^|}]+)(?:\|[^}]+)?\}/g, '$1');
+          .replace(/{@br\\}/g, "\n")
+          .replace(/{@b\\s+([^}]+)\\}/g, "$1")
+          .replace(/{@i\\s+([^}]+)\\}/g, "$1")
+          .replace(/{@sub\\s+([^}]+)\\}/g, "$1")
+          .replace(/{@roll\\s+([^}]+)\\}/g, "$1")
+          .replace(/{@glossary\\s+([^|}]+)(?:\\|[^}]+)?\\}/g, "$1")
+          .replace(/{@spell\\s+([^}]+)\\}/g, "$1")
+          .replace(/{@item\\s+([^}]+)(?:\\|[^}]+)?\\}/g, "$1")
+          .replace(/{@bestiary\\s+([^}]+)\\}/g, "$1")
+          .replace(/{@link\\s+([^}]+)(?:\\|[^}]+)?\\}/g, "$1");
       }
 
       return result;
     })
-    .join('\n');
+    .join("\n");
 }
