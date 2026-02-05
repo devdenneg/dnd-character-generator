@@ -135,20 +135,55 @@ export function generateSpellSlotTableEntries(casterType: CasterType) {
 
   const entries = [];
 
-  // Create a column for each spell level (1-9)
-  for (let spellLevel = 1; spellLevel <= 9; spellLevel++) {
-    const scaling = progression
-      .map(entry => ({
+  // Pact Magic (Warlock) uses different columns
+  if (casterType === 'PACT') {
+    // Column 1: Slot count
+    const slotCountScaling = progression.map(entry => {
+      // Find the non-zero slot count
+      const slotCount = entry.slots.find(s => s > 0) || 0;
+      return {
         level: entry.level,
-        value: entry.slots[spellLevel - 1].toString()
-      }))
-      .filter(s => s.value !== '0'); // Only include non-zero values
+        value: slotCount.toString()
+      };
+    });
 
-    if (scaling.length > 0) {
-      entries.push({
-        name: `${spellLevel} ур.`,
-        scaling
-      });
+    entries.push({
+      name: 'Кол-во ячеек',
+      scaling: slotCountScaling
+    });
+
+    // Column 2: Slot level
+    const slotLevelScaling = progression.map(entry => {
+      // Find which spell level has slots
+      const slotLevelIndex = entry.slots.findIndex(s => s > 0);
+      const slotLevel = slotLevelIndex >= 0 ? slotLevelIndex + 1 : 0;
+      return {
+        level: entry.level,
+        value: slotLevel > 0 ? `${slotLevel}` : '—'
+      };
+    });
+
+    entries.push({
+      name: 'Уровень ячейки',
+      scaling: slotLevelScaling
+    });
+  } else {
+    // Standard spell slots for FULL, HALF, THIRD casters
+    // Create a column for each spell level (1-9)
+    for (let spellLevel = 1; spellLevel <= 9; spellLevel++) {
+      const scaling = progression
+        .map(entry => ({
+          level: entry.level,
+          value: entry.slots[spellLevel - 1].toString()
+        }))
+        .filter(s => s.value !== '0'); // Only include non-zero values
+
+      if (scaling.length > 0) {
+        entries.push({
+          name: `${spellLevel} ур.`,
+          scaling
+        });
+      }
     }
   }
 
