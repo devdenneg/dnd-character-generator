@@ -83,6 +83,41 @@ export async function getAllClasses(source?: string) {
   }));
 }
 
+export async function getAllClassesMeta(source?: string) {
+  const classes = await prisma.characterClass.findMany({
+    where: source ? { source } : undefined,
+    select: {
+      id: true,
+      externalId: true,
+      name: true,
+      nameRu: true,
+      image: true,
+      hitDie: true,
+      primaryAbility: true,
+      spellcasting: true,
+      source: true,
+      // Minimal fields for correct mapping type shape (even if undefined/null)
+      description: false,
+      features: false,
+      subclasses: false,
+      equipment: false,
+      armorProficiencies: false,
+      weaponProficiencies: false,
+      skillChoices: false,
+      skillCount: false,
+      savingThrows: false,
+      gallery: false,
+      classTable: false,
+      multiclassing: false,
+      startingGold: false,
+      startingEquipment: false,
+    },
+    orderBy: [{ source: "asc" }, { name: "asc" }],
+  });
+
+  return classes;
+}
+
 export async function getClassById(id: string) {
   const classData = await prisma.characterClass.findUnique({
     where: { id },

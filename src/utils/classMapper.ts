@@ -14,14 +14,14 @@ export function mapBackendClassToFrontend(backendClass: BackendCharacterClass): 
 
   // Map Proficiency
   const proficiency: Proficiency = {
-    armor: backendClass.armorProficiencies.join(", "),
-    weapon: backendClass.weaponProficiencies.join(", "),
-    tool: "", // Backend doesn't seem to have a specific tools field for classes yet
-    skill: `Выберите ${backendClass.skillCount} из: ${backendClass.skillChoices.join(", ")}`,
+    armor: backendClass.armorProficiencies?.join(", ") || "",
+    weapon: backendClass.weaponProficiencies?.join(", ") || "",
+    tool: "",
+    skill: backendClass.skillCount ? `Выберите ${backendClass.skillCount} из: ${backendClass.skillChoices?.join(", ") || ""}` : "",
   };
 
   // Map features
-  const features: Feature[] = backendClass.features.map(f => ({
+  const features: Feature[] = backendClass.features?.map(f => ({
     isSubclass: false,
     key: f.name.toLowerCase().replace(/\s+/g, '-'),
     level: f.level,
@@ -30,9 +30,9 @@ export function mapBackendClassToFrontend(backendClass: BackendCharacterClass): 
     additional: "",
     scaling: [],
     hideInSubclasses: false,
-  }));
+  })) || [];
 
-  // Map subclasses (though seeding script currently skips them, the structure should be ready)
+  // Map subclasses
   const subclasses = backendClass.subclasses?.map(s => ({
     isSubclass: true,
     key: s.externalId,
@@ -55,16 +55,16 @@ export function mapBackendClassToFrontend(backendClass: BackendCharacterClass): 
       rus: backendClass.nameRu,
       eng: backendClass.name,
     },
-    description: backendClass.description,
+    description: backendClass.description || [],
     image: backendClass.image || "",
     gallery: backendClass.gallery || [],
     hitDice,
-    primaryCharacteristics: backendClass.primaryAbility.join(", "),
+    primaryCharacteristics: backendClass.primaryAbility?.join(", ") || "",
     proficiency,
-    savingThrows: backendClass.savingThrows.join(", "),
+    savingThrows: backendClass.savingThrows?.join(", ") || "",
     equipment: backendClass.startingEquipment || [],
     features,
-    table: backendClass.classTable as any,
+    table: backendClass.classTable as any || [],
     casterType: backendClass.spellcasting?.casterType || "NONE",
     source: {
       name: {

@@ -2,13 +2,14 @@ import { Response } from "express";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
 import {
-  getAllClasses,
-  getClassById,
-  getClassByExternalId,
   createClass,
-  updateClass,
   deleteClass,
+  getAllClasses,
+  getAllClassesMeta,
+  getClassByExternalId,
+  getClassById,
   searchClasses,
+  updateClass
 } from "../services/classService";
 
 // Validation schemas
@@ -112,7 +113,10 @@ const updateClassSchema = z.object({
 export async function list(req: AuthenticatedRequest, res: Response) {
   try {
     const source = req.query.source as string | undefined;
-    const classes = await getAllClasses(source);
+
+    // Use meta optimized query for the list view
+    // The frontend only needs basic info: name, image, hitDie, casterType, source
+    const classes = await getAllClassesMeta(source);
 
     res.status(200).json({
       success: true,
