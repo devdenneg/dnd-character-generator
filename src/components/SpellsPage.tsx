@@ -1,32 +1,32 @@
-import {
-  useBackendSpellsMeta,
-  useBackendSpellByExternalId,
-} from "@/api/hooks";
 import { spellsApi } from "@/api/client";
+import {
+    useBackendSpellByExternalId,
+    useBackendSpellsMeta,
+} from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
-import {
-  Sparkles,
-  Plus,
-  Pencil,
-  Trash2,
-  Save,
-  X,
-  Wand2,
-  Search,
-  Loader2,
-  Filter,
-} from "lucide-react";
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation, useNavigate } from "react-router-dom";
-import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import type { DescriptionItem } from "@/types/character";
+import { parseEquipmentDescription } from "@/utils/descriptionParser";
+import { useMutation } from "@tanstack/react-query";
+import {
+    Filter,
+    Loader2,
+    Pencil,
+    Plus,
+    Save,
+    Search,
+    Sparkles,
+    Trash2,
+    Wand2,
+    X,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Types
 interface Spell {
@@ -106,9 +106,11 @@ interface SpellsPageProps {
 
 // Component to render description items
 function DescriptionRenderer({ items }: { items: DescriptionItem[] }) {
+const content = Array.isArray(items) ? items : (items ? [items] : []);
+
   return (
     <div className="space-y-3">
-      {items.map((item, index) => {
+      {content.map((item, index) => {
         if (typeof item === "string") {
           // Парсим строку с тегами
           return (

@@ -2,7 +2,7 @@ import { BackgroundsPage } from "@/components/BackgroundsPage";
 import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
 import { ClassDetailsPage } from "@/components/ClassDetailsPage";
 import { ClassesPage } from "@/components/ClassesPage";
-import { ClassesTestPage } from "@/components/ClassesTestPage";
+
 import { CreateRoomPage } from "@/components/CreateRoomPage";
 import { EquipmentPage } from "@/components/EquipmentPage";
 import { Glossary } from "@/components/Glossary";
@@ -19,17 +19,17 @@ import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { SpellsPage } from "@/components/SpellsPage";
 import { Button } from "@/components/ui/button";
 import {
-    AbilitiesStep,
-    AbilityIncreaseStep,
-    BackgroundStep,
-    ClassStep,
-    DetailsStep,
-    EquipmentStep,
-    RaceStep,
-    SkillsStep,
-    SpellsStep,
-    SummaryStep,
-    WizardLayout,
+  AbilitiesStep,
+  AbilityIncreaseStep,
+  BackgroundStep,
+  ClassStep,
+  DetailsStep,
+  EquipmentStep,
+  RaceStep,
+  SkillsStep,
+  SpellsStep,
+  SummaryStep,
+  WizardLayout,
 } from "@/components/wizard";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthModalProvider, useAuthModal } from "@/contexts/AuthModalContext";
@@ -43,11 +43,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BookOpen, Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
-    BrowserRouter,
-    Route,
-    Routes,
-    useLocation,
-    useNavigate,
+  BrowserRouter,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
 } from "react-router-dom";
 
 const queryClient = new QueryClient({
@@ -301,15 +301,7 @@ function RacesPageWrapper() {
   return <RacesPage onBack={handleBack} />;
 }
 
-function ClassesPageWrapper() {
-  const navigate = useNavigate();
 
-  const handleBack = () => {
-    navigate("/");
-  };
-
-  return <ClassesPage onBack={handleBack} />;
-}
 
 function BackgroundsPageWrapper() {
   const navigate = useNavigate();
@@ -373,9 +365,8 @@ function AppRoutes() {
         <Route path="/character" element={<CharacterWizardPage />} />
         <Route path="/my-characters" element={<MyCharactersPage />} />
         <Route path="/races" element={<RacesPageWrapper />} />
-        <Route path="/classes-test" element={<ClassesTestPage />} />
-        <Route path="/classes-test/:classId" element={<ClassDetailsPage />} />
-        <Route path="/classes" element={<ClassesPageWrapper />} />
+        <Route path="/classes" element={<ClassesPage />} />
+        <Route path="/classes/:classId" element={<ClassDetailsPage />} />
         <Route path="/backgrounds" element={<BackgroundsPageWrapper />} />
         <Route path="/spells" element={<SpellsPageWrapper />} />
         <Route path="/equipment" element={<EquipmentPageWrapper />} />

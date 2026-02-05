@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mapBackendClassToFrontend } from "@/utils/classMapper";
-import { ArrowRight, BookOpen, ChevronLeft, Loader2, ScrollText, Shield, Swords } from "lucide-react";
+import { translateAbility } from "@/utils/classTranslations";
+import { ArrowRight, BookOpen, ChevronLeft, Loader2, Shield, Swords } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ContentRenderer } from "./content/ContentRenderer";
@@ -22,6 +23,8 @@ export function ClassDetailsPage() {
     }
     return null;
   }, [backendResponse]);
+
+
 
   if (isLoading) {
     return (
@@ -42,7 +45,7 @@ export function ClassDetailsPage() {
           <p className="text-muted-foreground mb-8">
             {error ? (error as any).message : "Мы не смогли найти запрашиваемый класс в нашей базе данных."}
           </p>
-          <Button onClick={() => navigate("/classes-test")}>Вернуться к списку</Button>
+          <Button onClick={() => navigate("/classes")}>Вернуться к списку</Button>
         </div>
       </PageLayout>
     );
@@ -140,7 +143,8 @@ export function ClassDetailsPage() {
                     <Button
                         variant="ghost"
                         className="text-white/70 hover:text-white hover:bg-white/10 -ml-4"
-                        onClick={() => navigate("/classes-test")}
+                        // Navigate back to classes list
+          onClick={() => navigate("/classes")}
                     >
                         <ChevronLeft className="w-5 h-5 mr-2" />
                         К списку классов
@@ -183,7 +187,7 @@ export function ClassDetailsPage() {
                         {/* Sticky Navigation Bar */}
                         <div className="sticky top-[3.5rem] z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 py-1 -mx-4 px-4 md:-mx-6 md:px-6 lg:mx-0 lg:px-0 lg:rounded-none mb-8">
                              <TabsList className="w-full justify-start h-auto bg-transparent p-0 gap-8 overflow-x-auto no-scrollbar mask-gradient-r">
-                                {['description', 'features', 'equipment', 'spells', 'table'].map(tab => (
+                                {['description', 'features', 'equipment', 'table'].map(tab => (
                                     <TabsTrigger
                                         key={tab}
                                         value={tab}
@@ -193,7 +197,6 @@ export function ClassDetailsPage() {
                                             'description': 'Описание',
                                             'features': 'Умения',
                                             'equipment': 'Снаряжение',
-                                            'spells': 'Заклинания',
                                             'table': 'Таблица'
                                         }[tab]}
                                     </TabsTrigger>
@@ -212,9 +215,10 @@ export function ClassDetailsPage() {
                             <TabsContent value="description" className="mt-0 space-y-10 animate-fade-in">
                                 <div className="prose prose-zinc dark:prose-invert prose-lg max-w-none prose-headings:font-display prose-a:text-primary hover:prose-a:underline prose-blockquote:border-l-primary prose-img:rounded-xl">
                                   <ContentRenderer content={selectedClass.description as any} />
-
                                 </div>
                             </TabsContent>
+
+
 
                             <TabsContent value="features" className="mt-0 animate-slide-up">
                                 <div className="max-w-4xl mx-auto space-y-16">
@@ -251,15 +255,7 @@ export function ClassDetailsPage() {
                                 </Card>
                             </TabsContent>
 
-                            <TabsContent value="spells" className="mt-0 animate-slide-up">
-                               <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-border/50 rounded-2xl bg-muted/10">
-                                    <ScrollText className="w-16 h-16 text-muted-foreground/30 mb-6" />
-                                    <h3 className="text-2xl font-bold font-display mb-2">Заклинания класса</h3>
-                                    <p className="text-muted-foreground max-w-md mx-auto">
-                                        Список заклинаний для этого класса скоро появится. Мы работаем над интеграцией базы заклинаний.
-                                    </p>
-                                </div>
-                            </TabsContent>
+
 
                             <TabsContent value="table" className="mt-0 animate-slide-up">
                                   {/* Class Table - Compact Mode */}
@@ -437,7 +433,7 @@ export function ClassDetailsPage() {
                                     <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-semibold">Кость хитов</div>
                                     <div className="flex items-center gap-4 bg-muted/40 p-3 rounded-lg border border-border/40">
                                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shadow-inner">d{selectedClass.hitDice.maxValue}</div>
-                                        <span className="text-sm font-medium">за уровень {selectedClass.name.rus.toLowerCase().slice(0, -1) + 'а'}</span>
+                                        <span className="text-sm font-medium">Хиты за уровень</span>
                                     </div>
                                 </div>
 
@@ -445,13 +441,13 @@ export function ClassDetailsPage() {
                                     <div>
                                         <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-semibold">Характеристика</div>
                                         <div className="font-medium text-foreground bg-muted/40 p-2 rounded-lg border border-border/40 text-center capitalize text-sm">
-                                            {selectedClass.primaryCharacteristics}
+                                            {(selectedClass.primaryCharacteristics || "").split(", ").map(s => translateAbility(s.trim())).join(", ")}
                                         </div>
                                     </div>
                                     <div>
                                         <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-semibold">Спасброски</div>
                                         <div className="font-medium text-foreground bg-muted/40 p-2 rounded-lg border border-border/40 text-center capitalize text-sm">
-                                            {(selectedClass.savingThrows || "").split(', ').map(s => s.slice(0,3)).join(', ')}
+                                            {(selectedClass.savingThrows || "").split(", ").map(s => translateAbility(s.trim())).join(", ")}
                                         </div>
                                     </div>
                                 </div>
