@@ -1,5 +1,4 @@
 import { useBackendClasses } from "@/api/hooks";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { mapBackendClassToFrontend } from "@/utils/classMapper";
@@ -110,58 +109,60 @@ export function ClassesPage() {
         {filteredClasses.map((cls: any) => (
           <div
             key={cls.url}
-            className="group relative h-[500px] w-full overflow-hidden rounded-[2rem] bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer border-0"
+            className="group relative h-[500px] w-full overflow-hidden rounded-[2rem] bg-card text-card-foreground shadow-lg transition-all duration-1000 ease-out hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2 cursor-pointer border-0 ring-1 ring-white/5"
             onClick={() => navigate(`/classes/${cls.url}`)}
           >
               {/* Image Background */}
-              <div className="absolute inset-0 z-0">
+              <div className="absolute inset-0 z-0 overflow-hidden">
                   <img
                       src={cls.image}
                       alt={cls.name.rus}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[0.8] group-hover:brightness-100"
+                      className="h-full w-full object-cover transition-transform duration-[1500ms] cubic-bezier(0.25, 0.46, 0.45, 0.94) group-hover:scale-105 group-hover:rotate-1 filter brightness-[0.7] group-hover:brightness-95"
                       loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/10 transition-opacity duration-500 group-hover:from-black/90" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent opacity-80 transition-opacity duration-700 group-hover:opacity-60" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               </div>
 
               {/* Content Overlay */}
               <div className="absolute inset-0 z-10 flex flex-col justify-end p-8">
-                  <div className="transform transition-transform duration-500 group-hover:-translate-y-2">
-                      <div className="flex items-center gap-3 mb-2 opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100">
+                  <div className="transform transition-transform duration-700 ease-out group-hover:-translate-y-2">
+                      <div className="flex items-center gap-3 mb-3 opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-700 delay-100 ease-out">
                           {cls.source?.name?.rus && (
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-white/70 bg-white/10 px-2 py-1 rounded backdrop-blur-sm">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-white/90 bg-white/10 px-2.5 py-1 rounded-full backdrop-blur-md shadow-sm border border-white/10">
                                   {cls.source.name.rus}
                               </span>
                           )}
                           {cls.isReprinted && (
-                               <span className="text-[10px] font-bold uppercase tracking-widest text-orange-300 bg-orange-500/20 px-2 py-1 rounded backdrop-blur-sm border border-orange-500/30">
+                               <span className="text-[10px] font-bold uppercase tracking-widest text-orange-200 bg-orange-500/20 px-2.5 py-1 rounded-full backdrop-blur-md border border-orange-500/30">
                                    Переиздание
                                </span>
                           )}
                       </div>
 
-                      <h3 className="font-display font-black text-4xl text-white mb-2 leading-tight drop-shadow-xl">
+                      <h3 className="font-display font-black text-5xl text-white mb-2 leading-[0.9] drop-shadow-xl tracking-tight transition-colors duration-500 group-hover:text-white">
                           {cls.name.rus}
                       </h3>
-                      <p className="text-sm font-bold text-white/50 tracking-[0.2em] uppercase font-mono mb-6">
+                      <p className="text-sm font-bold text-white/60 tracking-[0.2em] uppercase font-mono mb-8 transition-colors duration-500 group-hover:text-primary-foreground/90">
                            {cls.name.eng}
                       </p>
 
-                      <div className="grid grid-cols-2 gap-3 text-white/90 text-sm">
-                          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/5 group-hover:border-white/20 transition-colors">
-                              <span className="text-white/50 text-xs font-bold uppercase tracking-wider block mb-1">Кость хитов</span>
-                              <span className="font-mono font-bold text-lg text-primary-foreground">
+                      <div className="grid grid-cols-2 gap-4 text-white/90 text-sm opacity-90 group-hover:opacity-100 transition-opacity duration-500">
+                          <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10 group-hover:border-white/30 group-hover:bg-white/10 transition-all duration-500 flex flex-col items-start gap-1">
+                              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Кость хитов</span>
+                              <span className="font-mono font-bold text-xl text-white drop-shadow-md">
                                   {cls.hitDice?.label || "—"}
                               </span>
                           </div>
-                          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/5 group-hover:border-white/20 transition-colors">
-                              <span className="text-white/50 text-xs font-bold uppercase tracking-wider block mb-1">Магия</span>
+                          <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10 group-hover:border-white/30 group-hover:bg-white/10 transition-all duration-500 flex flex-col items-start gap-1">
+                              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Магия</span>
                               {cls.casterType && cls.casterType !== "NONE" ? (
-                                   <Badge variant="outline" className="text-xs border-white/30 text-white bg-white/5 hover:bg-white/10">
-                                       {cls.casterType}
-                                   </Badge>
+                                   <div className="flex items-center gap-2">
+                                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+                                     <span className="font-bold text-white tracking-wide">{cls.casterType}</span>
+                                   </div>
                               ) : (
-                                  <span className="text-white/40 text-xs font-medium italic">Нет</span>
+                                  <span className="text-white/30 text-sm font-medium">—</span>
                               )}
                           </div>
                       </div>
