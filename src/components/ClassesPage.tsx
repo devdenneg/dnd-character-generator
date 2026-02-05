@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { mapBackendClassToFrontend } from "@/utils/classMapper";
 import {
-  AlertCircle,
-  Crown,
-  Flame,
-  Loader2,
-  Mountain,
-  Scroll,
-  Search,
-  Shield,
-  Zap
+    AlertCircle,
+    Crown,
+    Flame,
+    Loader2,
+    Mountain,
+    Scroll,
+    Search,
+    Shield,
+    Zap
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -85,31 +85,32 @@ export function ClassesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+    <div className="container mx-auto p-6 max-w-[1400px] animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent italic tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-black mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent italic tracking-tight font-display">
             Классы
           </h1>
-          <p className="text-muted-foreground">
-            Просмотр данных PHB 2024 из базы данных
+          <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
+            Герои D&D бывают разными: от яростных варваров до могущественных волшебников.
+            Выберите свой путь и создайте легенду.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3.5 top-3 h-5 w-5 text-muted-foreground" />
             <Input
               placeholder="Поиск класса..."
-              className="pl-9 h-10 bg-card/50 backdrop-blur-sm focus-visible:ring-primary/30"
+              className="pl-11 h-12 bg-card/50 backdrop-blur-sm focus-visible:ring-primary/30 text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={() => navigate("/")}
-            className="h-10 px-6 font-medium hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+            className="h-12 px-8 font-medium hover:bg-primary hover:text-primary-foreground transition-all duration-300"
           >
             На главную
           </Button>
@@ -117,72 +118,76 @@ export function ClassesPage() {
       </div>
 
       {!filteredClasses.length && searchQuery && (
-        <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed border-muted">
-          <p className="text-muted-foreground text-lg italic">
+        <div className="text-center py-20 bg-muted/20 rounded-3xl border-2 border-dashed border-muted">
+          <p className="text-muted-foreground text-xl italic">
             Класс "{searchQuery}" не найден
           </p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredClasses.map((cls: any) => {
-          const iconKey = cls.url.split("-")[0];
-          const Icon = CLASS_ICONS[iconKey] || Shield;
-
-          return (
-            <div
-              key={cls.url}
-              className="group relative overflow-hidden rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm transition-all hover:shadow-xl hover:border-primary/50 hover:-translate-y-1 cursor-pointer duration-300"
-              onClick={() => navigate(`/classes/${cls.url}`)}
-            >
-              <div className="p-6 relative z-10">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 transform group-hover:rotate-[10deg] shadow-inner">
-                    <Icon className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-xl leading-none mb-1.5 tracking-tight group-hover:text-primary transition-colors">
-                      {cls.name.rus}
-                    </h3>
-                    <p className="text-sm font-medium text-muted-foreground/80 font-mono tracking-wider italic">
-                      {cls.name.eng.toUpperCase()}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3 text-sm border-t border-primary/5 pt-5">
-                  <div className="flex justify-between items-center bg-muted/30 p-2 rounded-lg">
-                    <span className="text-muted-foreground font-medium">Кость хитов:</span>
-                    <span className="font-bold text-foreground bg-background px-2 py-0.5 rounded shadow-sm border border-primary/10">
-                      {cls.hitDice?.label || "—"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center bg-muted/30 p-2 rounded-lg">
-                    <span className="text-muted-foreground font-medium text-xs">Характеристика:</span>
-                    <span className="font-bold text-foreground text-xs uppercase tracking-tighter">
-                      {cls.primaryCharacteristics}
-                    </span>
-                  </div>
-                  {cls.casterType && cls.casterType !== "NONE" && (
-                    <div className="flex justify-between items-center bg-primary/5 p-2 rounded-lg border border-primary/10">
-                      <span className="text-primary/70 font-semibold text-xs">Тип магии:</span>
-                      <Badge variant="default" className="text-[10px] uppercase font-black bg-primary/80 hover:bg-primary">
-                        {cls.casterType}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
+        {filteredClasses.map((cls: any) => (
+          <div
+            key={cls.url}
+            className="group relative h-[500px] w-full overflow-hidden rounded-[2rem] bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer border-0"
+            onClick={() => navigate(`/classes/${cls.url}`)}
+          >
+              {/* Image Background */}
+              <div className="absolute inset-0 z-0">
+                  <img
+                      src={cls.image}
+                      alt={cls.name.rus}
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[0.8] group-hover:brightness-100"
+                      loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/10 transition-opacity duration-500 group-hover:from-black/90" />
               </div>
 
-              {/* Decorative background elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-primary/10 transition-colors" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl group-hover:bg-primary/10 transition-colors" />
+              {/* Content Overlay */}
+              <div className="absolute inset-0 z-10 flex flex-col justify-end p-8">
+                  <div className="transform transition-transform duration-500 group-hover:-translate-y-2">
+                      <div className="flex items-center gap-3 mb-2 opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100">
+                          {cls.source?.name?.rus && (
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-white/70 bg-white/10 px-2 py-1 rounded backdrop-blur-sm">
+                                  {cls.source.name.rus}
+                              </span>
+                          )}
+                          {cls.isReprinted && (
+                               <span className="text-[10px] font-bold uppercase tracking-widest text-orange-300 bg-orange-500/20 px-2 py-1 rounded backdrop-blur-sm border border-orange-500/30">
+                                   Переиздание
+                               </span>
+                          )}
+                      </div>
 
-              {/* Bottom active line */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/0 to-transparent group-hover:via-primary transition-all duration-700" />
-            </div>
-          );
-        })}
+                      <h3 className="font-display font-black text-4xl text-white mb-2 leading-tight drop-shadow-xl">
+                          {cls.name.rus}
+                      </h3>
+                      <p className="text-sm font-bold text-white/50 tracking-[0.2em] uppercase font-mono mb-6">
+                           {cls.name.eng}
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-3 text-white/90 text-sm">
+                          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/5 group-hover:border-white/20 transition-colors">
+                              <span className="text-white/50 text-xs font-bold uppercase tracking-wider block mb-1">Кость хитов</span>
+                              <span className="font-mono font-bold text-lg text-primary-foreground">
+                                  {cls.hitDice?.label || "—"}
+                              </span>
+                          </div>
+                          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/5 group-hover:border-white/20 transition-colors">
+                              <span className="text-white/50 text-xs font-bold uppercase tracking-wider block mb-1">Магия</span>
+                              {cls.casterType && cls.casterType !== "NONE" ? (
+                                   <Badge variant="outline" className="text-xs border-white/30 text-white bg-white/5 hover:bg-white/10">
+                                       {cls.casterType}
+                                   </Badge>
+                              ) : (
+                                  <span className="text-white/40 text-xs font-medium italic">Нет</span>
+                              )}
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        ))}
       </div>
     </div>
   );
