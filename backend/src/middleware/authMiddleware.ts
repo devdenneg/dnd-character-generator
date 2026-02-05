@@ -1,9 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import { verifyToken } from "../utils/jwt";
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
   userEmail?: string;
+  userRole?: string;
 }
 
 export function authMiddleware(
@@ -46,6 +47,7 @@ export function authMiddleware(
     // Attach user info to request
     req.userId = payload.userId;
     req.userEmail = payload.email;
+    req.userRole = payload.role;
 
     next();
   } catch (error) {

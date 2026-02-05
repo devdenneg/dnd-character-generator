@@ -35,6 +35,7 @@ export const corsConfig = {
     "https://devdenneg.github.io",
     "https://dndgenerator.fun",
     "https://www.dndgenerator.fun",
+    "https://stratigouquequufo.begetcdn.cloud",
     process.env.FRONTEND_URL,
   ].filter(Boolean) as string[],
   credentials: true,

@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import { generateToken } from "../utils/jwt";
 import prisma from "../db";
+import { generateToken } from "../utils/jwt";
 
 export interface RegisterInput {
   email: string;
@@ -43,13 +43,13 @@ export async function registerUser(
   // Hash password
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  // Create user - always as player
+  // Create user
   const user = await prisma.user.create({
     data: {
       email,
       password: hashedPassword,
       name,
-      role: "player",
+      role: input.role || "player",
     },
   });
 

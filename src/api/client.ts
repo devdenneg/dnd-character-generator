@@ -1,15 +1,16 @@
-import axios from "axios";
 import type {
+  ApiResponse,
+  AuthResponse,
   CharacterData,
   CharacterResponse,
   CharactersListResponse,
-  AuthResponse,
 } from "@/types/api";
+import type { DescriptionItem } from "@/types/character";
 import type { StartingEquipment } from "@/types/equipment";
 import type { SpellcastingConfig } from "@/types/spellcasting";
-import type { DescriptionItem } from "@/types/character";
+import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://dndgenerator.fun/api";
 
 export const apiClient = axios.create({
   baseURL: API_URL,
@@ -620,6 +621,16 @@ export const searchApi = {
 
 // Upload API
 export const uploadApi = {
+  list: async () => {
+    const response = await apiClient.get<ApiResponse<{
+      filename: string;
+      url: string;
+      size: number;
+      date: string;
+    }[]>>("/upload");
+    return response.data;
+  },
+
   upload: async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);

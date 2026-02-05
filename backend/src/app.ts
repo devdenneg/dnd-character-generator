@@ -7,9 +7,9 @@ import hpp from "hpp";
 import { corsConfig, helmetConfig, payloadConfig } from "./config/security";
 import { generalLimiter } from "./middleware/rateLimiter";
 import {
-    sanitizeStrings,
-    validateContentType,
-    validatePayloadSize,
+  sanitizeStrings,
+  validateContentType,
+  validatePayloadSize,
 } from "./middleware/security";
 import { standardTimeout } from "./middleware/timeout";
 import achievementRoutes from "./routes/achievements";
@@ -25,6 +25,8 @@ import spellRoutes from "./routes/spells";
 import uploadRoutes from "./routes/upload";
 
 const app = express();
+// Trust proxy (Nginx) for correct protocol detection
+app.set("trust proxy", 1);
 
 // Security Headers - должен быть первым
 app.use(helmet(helmetConfig));

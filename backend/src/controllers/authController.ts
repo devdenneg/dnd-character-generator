@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { registerUser, loginUser, getUserById } from "../services/authService";
-import { validateTelegramWebAppData, getTelegramEmail, getTelegramUsername } from "../utils/telegram";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
+import { getUserById, loginUser, registerUser } from "../services/authService";
+import { getTelegramEmail, getTelegramUsername, validateTelegramWebAppData } from "../utils/telegram";
 
 // Validation schemas
 const registerSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().optional(),
+  role: z.enum(["player", "master"]).optional(),
 });
 
 const loginSchema = z.object({
@@ -95,6 +96,7 @@ export async function logout(_req: Request, res: Response) {
 
 export async function me(req: AuthenticatedRequest, res: Response) {
   try {
+    res.setHeader("Cache-Control", "no-store");
     const userId = req.userId;
 
     if (!userId) {

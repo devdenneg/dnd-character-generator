@@ -1,7 +1,7 @@
 import { Response } from "express";
+import fs from "fs/promises";
 import multer from "multer";
 import path from "path";
-import fs from "fs/promises";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
 
 // Ensure upload directory exists
@@ -153,6 +153,60 @@ export async function deleteFile(req: AuthenticatedRequest, res: Response) {
     res.status(500).json({
       success: false,
       error: "Failed to delete file",
+    });
+  }
+}
+
+// List files controller
+export async function listFiles(req: AuthenticatedRequest, res: Response) {
+  try {
+    const files = await fs.readdir(uploadDir);
+
+    // Get base URL logic similar to uploadFile
+    const getBaseUrl = () => {
+      if (process.env.API_URL) {
+        return process.env.API_URL.replace(/\/api$/, "");
+      }
+      const protocol = req.protocol;
+      const host = req.get("host");
+      return `${protocol}://${host}`;
+    };
+
+    const baseUrl = getBaseUrl();
+
+    // Process files with stats
+    const fileList = await Promise.all(
+      files.map(async (filename) => {
+        try {
+          const filePath = path.join(uploadDir, filename);
+          const stats = await fs.stat(filePath);
+
+          return {
+            filename,
+            url: `${baseUrl}/uploads/${filename}`,
+            size: stats.size,
+            date: stats.mtime,
+          };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    // Filter out nulls and sort by date desc
+    const sortedFiles = fileList
+      .filter(( file ): file is NonNullable<typeof file> => file !== null)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    res.status(200).json({
+      success: true,
+      data: sortedFiles,
+    });
+  } catch (error) {
+    console.error("[Upload] Failed to list files:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to list files",
     });
   }
 }

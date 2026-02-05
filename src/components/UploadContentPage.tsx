@@ -1,18 +1,18 @@
-import { FileUpload } from "@/components/ui/file-upload";
-import { useAuth } from "@/contexts/AuthContext";
-import { Copy, Check, Home, Upload as UploadIcon, Image as ImageIcon, Trash2 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { uploadApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { uploadApi } from "@/api/client";
+import { FileUpload } from "@/components/ui/file-upload";
+import { useAuth } from "@/contexts/AuthContext";
+import { Check, Copy, Home, Image as ImageIcon, Trash2, Upload as UploadIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UploadedFile {
   url: string;
   filename: string;
-  originalName: string;
+  originalName: string; // The backend list might not return originalName if not stored, but our list logic returns filename/url/size/date
   size: number;
-  mimetype: string;
-  uploadedAt: Date;
+  // mimetype: string; // Backend list doesn't return mimetype currently
+  date: string; // Backend returns date string
 }
 
 export function UploadContentPage({ onBack }: { onBack: () => void }) {
@@ -20,20 +20,38 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleUploadComplete = useCallback((url: string, file: File) => {
-    // Extract filename from URL
-    const filename = url.split("/").pop() || "";
-    const newFile: UploadedFile = {
-      url,
-      filename,
-      originalName: file.name,
-      size: file.size,
-      mimetype: file.type,
-      uploadedAt: new Date(),
-    };
-    setUploadedFiles((prev) => [newFile, ...prev]);
+  const fetchFiles = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await uploadApi.list();
+      if (response.success) {
+        // Map backend response to local interface if needed
+        // Backend returns: { filename, url, size, date }
+        setUploadedFiles(response.data.map((f: any) => ({
+          ...f,
+          originalName: f.filename, // We use filename as name since we don't store original name separately in FS listings easily
+          uploadedAt: new Date(f.date)
+        })));
+      }
+    } catch (error) {
+      console.error("Failed to fetch files:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchFiles();
+    }
+  }, [isAuthenticated, fetchFiles]);
+
+  const handleUploadComplete = useCallback(async (_url: string, _file: File) => {
+    // Refresh list after upload
+    await fetchFiles();
+  }, [fetchFiles]);
 
   const handleCopyUrl = useCallback((url: string) => {
     navigator.clipboard.writeText(url);
@@ -42,6 +60,8 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
   }, []);
 
   const handleDelete = useCallback(async (filename: string) => {
+    if (!confirm("Вы уверены, что хотите удалить этот файл?")) return;
+
     setDeleting(filename);
     try {
       await uploadApi.delete(filename);
@@ -76,6 +96,8 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
     );
   }
 
+
+
   return (
     <div className="relative z-10">
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
@@ -105,6 +127,7 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
             <p className="text-sm text-muted-foreground">
               Загружайте изображения для использования в игре (PNG, JPG, GIF, WebP до 5MB)
             </p>
+            <p className="text-xs text-muted-foreground mt-1">URL CDN: https://dndgenerator.fun/uploads/</p>
           </div>
 
           <Card className="p-6">
@@ -113,17 +136,19 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* Uploaded Files Section */}
-        {uploadedFiles.length > 0 && (
-          <div className="animate-fade-in-up">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold mb-1">Загруженные файлы</h2>
-                <p className="text-sm text-muted-foreground">
-                  {uploadedFiles.length} {uploadedFiles.length === 1 ? "файл" : "файлов"}
-                </p>
-              </div>
+        <div className="animate-fade-in-up">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold mb-1">Загруженные файлы</h2>
+              <p className="text-sm text-muted-foreground">
+                {uploadedFiles.length} {uploadedFiles.length === 1 ? "файл" : "файлов"}
+              </p>
             </div>
+          </div>
 
+          {loading ? (
+             <div className="text-center py-8 text-muted-foreground">Загрузка списка...</div>
+          ) : uploadedFiles.length > 0 ? (
             <div className="space-y-3">
               {uploadedFiles.map((file) => (
                 <Card key={file.filename} className="p-4">
@@ -132,7 +157,7 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
                     <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
                       <img
                         src={file.url}
-                        alt={file.originalName}
+                        alt={file.filename}
                         className="h-full w-full object-cover"
                         onError={(e) => {
                           e.currentTarget.src = "";
@@ -145,9 +170,9 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{file.originalName}</p>
+                          <p className="font-medium truncate">{file.filename}</p>
                           <p className="text-xs text-muted-foreground">
-                            {formatFileSize(file.size)} • {file.uploadedAt.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}
+                            {formatFileSize(file.size)} • {new Date(file.date).toLocaleTimeString("ru-RU", { day: 'numeric', month: 'long', hour: "2-digit", minute: "2-digit" })}
                           </p>
                         </div>
                       </div>
@@ -184,12 +209,7 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
                 </Card>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {uploadedFiles.length === 0 && (
-          <div className="animate-fade-in-up">
+          ) : (
             <Card className="p-12 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                 <ImageIcon className="w-8 h-8 text-muted-foreground" />
@@ -199,8 +219,8 @@ export function UploadContentPage({ onBack }: { onBack: () => void }) {
                 Загрузите изображения выше, чтобы увидеть их здесь
               </p>
             </Card>
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );
