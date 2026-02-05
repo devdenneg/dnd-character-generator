@@ -5,7 +5,7 @@ import { optimizedClasses } from '../src/data/classes.optimized.js';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🩹 Starting surgical fix for Spellcasting Data...');
+  console.log('🩹 Starting surgical fix for Spellcasting & Equipment Data...');
 
   for (const cls of optimizedClasses) {
     if (!cls.url) continue;
@@ -49,12 +49,22 @@ async function main() {
         await prisma.characterClass.update({
             where: { id: existingClass.id },
             data: {
-                spellcasting: spellcasting as any
+                spellcasting: spellcasting as any,
+                // Fix equipment
+                startingEquipment: (cls as any).equipment || null
             }
         });
-        console.log(`   ✅ Updated spellcasting data.`);
+        console.log(`   ✅ Updated spellcasting and equipment data.`);
     } else {
         console.log(`   -> No magic.`);
+        // Update equipment for non-casters too
+        await prisma.characterClass.update({
+            where: { id: existingClass.id },
+            data: {
+                startingEquipment: (cls as any).equipment || null
+            }
+        });
+        console.log(`   ✅ Updated equipment data.`);
     }
   }
 
