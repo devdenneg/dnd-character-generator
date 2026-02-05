@@ -1,6 +1,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { optimizedClasses } from '../src/data/classes.optimized.js';
+import { generateSpellSlotTableEntries, type CasterType } from './utils/spellSlots.ts';
 
 const prisma = new PrismaClient();
 
@@ -146,12 +147,22 @@ async function main() {
         subclassLevel = subclassFeature.level;
     }
 
+    // Generate class table with spell slots
+    let classTable = cls.table || [];
+
+    // Add spell slot columns for spellcasting classes
+    if (cls.casterType && cls.casterType !== 'NONE') {
+        const spellSlotColumns = generateSpellSlotTableEntries(cls.casterType as CasterType);
+        // Append spell slot columns to the existing table
+        classTable = [...classTable, ...spellSlotColumns];
+    }
+
     // Create the record
     await prisma.characterClass.create({
       data: {
         externalId: cls.url,
-        name: cls.name.eng,
         nameRu: cls.name.rus,
+        name: cls.name.eng,
         description: cls.description || [], // Now Json
         image: cls.image || null,
         gallery: cls.gallery || [],
@@ -165,7 +176,7 @@ async function main() {
         subclassLevel,
         source: "phb2024",
         spellcasting: cls.spellcasting || null,
-        classTable: cls.table || null, // Full table data
+        classTable, // Table with spell slots added
         multiclassing: cls.multiclassing || null,
         startingGold,
         startingEquipment: cls.equipment || null,
