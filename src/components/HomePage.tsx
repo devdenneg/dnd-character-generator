@@ -1,4 +1,4 @@
-import { User, Search, X, ChevronRight } from "lucide-react";
+import { User, Search, X, ChevronRight, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -582,6 +582,86 @@ export function HomePage({ onNavigate }: HomePageProps) {
           </div>
         )}
       </div>
+
+      {/* Upload Section - для всех авторизованных пользователей */}
+      {isAuthenticated && (
+        <div className="mb-16">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-3xl font-display font-semibold text-foreground">
+                Управление контентом
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Загрузка и управление файлами
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <button
+              onClick={() => onNavigate("upload-content")}
+              className="group w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative animate-fade-in-up"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-500 opacity-0 group-hover:opacity-5 transition-opacity blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
+
+              <div className="flex items-start gap-5 relative z-5 p-6">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                  <Upload className="w-7 h-7 text-violet-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg md:text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
+                    Загрузка контента
+                  </h3>
+                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                    Загружайте изображения для использования в игре
+                  </p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Master Section - только для мастеров */}
+      {isAuthenticated && user?.role === "master" && (
+        <div className="mb-16">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-3xl font-display font-semibold text-foreground">
+                Панель Мастера
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Инструменты для ведения игр
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <button
+              onClick={() => onNavigate("my-rooms")}
+              className="group w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative animate-fade-in-up"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500 opacity-0 group-hover:opacity-5 transition-opacity blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
+
+              <div className="flex items-start gap-5 relative z-5 p-6">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
+                  <User className="w-7 h-7 text-amber-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg md:text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
+                    Мои комнаты
+                  </h3>
+                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                    Управление игровыми комнатами
+                  </p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

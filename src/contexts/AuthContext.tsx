@@ -7,6 +7,7 @@ interface AuthContextType {
   user: UserEntity | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isMaster: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (
     email: string,
@@ -102,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
+        isMaster: user?.role === "master",
         login,
         register,
         logout,

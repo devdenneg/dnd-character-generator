@@ -22,6 +22,7 @@ import raceRoutes from "./routes/races";
 import roomRoutes from "./routes/rooms";
 import searchRoutes from "./routes/search";
 import spellRoutes from "./routes/spells";
+import uploadRoutes from "./routes/upload";
 
 const app = express();
 
@@ -83,6 +84,9 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Static files - serve uploaded files (for CDN)
+app.use("/uploads", express.static("uploads"));
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/characters", characterRoutes);
@@ -94,6 +98,7 @@ app.use("/api/backgrounds", backgroundRoutes);
 app.use("/api/spells", spellRoutes);
 app.use("/api/equipment", equipmentRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // 404 handler
 app.use((_req, res) => {

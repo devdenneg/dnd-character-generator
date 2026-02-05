@@ -7,6 +7,7 @@ const JWT_EXPIRES_IN_SECONDS = 7 * 24 * 60 * 60; // 7 days
 export interface JwtPayload {
   userId: string;
   email: string;
+  role?: "player" | "master";
 }
 
 export function generateToken(payload: JwtPayload): string {

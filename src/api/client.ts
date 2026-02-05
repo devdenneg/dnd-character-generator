@@ -24,6 +24,10 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Remove Content-Type for FormData to let browser set it with boundary
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
   return config;
 });
 
@@ -610,6 +614,22 @@ export const equipmentApi = {
 export const searchApi = {
   search: async (query: string) => {
     const response = await apiClient.get("/search", { params: { q: query } });
+    return response.data;
+  },
+};
+
+// Upload API
+export const uploadApi = {
+  upload: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await apiClient.post("/upload", formData);
+    return response.data;
+  },
+
+  delete: async (filename: string) => {
+    const response = await apiClient.delete(`/upload/${filename}`);
     return response.data;
   },
 };

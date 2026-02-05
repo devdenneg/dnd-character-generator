@@ -53,8 +53,12 @@ export async function registerUser(
     },
   });
 
-  // Generate token
-  const token = generateToken({ userId: user.id, email: user.email });
+  // Generate token with role
+  const token = generateToken({
+    userId: user.id,
+    email: user.email,
+    role: user.role as "player" | "master",
+  });
 
   return {
     user: {
@@ -86,8 +90,12 @@ export async function loginUser(input: LoginInput): Promise<AuthResponse> {
     throw new Error("Invalid email or password");
   }
 
-  // Generate token
-  const token = generateToken({ userId: user.id, email: user.email });
+  // Generate token with role
+  const token = generateToken({
+    userId: user.id,
+    email: user.email,
+    role: user.role as "player" | "master",
+  });
 
   return {
     user: {

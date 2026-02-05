@@ -2,7 +2,6 @@ import { BackgroundsPage } from "@/components/BackgroundsPage";
 import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
 import { ClassDetailsPage } from "@/components/ClassDetailsPage";
 import { ClassesPage } from "@/components/ClassesPage";
-
 import { CreateRoomPage } from "@/components/CreateRoomPage";
 import { EquipmentPage } from "@/components/EquipmentPage";
 import { Glossary } from "@/components/Glossary";
@@ -17,6 +16,7 @@ import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
 import { RacesPage } from "@/components/RacesPage";
 import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { SpellsPage } from "@/components/SpellsPage";
+import { UploadContentPage } from "@/components/UploadContentPage";
 import { Button } from "@/components/ui/button";
 import {
   AbilitiesStep,
@@ -283,6 +283,9 @@ function HomePageWrapper() {
       case "glossary":
         navigate("/glossary");
         break;
+      case "upload-content":
+        navigate("/upload-content");
+        break;
       default:
         navigate("/");
     }
@@ -381,6 +384,7 @@ function AppRoutes() {
         />
         <Route path="/achievements" element={<PlayerAchievementsPage />} />
         <Route path="/glossary" element={<GlossaryPage />} />
+        <Route path="/upload-content" element={<UploadContentPage onBack={() => window.location.hash = "/"} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </PageLayout>
