@@ -1,14 +1,14 @@
+import { RollButton } from "@/components/RollButton";
+import type { DescriptionItem } from "@/types/character";
 import React from "react";
 import { Link } from "react-router-dom";
-import type { DescriptionItem } from "@/types/character";
-import { RollButton } from "@/components/RollButton";
 
 /**
  * Парсит описание снаряжения с тегами формата {@tag content}
  * и возвращает React элементы
  */
 
-interface ParsedElement {
+export interface ParsedElement {
   type:
     | "text"
     | "bold"
@@ -29,7 +29,7 @@ interface ParsedElement {
 /**
  * Находит закрывающую скобку с учетом вложенности
  */
-function findClosingBrace(str: string, startIndex: number): number {
+export function findClosingBrace(str: string, startIndex: number): number {
   let depth = 1;
   let index = startIndex;
 
@@ -48,7 +48,7 @@ function findClosingBrace(str: string, startIndex: number): number {
 /**
  * Парсит строку с поддержкой вложенных тегов
  */
-function parseDescriptionLine(line: string): ParsedElement[] {
+export function parseDescriptionLine(line: string): ParsedElement[] {
   const elements: ParsedElement[] = [];
   let currentIndex = 0;
 
@@ -212,7 +212,7 @@ function parseDescriptionLine(line: string): ParsedElement[] {
 /**
  * Рендерит содержимое элемента (строка или массив вложенных элементов)
  */
-function renderContent(
+export function renderContent(
   content: string | ParsedElement[] | undefined
 ): React.ReactNode {
   if (!content) return null;
@@ -228,7 +228,7 @@ function renderContent(
 /**
  * Рендерит один элемент описания
  */
-function renderElement(element: ParsedElement, index: number): React.ReactNode {
+export function renderElement(element: ParsedElement, index: number): React.ReactNode {
   switch (element.type) {
     case "text":
       return <span key={index}>{element.content as string}</span>;

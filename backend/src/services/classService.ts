@@ -1,5 +1,5 @@
 import prisma from "../db";
-import type { StartingEquipment, SpellcastingConfig } from "../types/equipment";
+import type { SpellcastingConfig } from "../types/equipment";
 
 export interface EquipmentWithQuantity {
   equipmentId: string;
@@ -466,7 +466,6 @@ export async function searchClasses(query: string) {
       OR: [
         { name: { contains: query, mode: "insensitive" } },
         { nameRu: { contains: query, mode: "insensitive" } },
-        { description: { contains: query, mode: "insensitive" } },
       ],
     },
     select: {

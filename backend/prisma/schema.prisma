@@ -19,105 +19,27 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  characters  Character[]
-  rooms       Room[]
-  roomPlayers RoomPlayer[]
-}
-
-model Character {
-  id        String   @id @default(uuid())
-  userId    String
-  name      String
-  data      Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roomPlayers  RoomPlayer[]
-  playerAchievements PlayerAchievement[]
-
-  @@index([userId])
-}
-
-model Room {
-  id         String   @id @default(uuid())
-  masterId   String
-  name       String
-  maxPlayers Int      @default(4)
-  password   String
-  isActive   Boolean  @default(true)
-  isStarted  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  master  User         @relation(fields: [masterId], references: [id], onDelete: Cascade)
-  players RoomPlayer[]
-}
-
-model RoomPlayer {
-  id          String   @id @default(uuid())
-  roomId      String
-  userId      String
-  characterId String
-  joinedAt    DateTime @default(now())
-  isOnline    Boolean  @default(true)
-  updatedAt   DateTime @updatedAt
-
-  room      Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-
-  @@unique([roomId, userId])
-  @@index([roomId])
-  @@index([userId])
-  @@index([characterId])
-}
-
-model Achievement {
-  id          String   @id @default(uuid())
-  key         String
-  name        String
-  description String
-  icon        String
-  category    String
-  xpReward    Int      @default(0)
-  rarity      String
-  createdAt   DateTime @default(now())
-
-  playerAchievements PlayerAchievement[]
-}
-
-model PlayerAchievement {
-  id            String   @id @default(uuid())
-  achievementId String
-  userId        String
-  characterId   String?
-  grantedById   String
-  grantedAt     DateTime @default(now())
-
-  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-  character    Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
-
-  @@index([characterId])
-  @@index([userId])
+  characters          Character[]
+  roomsMastered       Room[]              @relation("RoomMaster")
+  roomsJoined         RoomPlayer[]
+  achievements        PlayerAchievement[] @relation("PlayerAchievements")
+  achievementsGranted PlayerAchievement[] @relation("GrantedAchievements")
 }
 
 model Race {
-  id          String   @id @default(uuid())
-  externalId  String   @unique // ID from the frontend (e.g., "aasimar", "dragonborn")
-  name        String
-  nameRu      String
-  description String
-  speed       Int
-  size        String   // "Small", "Medium", "Large"
-  source      String   // "srd" or "phb2024"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(uuid())
+  externalId      String   @unique
+  name            String
+  nameRu          String
+  description     String   @db.Text
+  speed           Int
+  size            String
+  abilityIncreases Json?
+  source          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  traits      RaceTrait[]
-
-  @@index([externalId])
-  @@index([source])
+  traits          RaceTrait[]
 }
 
 model RaceTrait {
@@ -125,7 +47,7 @@ model RaceTrait {
   raceId      String
   name        String
   nameRu      String
-  description String
+  description String   @db.Text
   createdAt   DateTime @default(now())
 
   race        Race     @relation(fields: [raceId], references: [id], onDelete: Cascade)
@@ -133,12 +55,30 @@ model RaceTrait {
   @@index([raceId])
 }
 
+model Character {
+  id          String   @id @default(uuid())
+  userId      String
+  name        String
+  data        Json     // The large blob used by characterService
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  achievements PlayerAchievement[]
+  roomsJoined  RoomPlayer[]
+
+  @@index([userId])
+}
+
 model CharacterClass {
   id              String   @id @default(uuid())
   externalId      String   @unique // ID from the frontend (e.g., "barbarian", "wizard")
   name            String
   nameRu          String
-  description     String   @db.Text
+  description     Json?    // Changed from String to Json to store rich text array
+  image           String?  // Main image
+  gallery         String[] // Additional images
   hitDie          Int
   primaryAbility  String[]
   savingThrows    String[]
@@ -149,7 +89,10 @@ model CharacterClass {
   subclassLevel   Int
   source          String   // "srd" or "phb2024"
   spellcasting    Json?    // Spellcasting data: { ability, cantripsKnown, spellsKnown, spellSlots }
+  classTable      Json?    // Full table data from JSON
+  multiclassing   Json?    // Multiclassing rules
   startingGold    Int      @default(0) // Starting gold amount
+  startingEquipment Json?    // Rich equipment data from PHB 2024
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -166,7 +109,7 @@ model ClassFeature {
   classId     String
   name        String
   nameRu      String
-  description String   @db.Text
+  description Json?    // Changed to Json for rich text
   level       Int
   createdAt   DateTime @default(now())
 
@@ -181,12 +124,13 @@ model Subclass {
   externalId  String   // ID from frontend
   name        String
   nameRu      String
-  description String   @db.Text
+  description Json?    // Changed to Json for rich text
   source      String   @default("phb2024")
   createdAt   DateTime @default(now())
 
   class       CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
   features    SubclassFeature[]
+  classTable  Json?    // Subclass specific table overrides if any
 
   @@index([classId])
   @@index([externalId])
@@ -197,13 +141,35 @@ model SubclassFeature {
   subclassId  String
   name        String
   nameRu      String
-  description String   @db.Text
+  description Json?    // Changed to Json for rich text
   level       Int
   createdAt   DateTime @default(now())
 
   subclass    Subclass @relation(fields: [subclassId], references: [id], onDelete: Cascade)
 
   @@index([subclassId])
+}
+
+model Equipment {
+  id          String   @id @default(uuid())
+  externalId  String   @unique
+  name        String
+  nameRu      String
+  category    String
+  cost        Json     // { quantity: number, unit: string }
+  weight      Float?
+  source      String
+  description Json?
+  damage      Json?    // { dice: string, type: string }
+  armorClass  Int?
+  armorType   String?
+  maxDexBonus Int?
+  properties  String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  backgroundEquipment BackgroundEquipment[]
+  classEquipment      ClassEquipment[]
 }
 
 model Background {
@@ -228,6 +194,34 @@ model Background {
   @@index([source])
 }
 
+model BackgroundEquipment {
+  id            String     @id @default(uuid())
+  backgroundId  String
+  itemId        String
+  quantity      Int        @default(1)
+
+  background    Background @relation(fields: [backgroundId], references: [id], onDelete: Cascade)
+  equipment     Equipment  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([backgroundId])
+  @@index([itemId])
+}
+
+model ClassEquipment {
+  id            String         @id @default(uuid())
+  classId       String
+  itemId        String
+  quantity      Int            @default(1)
+  isChoice      Boolean        @default(false)
+  choiceGroup   Int?           // For choices like "A or B"
+
+  class         CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  equipment     Equipment      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([classId])
+  @@index([itemId])
+}
+
 model Spell {
   id          String   @id @default(uuid())
   externalId  String   @unique // ID from the frontend (e.g., "fire-bolt", "magic-missile")
@@ -250,58 +244,67 @@ model Spell {
   @@index([source])
 }
 
-model Equipment {
+model Achievement {
   id          String   @id @default(uuid())
-  externalId  String   @unique // ID from the frontend (e.g., "longsword-phb", "chain-mail-phb")
+  key         String   @unique
   name        String
-  nameRu      String
-  category    String   // "weapon", "armor", "gear", "tool", "pack"
-  cost        Json     // { quantity: number, unit: string }
-  weight      Float?
-  source      String   // "PHB", "DMG", etc.
-  description Json     // Array of description strings
-  damage      Json?    // { dice: string, type: string }
-  armorClass  Int?
-  armorType   String?  // "light", "medium", "heavy", "shield"
-  maxDexBonus Int?
-  properties  String[] // Array of property strings
+  description String
+  icon        String
+  category    String
+  rarity      String
+  xpReward    Int      @default(0)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  backgrounds BackgroundEquipment[]
-  classes     ClassEquipment[]
-
-  @@index([externalId])
-  @@index([category])
-  @@index([source])
+  playerAchievements PlayerAchievement[]
 }
 
-model BackgroundEquipment {
-  id           String     @id @default(uuid())
-  backgroundId String
-  equipmentId  String
-  quantity     Int        @default(1)
-  createdAt    DateTime   @default(now())
+model PlayerAchievement {
+  id            String   @id @default(uuid())
+  achievementId String
+  userId        String
+  characterId   String?
+  grantedById   String
+  grantedAt     DateTime @default(now())
 
-  background   Background @relation(fields: [backgroundId], references: [id], onDelete: Cascade)
-  equipment    Equipment  @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user          User        @relation("PlayerAchievements", fields: [userId], references: [id], onDelete: Cascade)
+  character     Character?  @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  grantedBy     User        @relation("GrantedAchievements", fields: [grantedById], references: [id], onDelete: Cascade)
 
-  @@unique([backgroundId, equipmentId])
-  @@index([backgroundId])
-  @@index([equipmentId])
+  @@index([achievementId])
+  @@index([userId])
+  @@index([characterId])
 }
 
-model ClassEquipment {
-  id          String         @id @default(uuid())
-  classId     String
-  equipmentId String
-  quantity    Int            @default(1)
-  createdAt   DateTime       @default(now())
+model Room {
+  id         String   @id @default(uuid())
+  masterId   String
+  name       String
+  maxPlayers Int      @default(4)
+  password   String
+  isActive   Boolean  @default(true)
+  isStarted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  class       CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
-  equipment   Equipment      @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  master     User     @relation("RoomMaster", fields: [masterId], references: [id], onDelete: Cascade)
+  players    RoomPlayer[]
+}
 
-  @@unique([classId, equipmentId])
-  @@index([classId])
-  @@index([equipmentId])
+model RoomPlayer {
+  id          String   @id @default(uuid())
+  roomId      String
+  userId      String
+  characterId String
+  joinedAt    DateTime @default(now())
+  isOnline    Boolean  @default(true)
+
+  room      Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId], name: "roomId_userId")
+  @@index([roomId])
+  @@index([userId])
+  @@index([characterId])
 }

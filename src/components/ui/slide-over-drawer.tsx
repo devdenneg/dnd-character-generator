@@ -8,6 +8,7 @@ interface SlideOverDrawerProps {
   title: ReactNode;
   children: ReactNode;
   actions?: ReactNode;
+  className?: string; // Add className
 }
 
 export function SlideOverDrawer({
@@ -16,6 +17,7 @@ export function SlideOverDrawer({
   title,
   children,
   actions,
+  className, // Destructure className
 }: SlideOverDrawerProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [shouldRender, setShouldRender] = useState(isOpen);
@@ -79,7 +81,7 @@ export function SlideOverDrawer({
       <div
         className={`relative w-full max-w-xl h-full bg-card border-l border-border shadow-2xl overflow-hidden flex flex-col ${
           isClosing ? "animate-slide-out-right" : "animate-slide-in-right"
-        }`}
+        } ${className || ""}`} // Apply className
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">

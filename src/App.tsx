@@ -1,52 +1,54 @@
-import { useState, useEffect } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BookOpen, Home } from "lucide-react";
-import {
-  WizardLayout,
-  RaceStep,
-  ClassStep,
-  SkillsStep,
-  AbilitiesStep,
-  BackgroundStep,
-  AbilityIncreaseStep,
-  EquipmentStep,
-  SpellsStep,
-  DetailsStep,
-  SummaryStep,
-} from "@/components/wizard";
+import { BackgroundsPage } from "@/components/BackgroundsPage";
+import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
+import { ClassDetailsPage } from "@/components/ClassDetailsPage";
+import { ClassesPage } from "@/components/ClassesPage";
+import { ClassesTestPage } from "@/components/ClassesTestPage";
+import { CreateRoomPage } from "@/components/CreateRoomPage";
+import { EquipmentPage } from "@/components/EquipmentPage";
 import { Glossary } from "@/components/Glossary";
 import { HomePage } from "@/components/HomePage";
-import { MyCharactersPage } from "@/components/MyCharactersPage";
-import { CreateRoomPage } from "@/components/CreateRoomPage";
-import { MyRoomsPage } from "@/components/MyRoomsPage";
-import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { JoinRoomPage } from "@/components/JoinRoomPage";
-import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
 import { MasterAchievementsPage } from "@/components/MasterAchievementsPage";
-import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
+import { MyCharactersPage } from "@/components/MyCharactersPage";
+import { MyRoomsPage } from "@/components/MyRoomsPage";
 import { NotFoundPage } from "@/components/NotFoundPage";
+import { PageLayout } from "@/components/PageLayout";
+import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
 import { RacesPage } from "@/components/RacesPage";
-import { ClassesPage } from "@/components/ClassesPage";
-import { BackgroundsPage } from "@/components/BackgroundsPage";
+import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { SpellsPage } from "@/components/SpellsPage";
-import { EquipmentPage } from "@/components/EquipmentPage";
 import { Button } from "@/components/ui/button";
-import { useCharacterStore } from "@/store/characterStore";
+import {
+    AbilitiesStep,
+    AbilityIncreaseStep,
+    BackgroundStep,
+    ClassStep,
+    DetailsStep,
+    EquipmentStep,
+    RaceStep,
+    SkillsStep,
+    SpellsStep,
+    SummaryStep,
+    WizardLayout,
+} from "@/components/wizard";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthModalProvider, useAuthModal } from "@/contexts/AuthModalContext";
 import { DiceRollProvider } from "@/contexts/DiceRollContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { TelegramProvider } from "@/contexts/TelegramContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { PageLayout } from "@/components/PageLayout";
 import "@/i18n";
+import { useCharacterStore } from "@/store/characterStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BookOpen, Home } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+    BrowserRouter,
+    Route,
+    Routes,
+    useLocation,
+    useNavigate,
+} from "react-router-dom";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -371,6 +373,8 @@ function AppRoutes() {
         <Route path="/character" element={<CharacterWizardPage />} />
         <Route path="/my-characters" element={<MyCharactersPage />} />
         <Route path="/races" element={<RacesPageWrapper />} />
+        <Route path="/classes-test" element={<ClassesTestPage />} />
+        <Route path="/classes-test/:classId" element={<ClassDetailsPage />} />
         <Route path="/classes" element={<ClassesPageWrapper />} />
         <Route path="/backgrounds" element={<BackgroundsPageWrapper />} />
         <Route path="/spells" element={<SpellsPageWrapper />} />
