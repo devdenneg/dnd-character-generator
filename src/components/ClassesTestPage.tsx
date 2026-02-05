@@ -44,7 +44,7 @@ export function ClassesTestPage() {
   }, [data]);
 
   const filteredClasses = useMemo(() => {
-    return mappedClasses.filter((c) =>
+    return mappedClasses.filter((c: any) =>
       c.name.rus.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.name.eng.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -125,7 +125,7 @@ export function ClassesTestPage() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredClasses.map((cls) => {
+        {filteredClasses.map((cls: any) => {
           const iconKey = cls.url.split("-")[0];
           const Icon = CLASS_ICONS[iconKey] || Shield;
 

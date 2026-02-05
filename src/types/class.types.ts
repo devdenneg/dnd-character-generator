@@ -7,13 +7,11 @@
 // Базовые типы для содержимого описания
 // ============================================
 
-export type ContentType =
-  | string
-  | ContentBlock
-  | (string | ContentBlock)[]; // Allow mixed arrays
+export type ContentItem = string | ContentBlock;
+export type ContentType = ContentItem | ContentItem[];
 
 export interface ContentBlock {
-  type: 'heading' | 'list' | 'quote' | 'table' | 'text' | 'bold' | 'italic' | 'break' | 'image';
+  type: 'heading' | 'list' | 'quote' | 'table' | 'text' | 'bold' | 'italic' | 'break' | 'image' | 'paragraph' | 'doc';
   attrs?: {
     level?: number | string;
     type?: 'ordered' | 'unordered';
@@ -21,7 +19,7 @@ export interface ContentBlock {
     variant?: string;
     [key: string]: any; // Allow other attributes
   };
-  content?: ContentType[];
+  content?: ContentType;
   text?: string; // For text nodes
   caption?: string;
   colLabels?: string[];

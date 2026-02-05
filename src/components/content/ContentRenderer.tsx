@@ -71,7 +71,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
       );
 
     case "heading":
-      const Level = (`h${block.attrs?.level || 3}` as keyof JSX.IntrinsicElements) as React.ElementType;
+      const Level = (`h${block.attrs?.level || 3}` as any) as React.ElementType;
       return (
         <Level className="font-bold mt-6 mb-3 text-foreground tracking-tight">
           <ContentRenderer content={block.content} />
@@ -87,9 +87,9 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
             block.attrs?.type === "ordered"
               ? "list-decimal"
               : "list-disc marker:text-primary/70"
-          )}
-        >
-          {block.content?.map((item, index) => (
+      )}
+    >
+      {Array.isArray(block.content) && block.content.map((item, index) => (
             <li key={index} className="pl-1">
               <ContentRenderer content={item} className="mb-0" />
             </li>
