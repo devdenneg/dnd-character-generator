@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router-dom";
-import { Home, Ghost, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft, Ghost, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function NotFoundPage() {
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ export function NotFoundPage() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%,
           100% {

@@ -1,6 +1,6 @@
-import { Server as SocketIOServer } from "socket.io";
 import { Server as HTTPServer } from "http";
 import jwt from "jsonwebtoken";
+import { Server as SocketIOServer } from "socket.io";
 import prisma from "./db";
 
 export let io: SocketIOServer;
@@ -10,6 +10,48 @@ interface JWTPayload {
   email: string;
   role: string;
 }
+
+// Rate limiting для WebSocket событий
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+}
+
+const eventRateLimits = new Map<string, RateLimitEntry>();
+const MAX_EVENTS_PER_MINUTE = 50;
+const RATE_LIMIT_WINDOW = 60000; // 1 минута
+
+function checkRateLimit(socketId: string): boolean {
+  const now = Date.now();
+  const entry = eventRateLimits.get(socketId);
+
+  if (!entry || now > entry.resetTime) {
+    eventRateLimits.set(socketId, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW,
+    });
+    return true;
+  }
+
+  if (entry.count >= MAX_EVENTS_PER_MINUTE) {
+    return false;
+  }
+
+  entry.count++;
+  return true;
+}
+
+function cleanupRateLimits() {
+  const now = Date.now();
+  for (const [socketId, entry] of eventRateLimits.entries()) {
+    if (now > entry.resetTime) {
+      eventRateLimits.delete(socketId);
+    }
+  }
+}
+
+// Очистка каждые 5 минут
+setInterval(cleanupRateLimits, 5 * 60 * 1000);
 
 export function initializeSocket(httpServer: HTTPServer) {
   io = new SocketIOServer(httpServer, {
@@ -49,9 +91,30 @@ export function initializeSocket(httpServer: HTTPServer) {
     // Присоединяем к личной комнате для уведомлений
     socket.join(`user:${socket.data.userId}`);
 
+    // Middleware для rate limiting событий
+    socket.use((packet, next) => {
+      if (!checkRateLimit(socket.id)) {
+        console.warn(
+          `⚠️  Rate limit exceeded for ${socket.data.email}, disconnecting`,
+        );
+        socket.emit("error", {
+          message: "Слишком много событий. Подключение будет разорвано.",
+        });
+        socket.disconnect(true);
+        return;
+      }
+      next();
+    });
+
     // Присоединение к комнате
     socket.on("join-room", async (roomId: string) => {
       try {
+        // Валидация roomId
+        if (!roomId || typeof roomId !== "string" || roomId.length > 100) {
+          socket.emit("error", { message: "Некорректный ID комнаты" });
+          return;
+        }
+
         const room = await prisma.room.findUnique({
           where: { id: roomId },
           include: {
@@ -113,6 +176,12 @@ export function initializeSocket(httpServer: HTTPServer) {
     // Выход из комнаты
     socket.on("leave-room", async (roomId: string) => {
       try {
+        // Валидация roomId
+        if (!roomId || typeof roomId !== "string" || roomId.length > 100) {
+          socket.emit("error", { message: "Некорректный ID комнаты" });
+          return;
+        }
+
         socket.leave(`room:${roomId}`);
 
         // Обновить статус игрока на offline
@@ -153,6 +222,8 @@ export function initializeSocket(httpServer: HTTPServer) {
     // Отключение пользователя
     socket.on("disconnect", async () => {
       try {
+        // Очистка rate limit для этого сокета
+        eventRateLimits.delete(socket.id);
         // Найти все комнаты пользователя и установить offline
         const playerRooms = await prisma.roomPlayer.findMany({
           where: { userId: socket.data.userId },

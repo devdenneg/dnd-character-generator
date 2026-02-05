@@ -1,44 +1,84 @@
-import express from "express";
+import compression from "compression";
 import cors from "cors";
-import authRoutes from "./routes/auth";
-import characterRoutes from "./routes/characters";
-import roomRoutes from "./routes/rooms";
+import express from "express";
+import mongoSanitize from "express-mongo-sanitize";
+import helmet from "helmet";
+import hpp from "hpp";
+import { corsConfig, helmetConfig, payloadConfig } from "./config/security";
+import { generalLimiter } from "./middleware/rateLimiter";
+import {
+    sanitizeStrings,
+    validateContentType,
+    validatePayloadSize,
+} from "./middleware/security";
+import { standardTimeout } from "./middleware/timeout";
 import achievementRoutes from "./routes/achievements";
-import raceRoutes from "./routes/races";
-import classRoutes from "./routes/classes";
+import authRoutes from "./routes/auth";
 import backgroundRoutes from "./routes/backgrounds";
-import spellRoutes from "./routes/spells";
+import characterRoutes from "./routes/characters";
+import classRoutes from "./routes/classes";
 import equipmentRoutes from "./routes/equipment";
+import raceRoutes from "./routes/races";
+import roomRoutes from "./routes/rooms";
 import searchRoutes from "./routes/search";
+import spellRoutes from "./routes/spells";
 
 const app = express();
 
-// CORS - allow multiple origins
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:4173",
-  "https://devdenneg.github.io",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+// Security Headers - должен быть первым
+app.use(helmet(helmetConfig));
 
+// Compression
+app.use(compression());
+
+// CORS - строгая политика для production
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
+      // В production разрешаем только указанные origins
+      if (process.env.NODE_ENV === "production") {
+        if (corsConfig.allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
       } else {
-        callback(null, true); // Allow all in development
+        // В development разрешаем все
+        callback(null, true);
       }
     },
-    credentials: true,
+    credentials: corsConfig.credentials,
   })
 );
-app.use(express.json());
 
-// Health check
+// Body parsing с ограничением размера
+app.use(express.json({ limit: payloadConfig.jsonLimit }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: payloadConfig.urlEncodedLimit,
+  })
+);
+
+// Sanitization
+app.use(mongoSanitize()); // Защита от NoSQL injection
+app.use(hpp()); // Защита от HTTP Parameter Pollution
+app.use(sanitizeStrings); // Базовая санитизация строк
+
+// Security middleware
+app.use(validatePayloadSize);
+app.use(validateContentType);
+
+// Rate limiting - применяется ко всем routes
+app.use("/api", generalLimiter);
+
+// Timeout для всех запросов
+app.use(standardTimeout);
+
+// Health check (без rate limiting)
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
@@ -63,20 +103,43 @@ app.use((_req, res) => {
   });
 });
 
-// Error handler
+// Error handler - улучшенный с логированием
 app.use(
   (
     err: Error,
-    _req: express.Request,
+    req: express.Request,
     res: express.Response,
     _next: express.NextFunction
   ) => {
-    console.error("Error:", err);
+    // Логируем ошибку
+    console.error("Error:", {
+      message: err.message,
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+      timestamp: new Date().toISOString(),
+    });
+
+    // CORS ошибка
+    if (err.message === "Not allowed by CORS") {
+      res.status(403).json({
+        success: false,
+        error: "CORS policy: Origin not allowed",
+      });
+      return;
+    }
+
+    // Общая ошибка сервера
     res.status(500).json({
       success: false,
-      error: "Internal server error",
+      error:
+        process.env.NODE_ENV === "development"
+          ? err.message
+          : "Internal server error",
     });
   }
 );
 
 export default app;
+
