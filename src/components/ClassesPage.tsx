@@ -4,33 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { mapBackendClassToFrontend } from "@/utils/classMapper";
 import {
-    AlertCircle,
-    Crown,
-    Flame,
-    Loader2,
-    Mountain,
-    Scroll,
-    Search,
-    Shield,
-    Zap
+  AlertCircle,
+  Loader2,
+  Search
 } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const CLASS_ICONS: Record<string, React.ElementType> = {
-  barbarian: Flame,
-  bard: Crown,
-  cleric: Shield,
-  druid: Mountain,
-  fighter: Shield,
-  monk: Zap,
-  paladin: Crown,
-  ranger: Mountain,
-  rogue: Zap,
-  sorcerer: Flame,
-  warlock: Flame,
-  wizard: Scroll,
-};
+
 
 export function ClassesPage() {
   const navigate = useNavigate();
