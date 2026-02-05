@@ -93,18 +93,57 @@ async function main() {
         });
     }
 
-    // Features mapping
-    const classFeatures = (cls.features || []).map((feat: any) => ({
-        name: feat.name || "Unknown Feature",
-        nameRu: feat.name || "Неизвестное умение",
-        description: feat.description || [], // Now Json in Prisma
-        level: feat.level || 1
-    }));
+    // Features mapping - include both base features and scaling entries
+    const classFeatures: any[] = [];
+
+    (cls.features || []).forEach((feat: any) => {
+        // Add the base feature
+        classFeatures.push({
+            name: feat.name || "Unknown Feature",
+            nameRu: feat.name || "Неизвестное умение",
+            description: feat.description || [],
+            level: feat.level || 1
+        });
+
+        // Add scaling entries as separate features
+        if (feat.scaling && Array.isArray(feat.scaling)) {
+            feat.scaling.forEach((scalingEntry: any) => {
+                classFeatures.push({
+                    name: scalingEntry.name || feat.name || "Unknown Feature",
+                    nameRu: scalingEntry.name || feat.name || "Неизвестное умение",
+                    description: scalingEntry.description || [],
+                    level: scalingEntry.level || 1
+                });
+            });
+        }
+    });
+
 
     // Extract starting gold if possible
     let startingGold = 0;
     if (cls.startingGold) {
         startingGold = parseInt(cls.startingGold) || 0;
+    }
+
+    // Extract skill count from proficiency.skill string (e.g., "Выберите любые 3 навыка" -> 3)
+    let skillCount = 2; // default
+    if (cls.proficiency?.skill) {
+        const skillMatch = cls.proficiency.skill.match(/(\d+)/);
+        if (skillMatch) {
+            skillCount = parseInt(skillMatch[1]);
+        }
+    }
+
+    // Extract subclass level from features or use default
+    let subclassLevel = 3; // default for most classes
+    // Try to find subclass feature level
+    const subclassFeature = cls.features?.find((f: any) =>
+        f.name?.toLowerCase().includes('подкласс') ||
+        f.name?.toLowerCase().includes('subclass') ||
+        f.key?.includes('subclass')
+    );
+    if (subclassFeature?.level) {
+        subclassLevel = subclassFeature.level;
     }
 
     // Create the record
@@ -122,8 +161,8 @@ async function main() {
         armorProficiencies: armorProfs,
         weaponProficiencies: weaponProfs,
         skillChoices,
-        skillCount: cls.skillCount || 2,
-        subclassLevel: cls.subclassLevel || 3,
+        skillCount,
+        subclassLevel,
         source: "phb2024",
         spellcasting: cls.spellcasting || null,
         classTable: cls.table || null, // Full table data
