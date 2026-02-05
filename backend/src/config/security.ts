@@ -33,6 +33,8 @@ export const corsConfig = {
     "http://localhost:5173",
     "http://localhost:4173",
     "https://devdenneg.github.io",
+    "https://dndgenerator.fun",
+    "https://www.dndgenerator.fun",
     process.env.FRONTEND_URL,
   ].filter(Boolean) as string[],
   credentials: true,
