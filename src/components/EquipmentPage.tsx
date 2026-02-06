@@ -1,33 +1,33 @@
-import {
-  useBackendEquipmentMeta,
-  useBackendEquipmentByExternalId,
-} from "@/api/hooks";
 import { equipmentApi } from "@/api/client";
+import {
+    useBackendEquipmentByExternalId,
+    useBackendEquipmentMeta,
+} from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
-import { parseEquipmentDescription } from "@/utils/descriptionParser";
-import {
-  Shield,
-  Sword,
-  Backpack,
-  Wrench,
-  Scroll,
-  Plus,
-  Pencil,
-  Trash2,
-  Save,
-  X,
-  Search,
-  Package,
-  Loader2,
-  Filter,
-} from "lucide-react";
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseEquipmentDescription } from "@/utils/descriptionParser";
+import { useMutation } from "@tanstack/react-query";
+import {
+    Backpack,
+    Filter,
+    Loader2,
+    Package,
+    Pencil,
+    Plus,
+    Save,
+    Scroll,
+    Search,
+    Shield,
+    Sword,
+    Trash2,
+    Wrench,
+    X,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 // Types
@@ -771,7 +771,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
             onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
-                {navigationHistory.length > 0 && (
+                {(navigationHistory.length > 0) ? (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -783,6 +783,22 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
                   >
                     ← Назад
                   </Button>
+                ) : (
+                  (location.state as any)?.backUrl && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                         e.stopPropagation();
+                         navigate((location.state as any).backUrl, {
+                           state: { scrollY: (location.state as any).scrollY }
+                         });
+                      }}
+                      className="mr-2 text-primary hover:text-primary/80"
+                    >
+                      ← {(location.state as any).backLabel || "Назад"}
+                    </Button>
+                  )
                 )}
                 {isLoadingItem ? (
                   <>

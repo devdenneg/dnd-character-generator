@@ -105,11 +105,11 @@ export function ClassesPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 pb-20">
         {filteredClasses.map((cls: any) => (
           <div
             key={cls.url}
-            className="group relative h-[500px] w-full overflow-hidden rounded-[2rem] bg-card text-card-foreground shadow-lg transition-all duration-1000 ease-out hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2 cursor-pointer border-0 ring-1 ring-white/5"
+            className="group relative h-[280px] w-full overflow-hidden rounded-xl bg-card text-card-foreground shadow-sm transition-all duration-500 ease-out hover:shadow-xl hover:-translate-y-1 cursor-pointer border border-border/50"
             onClick={() => navigate(`/classes/${cls.url}`)}
           >
               {/* Image Background */}
@@ -117,54 +117,49 @@ export function ClassesPage() {
                   <img
                       src={cls.image}
                       alt={cls.name.rus}
-                      className="h-full w-full object-cover transition-transform duration-[1500ms] cubic-bezier(0.25, 0.46, 0.45, 0.94) group-hover:scale-105 group-hover:rotate-1 filter brightness-[0.7] group-hover:brightness-95"
+                      className="h-full w-full object-cover object-top transition-transform duration-700 md:group-hover:scale-105 filter brightness-[0.6] md:brightness-[0.7] md:group-hover:brightness-90"
                       loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent opacity-80 transition-opacity duration-700 group-hover:opacity-60" />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
               </div>
 
               {/* Content Overlay */}
-              <div className="absolute inset-0 z-10 flex flex-col justify-end p-8">
-                  <div className="transform transition-transform duration-700 ease-out group-hover:-translate-y-2">
-                      <div className="flex items-center gap-3 mb-3 opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-700 delay-100 ease-out">
+              <div className="absolute inset-0 z-10 flex flex-col justify-end p-5">
+                  <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2 mb-1">
                           {cls.source?.name?.rus && (
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-white/90 bg-white/10 px-2.5 py-1 rounded-full backdrop-blur-md shadow-sm border border-white/10">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 bg-white/10 px-2 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
                                   {cls.source.name.rus}
                               </span>
                           )}
                           {cls.isReprinted && (
-                               <span className="text-[10px] font-bold uppercase tracking-widest text-orange-200 bg-orange-500/20 px-2.5 py-1 rounded-full backdrop-blur-md border border-orange-500/30">
+                               <span className="text-[10px] font-bold uppercase tracking-widest text-orange-200 bg-orange-500/20 px-2 py-0.5 rounded-md backdrop-blur-sm border border-orange-500/30">
                                    Переиздание
                                </span>
                           )}
                       </div>
 
-                      <h3 className="font-display font-black text-5xl text-white mb-2 leading-[0.9] drop-shadow-xl tracking-tight transition-colors duration-500 group-hover:text-white">
+                      <h3 className="font-display font-black text-2xl md:text-3xl text-white leading-tight drop-shadow-md transition-colors group-hover:text-primary">
                           {cls.name.rus}
                       </h3>
-                      <p className="text-sm font-bold text-white/60 tracking-[0.2em] uppercase font-mono mb-8 transition-colors duration-500 group-hover:text-primary-foreground/90">
+                      <p className="text-xs font-bold text-white/50 tracking-[0.15em] uppercase font-mono mb-2">
                            {cls.name.eng}
                       </p>
 
-                      <div className="grid grid-cols-2 gap-4 text-white/90 text-sm opacity-90 group-hover:opacity-100 transition-opacity duration-500">
-                          <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10 group-hover:border-white/30 group-hover:bg-white/10 transition-all duration-500 flex flex-col items-start gap-1">
-                              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Кость хитов</span>
-                              <span className="font-mono font-bold text-xl text-white drop-shadow-md">
+                      {/* Stats Row */}
+                      <div className="flex items-center gap-4 text-white/80 text-xs border-t border-white/10 pt-3 mt-1">
+                          <div className="flex items-center gap-1.5">
+                              <span className="text-white/40 font-bold uppercase">Хиты</span>
+                              <span className="font-mono font-bold text-white">
                                   {cls.hitDice?.label || "—"}
                               </span>
                           </div>
-                          <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10 group-hover:border-white/30 group-hover:bg-white/10 transition-all duration-500 flex flex-col items-start gap-1">
-                              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Магия</span>
-                              {cls.casterType && cls.casterType !== "NONE" ? (
-                                   <div className="flex items-center gap-2">
-                                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
-                                     <span className="font-bold text-white tracking-wide">{cls.casterType}</span>
-                                   </div>
-                              ) : (
-                                  <span className="text-white/30 text-sm font-medium">—</span>
-                              )}
-                          </div>
+                          {cls.casterType && cls.casterType !== "NONE" && (
+                              <div className="flex items-center gap-1.5">
+                                   <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(var(--primary),0.8)]" />
+                                   <span className="font-bold text-white tracking-wide">{cls.casterType}</span>
+                              </div>
+                          )}
                       </div>
                   </div>
               </div>

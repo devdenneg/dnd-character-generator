@@ -209,11 +209,16 @@ export function parseDescriptionLine(line: string): ParsedElement[] {
   return elements;
 }
 
+export interface RenderOptions {
+  linkState?: any;
+}
+
 /**
  * Рендерит содержимое элемента (строка или массив вложенных элементов)
  */
 export function renderContent(
-  content: string | ParsedElement[] | undefined
+  content: string | ParsedElement[] | undefined,
+  options?: RenderOptions
 ): React.ReactNode {
   if (!content) return null;
 
@@ -222,13 +227,13 @@ export function renderContent(
   }
 
   // Рекурсивно рендерим вложенные элементы
-  return content.map((element, index) => renderElement(element, index));
+  return content.map((element, index) => renderElement(element, index, options));
 }
 
 /**
  * Рендерит один элемент описания
  */
-export function renderElement(element: ParsedElement, index: number): React.ReactNode {
+export function renderElement(element: ParsedElement, index: number, options?: RenderOptions): React.ReactNode {
   switch (element.type) {
     case "text":
       return <span key={index}>{element.content as string}</span>;
@@ -236,14 +241,14 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
     case "bold":
       return (
         <strong key={index} className="font-semibold text-foreground">
-          {renderContent(element.content)}
+          {renderContent(element.content, options)}
         </strong>
       );
 
     case "italic":
       return (
         <em key={index} className="italic">
-          {renderContent(element.content)}
+          {renderContent(element.content, options)}
         </em>
       );
 
@@ -253,7 +258,7 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
     case "sub":
       return (
         <span key={index} className="text-xs opacity-75">
-          {renderContent(element.content)}
+          {renderContent(element.content, options)}
         </span>
       );
 
@@ -268,7 +273,7 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
           className="underline decoration-dotted underline-offset-2 cursor-help"
           title="Термин из глоссария"
         >
-          {element.label || renderContent(element.content)}
+          {element.label || renderContent(element.content, options)}
         </span>
       );
 
@@ -279,9 +284,10 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
           <Link
             key={index}
             to={`/spells#${element.url}`}
+            state={options?.linkState}
             className="text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors"
           >
-            {element.label || renderContent(element.content)}
+            {element.label || renderContent(element.content, options)}
           </Link>
         );
       }
@@ -291,7 +297,7 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
           className="text-purple-400 underline decoration-dotted underline-offset-2"
           title="Заклинание"
         >
-          {element.label || renderContent(element.content)}
+          {element.label || renderContent(element.content, options)}
         </span>
       );
 
@@ -302,9 +308,10 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
           <Link
             key={index}
             to={`/equipment#${element.url}`}
+            state={options?.linkState}
             className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
           >
-            {element.label || renderContent(element.content)}
+            {element.label || renderContent(element.content, options)}
           </Link>
         );
       }
@@ -314,7 +321,7 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
           className="text-primary underline decoration-dotted underline-offset-2"
           title="Предмет снаряжения"
         >
-          {element.label || renderContent(element.content)}
+          {element.label || renderContent(element.content, options)}
         </span>
       );
 
@@ -326,7 +333,7 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
           className="text-amber-400 underline decoration-dotted underline-offset-2"
           title="Существо"
         >
-          {renderContent(element.content)}
+          {renderContent(element.content, options)}
         </span>
       );
 
@@ -340,18 +347,18 @@ export function renderElement(element: ParsedElement, index: number): React.Reac
             rel="noopener noreferrer"
             className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
           >
-            {element.label || renderContent(element.content)}
+            {element.label || renderContent(element.content, options)}
           </a>
         );
       }
       return (
         <span key={index}>
-          {element.label || renderContent(element.content)}
+          {element.label || renderContent(element.content, options)}
         </span>
       );
 
     default:
-      return <span key={index}>{renderContent(element.content)}</span>;
+      return <span key={index}>{renderContent(element.content, options)}</span>;
   }
 }
 

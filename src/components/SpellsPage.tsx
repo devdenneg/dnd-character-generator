@@ -781,7 +781,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
             onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
-                {navigationHistory.length > 0 && (
+                {(navigationHistory.length > 0) ? (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -793,6 +793,22 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
                   >
                     ← Назад
                   </Button>
+                ) : (
+                  (location.state as any)?.backUrl && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                         e.stopPropagation();
+                         navigate((location.state as any).backUrl, {
+                           state: { scrollY: (location.state as any).scrollY }
+                         });
+                      }}
+                      className="mr-2 text-primary hover:text-primary/80"
+                    >
+                      ← {(location.state as any).backLabel || "Назад"}
+                    </Button>
+                  )
                 )}
                 {isLoadingSpell ? (
                   <>

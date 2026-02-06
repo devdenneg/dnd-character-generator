@@ -19,17 +19,17 @@ import { SpellsPage } from "@/components/SpellsPage";
 import { UploadContentPage } from "@/components/UploadContentPage";
 import { Button } from "@/components/ui/button";
 import {
-    AbilitiesStep,
-    AbilityIncreaseStep,
-    BackgroundStep,
-    ClassStep,
-    DetailsStep,
-    EquipmentStep,
-    RaceStep,
-    SkillsStep,
-    SpellsStep,
-    SummaryStep,
-    WizardLayout,
+  AbilitiesStep,
+  AbilityIncreaseStep,
+  BackgroundStep,
+  ClassStep,
+  DetailsStep,
+  EquipmentStep,
+  RaceStep,
+  SkillsStep,
+  SpellsStep,
+  SummaryStep,
+  WizardLayout,
 } from "@/components/wizard";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthModalProvider, useAuthModal } from "@/contexts/AuthModalContext";
@@ -43,11 +43,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BookOpen, Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
-    BrowserRouter,
-    Route,
-    Routes,
-    useLocation,
-    useNavigate,
+  BrowserRouter,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
 } from "react-router-dom";
 
 const queryClient = new QueryClient({
@@ -346,8 +346,10 @@ function AppRoutes() {
 
   // Сброс скролла при изменении маршрута
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+    if (!(location.state as any)?.scrollY) {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname, location.state]);
 
   if (!isLoaded) {
     return (

@@ -13,13 +13,24 @@ import {
     renderContent,
 } from "@/utils/descriptionParser";
 import React from "react";
+import { useLocation } from "react-router-dom";
 
 interface ContentRendererProps {
   content: ContentType | undefined;
   className?: string;
+  options?: any; // Add options prop
 }
 
-export function ContentRenderer({ content, className }: ContentRendererProps) {
+export function ContentRenderer({ content, className, options }: ContentRendererProps) {
+  const location = useLocation();
+  const renderOptions = options || { // Use existing options or create new ones
+      linkState: {
+          backUrl: location.pathname + location.search + location.hash,
+          backLabel: "Назад",
+          scrollY: window.scrollY
+      }
+  };
+
   if (!content) return null;
 
   // Если это строка, парсим и рендерим
@@ -27,7 +38,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
     const parsed = parseDescriptionLine(content);
     return (
       <p className={cn("leading-relaxed mb-4", className)}>
-        {renderContent(parsed)}
+        {renderContent(parsed, renderOptions)}
       </p>
     );
   }
@@ -37,7 +48,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
     return (
       <div className={cn("space-y-4", className)}>
         {content.map((item, index) => (
-          <ContentRenderer key={index} content={item} />
+          <ContentRenderer key={index} content={item} className={className} options={renderOptions} />
         ))}
       </div>
     );
@@ -45,13 +56,13 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
 
   // Если это объект, рендерим в зависимости от типа
   if (typeof content === "object") {
-    return <BlockRenderer block={content as ContentBlock} />;
+    return <BlockRenderer block={content as ContentBlock} options={renderOptions} />;
   }
 
   return null;
 }
 
-function BlockRenderer({ block }: { block: ContentBlock }) {
+function BlockRenderer({ block, options }: { block: ContentBlock; options: any }) {
   switch (block.type) {
     case "text":
       return <span className="text-foreground">{block.text}</span>;
@@ -59,14 +70,14 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
     case "paragraph":
       return (
         <p className="leading-relaxed mb-4 text-foreground">
-          <ContentRenderer content={block.content} />
+          <ContentRenderer content={block.content} options={options} />
         </p>
       );
 
     case "doc":
       return (
         <div>
-          <ContentRenderer content={block.content} />
+          <ContentRenderer content={block.content} options={options} />
         </div>
       );
 
@@ -74,7 +85,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
       const Level = (`h${block.attrs?.level || 3}` as any) as React.ElementType;
       return (
         <Level className="font-bold mt-6 mb-3 text-foreground tracking-tight">
-          <ContentRenderer content={block.content} />
+          <ContentRenderer content={block.content} options={options} />
         </Level>
       );
 
@@ -91,7 +102,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
     >
       {Array.isArray(block.content) && block.content.map((item, index) => (
             <li key={index} className="pl-1">
-              <ContentRenderer content={item} className="mb-0" />
+              <ContentRenderer content={item} className="mb-0" options={options} />
             </li>
           ))}
         </ListTag>

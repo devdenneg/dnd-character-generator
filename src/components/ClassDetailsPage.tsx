@@ -6,14 +6,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mapBackendClassToFrontend } from "@/utils/classMapper";
 import { translateAbility } from "@/utils/classTranslations";
 import { ArrowRight, BookOpen, ChevronLeft, Loader2, Shield, Swords } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ContentRenderer } from "./content/ContentRenderer";
 
 export function ClassDetailsPage() {
   const { classId } = useParams();
   const navigate = useNavigate();
-  const [viewTab, setViewTab] = useState("description");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const viewTab = searchParams.get("tab") || "description";
+  const setViewTab = (tab: string) => {
+    setSearchParams(prev => {
+      prev.set("tab", tab);
+      return prev;
+    }, { replace: true });
+  };
 
   const { data: backendResponse, isLoading, error } = useBackendClassByExternalId(classId || "");
 
@@ -23,6 +31,8 @@ export function ClassDetailsPage() {
     }
     return null;
   }, [backendResponse]);
+
+  useScrollRestoration(isLoading);
 
 
 
@@ -503,4 +513,17 @@ export function ClassDetailsPage() {
       </div>
     </PageLayout>
   );
+}
+
+function useScrollRestoration(loading: boolean) {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!loading && (location.state as any)?.scrollY) {
+      window.scrollTo({
+        top: (location.state as any).scrollY,
+        behavior: "instant"
+      });
+    }
+  }, [loading, location.state]);
 }
