@@ -8,9 +8,31 @@ export async function getAllFeats() {
   });
 }
 
+export async function getAllFeatsMeta() {
+  return await prisma.feat.findMany({
+    select: {
+      id: true,
+      name: true,
+      nameRu: true,
+      category: true,
+      prerequisite: true,
+      source: true,
+    },
+    orderBy: { nameRu: "asc" },
+  });
+}
+
 export async function getFeatById(id: string) {
   return await prisma.feat.findUnique({
     where: { id },
+  });
+}
+
+export async function getFeatByExternalId(externalId: string) {
+  // In the Feat model, the 'id' field stores the slug (e.g. "aberrant-dragonmark-uaeu")
+  // So we just need to find by id.
+  return await prisma.feat.findUnique({
+    where: { id: externalId },
   });
 }
 

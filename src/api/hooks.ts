@@ -1,8 +1,8 @@
 // TanStack Query hooks for D&D 5e API
 
 import { useQuery } from "@tanstack/react-query";
+import { backgroundsApi, classesApi, equipmentApi, featsApi, racesApi, spellsApi } from "./client";
 import { dnd5eApi } from "./dnd5e";
-import { racesApi, classesApi, backgroundsApi, spellsApi, equipmentApi } from "./client";
 
 // Query keys
 export const queryKeys = {
@@ -250,7 +250,12 @@ export const backendQueryKeys = {
   equipmentMeta: ["backend", "equipment", "meta"] as const,
   equipmentBySource: (source: string) => ["backend", "equipment", "source", source] as const,
   equipmentItem: (id: string) => ["backend", "equipment", id] as const,
+
   equipmentByExternalId: (externalId: string) => ["backend", "equipment", "external", externalId] as const,
+  feats: ["backend", "feats"] as const,
+  featsMeta: (search?: string) => ["backend", "feats", "meta", search] as const,
+  feat: (id: string) => ["backend", "feat", id] as const,
+  featByExternalId: (externalId: string) => ["backend", "feat", "external", externalId] as const,
 };
 
 // Races (from backend - PHB 2024 data)
@@ -454,5 +459,34 @@ export function useBackendEquipmentByExternalId(externalId: string) {
     queryFn: () => equipmentApi.getByExternalId(externalId),
     enabled: !!externalId,
     staleTime: 5 * 60 * 1000, // 5 минут
+  });
+}
+
+// Feats (from backend)
+// Получить только мета-данные (без описаний) - для списка
+export function useBackendFeatsMeta(search?: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.featsMeta(search),
+    queryFn: () => featsApi.listMeta(search),
+    staleTime: 5 * 60 * 1000, // 5 минут
+  });
+}
+
+// Получить полную информацию о черте
+export function useBackendFeat(id: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.feat(id),
+    queryFn: () => featsApi.get(id),
+    enabled: !!id,
+    staleTime: Infinity,
+  });
+}
+
+export function useBackendFeatByExternalId(externalId: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.featByExternalId(externalId),
+    queryFn: () => featsApi.getByExternalId(externalId),
+    enabled: !!externalId,
+    staleTime: Infinity,
   });
 }

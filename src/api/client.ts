@@ -648,6 +648,15 @@ export const glossaryApi = {
 
 // Feats API
 export const featsApi = {
+  // Получить список черт (только мета)
+  listMeta: async (search?: string) => {
+    const params = search ? { search } : {};
+    const response = await apiClient.get<ApiResponse<FeatMeta[]>>("/feats/meta", {
+      params,
+    });
+    return response.data;
+  },
+
   list: async (search?: string) => {
     const params = search ? { search } : {};
     const response = await apiClient.get<ApiResponse<FeatMeta[]>>("/feats", {
@@ -658,6 +667,11 @@ export const featsApi = {
 
   get: async (id: string) => {
     const response = await apiClient.get<ApiResponse<FeatFull>>(`/feats/${id}`);
+    return response.data;
+  },
+
+  getByExternalId: async (externalId: string) => {
+    const response = await apiClient.get<ApiResponse<FeatFull>>(`/feats/external/${externalId}`);
     return response.data;
   },
 };

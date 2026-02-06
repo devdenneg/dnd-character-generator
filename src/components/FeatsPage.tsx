@@ -1,19 +1,14 @@
-import { featsApi } from "@/api/client";
+import { useBackendFeat, useBackendFeatsMeta } from "@/api/hooks";
 import { Input } from "@/components/ui/input";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
-import { FeatFull, FeatMeta } from "@/types/api";
 import { parseEquipmentDescription } from "@/utils/descriptionParser";
-import { Search, Star } from "lucide-react";
+import { Loader2, Search, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function FeatsPage() {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Feats state
-  const [feats, setFeats] = useState<FeatMeta[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // URL state
   const searchParams = new URLSearchParams(location.search);
@@ -27,42 +22,12 @@ export default function FeatsPage() {
     return hash || null;
   }, [location.hash]);
 
-  // Selected feat data
-  const [selectedFeat, setSelectedFeat] = useState<FeatFull | null>(null);
-  const [loadingFeat, setLoadingFeat] = useState(false);
+  // Data fetching
+  const { data: metaData, isLoading: isLoadingList } = useBackendFeatsMeta(searchQuery);
+  const feats = metaData?.data || [];
 
-
-
-  // Fetch feats list
-  useEffect(() => {
-    setLoading(true);
-    featsApi.list(searchQuery)
-      .then((data) => {
-        if (data.success) {
-          setFeats(data.data);
-        }
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, [searchQuery]);
-
-  // Fetch full feat data
-  useEffect(() => {
-    if (!selectedFeatId) {
-      setSelectedFeat(null);
-      return;
-    }
-
-    setLoadingFeat(true);
-    featsApi.get(selectedFeatId)
-      .then((data) => {
-        if (data.success) {
-          setSelectedFeat(data.data);
-        }
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoadingFeat(false));
-  }, [selectedFeatId]);
+  const { data: featData, isLoading: isLoadingFeat } = useBackendFeat(selectedFeatId || "");
+  const selectedFeat = featData?.data || null;
 
   // Navigation management
   useEffect(() => {
@@ -116,7 +81,7 @@ export default function FeatsPage() {
         </div>
 
         {/* Feats Grid */}
-        {loading ? (
+        {isLoadingList ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="h-24 bg-muted/30 rounded-lg animate-pulse" />
@@ -171,20 +136,23 @@ export default function FeatsPage() {
           onClose={closeDrawer}
           title={
             <div className="flex flex-col">
-              {loadingFeat ? (
-                <div className="h-6 bg-muted/50 rounded w-48 animate-pulse" />
+              {isLoadingFeat ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                   <Loader2 className="h-4 w-4 animate-spin" />
+                   <span>Загрузка...</span>
+                </div>
               ) : selectedFeat ? (
                 <>
                   <h2 className="text-xl font-bold">{selectedFeat.nameRu}</h2>
                   <p className="text-sm text-muted-foreground">{selectedFeat.name}</p>
                 </>
               ) : (
-                <span>Загрузка...</span>
+                <span>Черта не найдена</span>
               )}
             </div>
           }
         >
-          {loadingFeat ? (
+          {isLoadingFeat ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-20 bg-muted/30 rounded animate-pulse" />
@@ -216,7 +184,7 @@ export default function FeatsPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Черта не найдена</p>
+              <p className="text-muted-foreground">Черта не найдена или ошибка загрузки</p>
             </div>
           )}
         </SlideOverDrawer>
