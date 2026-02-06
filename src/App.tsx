@@ -4,7 +4,7 @@ import { ClassDetailsPage } from "@/components/ClassDetailsPage";
 import { ClassesPage } from "@/components/ClassesPage";
 import { CreateRoomPage } from "@/components/CreateRoomPage";
 import { EquipmentPage } from "@/components/EquipmentPage";
-import { Glossary } from "@/components/Glossary";
+import GlossaryPage from "@/components/GlossaryPage";
 import { HomePage } from "@/components/HomePage";
 import { JoinRoomPage } from "@/components/JoinRoomPage";
 import { MasterAchievementsPage } from "@/components/MasterAchievementsPage";
@@ -19,17 +19,17 @@ import { SpellsPage } from "@/components/SpellsPage";
 import { UploadContentPage } from "@/components/UploadContentPage";
 import { Button } from "@/components/ui/button";
 import {
-  AbilitiesStep,
-  AbilityIncreaseStep,
-  BackgroundStep,
-  ClassStep,
-  DetailsStep,
-  EquipmentStep,
-  RaceStep,
-  SkillsStep,
-  SpellsStep,
-  SummaryStep,
-  WizardLayout,
+    AbilitiesStep,
+    AbilityIncreaseStep,
+    BackgroundStep,
+    ClassStep,
+    DetailsStep,
+    EquipmentStep,
+    RaceStep,
+    SkillsStep,
+    SpellsStep,
+    SummaryStep,
+    WizardLayout,
 } from "@/components/wizard";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthModalProvider, useAuthModal } from "@/contexts/AuthModalContext";
@@ -43,11 +43,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BookOpen, Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
-  BrowserRouter,
-  Route,
-  Routes,
-  useLocation,
-  useNavigate,
+    BrowserRouter,
+    Route,
+    Routes,
+    useLocation,
+    useNavigate,
 } from "react-router-dom";
 
 const queryClient = new QueryClient({
@@ -144,37 +144,15 @@ function CharacterWizardPage() {
 
   if (showGlossary) {
     return (
-      <div className="relative z-10">
-        <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
-          <div className="max-w-4xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1
-                  className="text-xl font-bold text-gradient"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  Глоссарий D&D
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  PHB 2024 — Справочник терминов
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => setShowGlossary(false)}
-                className="gap-2"
-              >
-                ← Вернуться
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        <main className="max-w-4xl mx-auto px-4 py-6">
-          <div className="animate-fade-in-up">
-            <Glossary />
-          </div>
-        </main>
+      <div className="fixed inset-0 z-50 bg-background overflow-auto">
+         <GlossaryPage />
+         <Button
+            variant="outline"
+            className="fixed top-4 right-4 z-50"
+            onClick={() => setShowGlossary(false)}
+         >
+            Закрыть
+         </Button>
       </div>
     );
   }
@@ -198,46 +176,6 @@ function CharacterWizardPage() {
         <BookOpen className="w-4 h-4" />
         <span className="hidden sm:inline">Глоссарий</span>
       </Button>
-    </div>
-  );
-}
-
-function GlossaryPage() {
-  const navigate = useNavigate();
-
-  return (
-    <div className="relative z-10">
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1
-                className="text-xl font-bold text-gradient"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                Глоссарий D&D
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                PHB 2024 — Справочник терминов
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/")}
-              className="gap-2"
-            >
-              <Home className="w-4 h-4" />
-              На главную
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        <div className="animate-fade-in-up">
-          <Glossary />
-        </div>
-      </main>
     </div>
   );
 }

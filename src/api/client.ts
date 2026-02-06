@@ -1,9 +1,11 @@
 import type {
-  ApiResponse,
-  AuthResponse,
-  CharacterData,
-  CharacterResponse,
-  CharactersListResponse,
+    ApiResponse,
+    AuthResponse,
+    CharacterData,
+    CharacterResponse,
+    CharactersListResponse,
+    GlossaryListResponse,
+    GlossaryTermFull
 } from "@/types/api";
 import type { DescriptionItem } from "@/types/character";
 import type { StartingEquipment } from "@/types/equipment";
@@ -610,6 +612,38 @@ export const equipmentApi = {
     return response.data;
   },
 };
+
+// Glossary API
+export const glossaryApi = {
+  // Get categories list
+  getCategories: async () => {
+    const response = await apiClient.get<ApiResponse<string[]>>("/glossary/categories");
+    return response.data;
+  },
+
+  // Get lightweight metadata list
+  listMeta: async (params: { category?: string; search?: string }) => {
+    const queryParams: Record<string, string> = {};
+    if (params.category && params.category !== "all") {
+      queryParams.category = params.category;
+    }
+    if (params.search) {
+      queryParams.search = params.search;
+    }
+
+    const response = await apiClient.get<GlossaryListResponse>("/glossary/meta", {
+      params: queryParams,
+    });
+    return response.data;
+  },
+
+  // Get full term data
+  get: async (id: string) => {
+    const response = await apiClient.get<ApiResponse<{ term: GlossaryTermFull }>>(`/glossary/${id}`);
+    return response.data;
+  },
+};
+
 
 // Search API
 export const searchApi = {

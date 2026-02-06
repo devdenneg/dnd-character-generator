@@ -1,10 +1,11 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
-import { searchRaces } from "../services/raceService";
-import { searchClasses } from "../services/classService";
 import { searchBackgrounds } from "../services/backgroundService";
-import { searchSpells } from "../services/spellService";
+import { searchClasses } from "../services/classService";
 import { searchEquipment } from "../services/equipmentService";
+import { searchGlossaryTerms } from "../services/glossaryService";
+import { searchRaces } from "../services/raceService";
+import { searchSpells } from "../services/spellService";
 
 export async function search(req: AuthenticatedRequest, res: Response) {
   try {
@@ -19,12 +20,13 @@ export async function search(req: AuthenticatedRequest, res: Response) {
     }
 
     // Search in parallel across all types
-    const [races, classes, backgrounds, spells, equipment] = await Promise.all([
+    const [races, classes, backgrounds, spells, equipment, glossary] = await Promise.all([
       searchRaces(query),
       searchClasses(query),
       searchBackgrounds(query),
       searchSpells(query),
       searchEquipment(query),
+      searchGlossaryTerms(query),
     ]);
 
     // Combine all results
@@ -34,6 +36,7 @@ export async function search(req: AuthenticatedRequest, res: Response) {
       ...backgrounds,
       ...spells,
       ...equipment,
+      ...glossary,
     ];
 
     res.status(200).json({

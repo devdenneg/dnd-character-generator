@@ -161,5 +161,36 @@ export interface AuthResponse {
 export interface ApiError {
   error: string;
   message?: string;
-  statusCode?: number;
+
+/**
+ * Glossary term metadata (list view)
+ */
+export interface GlossaryTermMeta {
+  id: string;
+  name: string;
+  nameRu: string;
+  category: string;
+  source: string;
+}
+
+/**
+ * Full glossary term data
+ */
+export interface GlossaryTermFull extends GlossaryTermMeta {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  description: any[];
+}
+
+/**
+ * Glossary list response (meta)
+ */
+export interface GlossaryListResponse {
+  success: boolean;
+  data: {
+    terms: GlossaryTermMeta[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
 }

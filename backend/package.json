@@ -20,6 +20,7 @@
     "seed:backgrounds": "ts-node seed-backgrounds.ts",
     "seed:spells": "ts-node seed-spells.ts",
     "seed:equipment": "ts-node seed-equip.ts",
+    "seed:glossary": "ts-node import-glossary.ts",
     "generate:classes:csv": "ts-node generate-classes-csv.ts"
   },
   "keywords": [

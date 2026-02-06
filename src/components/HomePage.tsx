@@ -1,17 +1,18 @@
-import { User, Search, X, ChevronRight, Upload } from "lucide-react";
+import { useSearch } from "@/api/search";
+import backgroundsImage from "@/components/assets/backgrounds.jpg";
+import classesImage from "@/components/assets/classes.jpg";
+import createCharImage from "@/components/assets/createChar.jpg";
+import equipImage from "@/components/assets/equip.jpg";
+import myCharImage from "@/components/assets/myChar.jpg";
+import racesImage from "@/components/assets/races.jpg";
+import spellsImage from "@/components/assets/spells.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import { ChevronRight, Search, Upload, User, X } from "lucide-react";
 import { useState } from "react";
-import createCharImage from "@/components/assets/createChar.jpg";
-import myCharImage from "@/components/assets/myChar.jpg";
-import racesImage from "@/components/assets/races.jpg";
-import equipImage from "@/components/assets/equip.jpg";
-import classesImage from "@/components/assets/classes.jpg";
-import backgroundsImage from "@/components/assets/backgrounds.jpg";
-import spellsImage from "@/components/assets/spells.jpg";
-import { useSearch } from "@/api/search";
+import { useNavigate } from "react-router-dom";
 
 interface HomePageProps {
   onNavigate: (page: string, itemId?: string) => void;
@@ -31,7 +32,7 @@ interface SearchResult {
   id: string;
   name: string;
   nameRu: string;
-  type: "race" | "class" | "background" | "spell" | "equipment";
+  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary";
   category: string;
 }
 
@@ -138,11 +139,21 @@ const MENU_ITEMS: MenuItem[] = [
     inDevelopment: false,
   },
   */
+  {
+    id: "glossary",
+    title: "Глоссарий",
+    description: "Справочник терминов, правил и условий",
+    gradient: "from-emerald-500 to-green-600",
+    roles: ["player", "master"],
+    inDevelopment: false,
+    image: undefined, // Можно добавить картинку, если есть
+  },
 ];
 
 export function HomePage({ onNavigate }: HomePageProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { openLogin, openRegister } = useAuthModal();
+  const navigate = useNavigate();
 
   // Секретная разблокировка для разработчика (7 кликов)
   const [devClickCounts, setDevClickCounts] = useState<Record<string, number>>(
@@ -171,8 +182,9 @@ export function HomePage({ onNavigate }: HomePageProps) {
         navigateTo = "races";
         break;
       case "class":
-        navigateTo = "classes";
-        break;
+        navigate(`/classes/${result.id}`);
+        setSearchQuery("");
+        return;
       case "background":
         navigateTo = "backgrounds";
         break;
@@ -182,6 +194,10 @@ export function HomePage({ onNavigate }: HomePageProps) {
       case "equipment":
         navigateTo = "equipment";
         break;
+      case "glossary":
+        navigate(`/glossary#${result.id}`);
+        setSearchQuery("");
+        return;
     }
 
     setSearchQuery("");
@@ -209,6 +225,12 @@ export function HomePage({ onNavigate }: HomePageProps) {
       // Сбрасываем счётчик
       const resetCounts = { ...newCounts, [itemId]: 0 };
       setDevClickCounts(resetCounts);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      navigate(`/glossary?search=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -412,6 +434,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               placeholder="Поиск по справочнику..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="pl-10 pr-10 h-11 text-base bg-card/60 backdrop-blur-sm border-border/40 focus:border-primary/50"
             />
             {searchQuery && (
@@ -503,6 +526,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                   "backgrounds",
                   "spells",
                   "equipment",
+                  "glossary",
                 ].includes(item.id)
               )
               .map((item, index) => {

@@ -7,9 +7,9 @@ import hpp from "hpp";
 import { corsConfig, helmetConfig, payloadConfig } from "./config/security";
 import { generalLimiter } from "./middleware/rateLimiter";
 import {
-  sanitizeStrings,
-  validateContentType,
-  validatePayloadSize,
+    sanitizeStrings,
+    validateContentType,
+    validatePayloadSize,
 } from "./middleware/security";
 import { standardTimeout } from "./middleware/timeout";
 import achievementRoutes from "./routes/achievements";
@@ -18,6 +18,7 @@ import backgroundRoutes from "./routes/backgrounds";
 import characterRoutes from "./routes/characters";
 import classRoutes from "./routes/classes";
 import equipmentRoutes from "./routes/equipment";
+import glossaryRoutes from "./routes/glossaryRoutes";
 import raceRoutes from "./routes/races";
 import roomRoutes from "./routes/rooms";
 import searchRoutes from "./routes/search";
@@ -101,6 +102,7 @@ app.use("/api/spells", spellRoutes);
 app.use("/api/equipment", equipmentRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/glossary", glossaryRoutes);
 
 // 404 handler
 app.use((_req, res) => {

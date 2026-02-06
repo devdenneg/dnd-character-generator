@@ -291,3 +291,18 @@ model RoomPlayer {
   @@index([userId])
   @@index([characterId])
 }
+
+model GlossaryTerm {
+  id          String   @id
+  name        String
+  nameRu      String
+  category    String
+  description Json
+  source      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([name])
+  @@index([nameRu])
+}
