@@ -2,14 +2,14 @@ import { Response } from "express";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
 import {
-  createClass,
-  deleteClass,
-  getAllClasses,
-  getAllClassesMeta,
-  getClassByExternalId,
-  getClassById,
-  searchClasses,
-  updateClass
+    createClass,
+    deleteClass,
+    getAllClasses,
+    getAllClassesMeta,
+    getClassByExternalId,
+    getClassById,
+    searchClasses,
+    updateClass
 } from "../services/classService";
 
 // Validation schemas
@@ -83,7 +83,6 @@ const createClassSchema = z.object({
     .array(createClassFeatureSchema)
     .min(1, "Class must have at least one feature"),
   subclasses: z.array(createSubclassSchema),
-  equipment: z.array(equipmentWithQuantitySchema).optional(),
   startingGold: z.number().int().min(0).optional(),
   spellcasting: spellcastingSchema,
 });
@@ -104,7 +103,6 @@ const updateClassSchema = z.object({
   source: z.enum(["srd", "phb2024"]).optional(),
   features: z.array(createClassFeatureSchema).optional(),
   subclasses: z.array(createSubclassSchema).optional(),
-  equipment: z.array(equipmentWithQuantitySchema).optional(),
   startingGold: z.number().int().min(0).optional(),
   spellcasting: spellcastingSchema,
 });

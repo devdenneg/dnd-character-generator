@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { mapBackendClassToFrontend } from "@/utils/classMapper";
 import {
-  AlertCircle,
-  Loader2,
-  Search
+    AlertCircle,
+    Loader2,
+    Search
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -154,10 +154,10 @@ export function ClassesPage() {
                                   {cls.hitDice?.label || "—"}
                               </span>
                           </div>
-                          {cls.casterType && cls.casterType !== "NONE" && (
+                          {cls.casterType && cls.casterType !== "NONE" && cls.spellcastingAbility && (
                               <div className="flex items-center gap-1.5">
-                                   <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(var(--primary),0.8)]" />
-                                   <span className="font-bold text-white tracking-wide">{cls.casterType}</span>
+                                   <div className="w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
+                                   <span className="font-bold text-purple-200 tracking-wide capitalize">Магия: {cls.spellcastingAbility}</span>
                               </div>
                           )}
                       </div>

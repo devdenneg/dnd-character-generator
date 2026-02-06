@@ -65,7 +65,8 @@ export function mapBackendClassToFrontend(backendClass: BackendCharacterClass): 
     equipment: backendClass.startingEquipment || [],
     features,
     table: backendClass.classTable as any || [],
-    casterType: backendClass.spellcasting?.casterType || "NONE",
+    casterType: backendClass.spellcasting ? "FULL" : "NONE",
+    spellcastingAbility: backendClass.spellcasting?.ability || null,
     source: {
       name: {
         label: backendClass.source,

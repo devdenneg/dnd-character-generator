@@ -27,19 +27,19 @@ model User {
 }
 
 model Race {
-  id              String   @id @default(uuid())
-  externalId      String   @unique
-  name            String
-  nameRu          String
-  description     String   @db.Text
-  speed           Int
-  size            String
+  id               String   @id @default(uuid())
+  externalId       String   @unique
+  name             String
+  nameRu           String
+  description      String   @db.Text
+  speed            Int
+  size             String
   abilityIncreases Json?
-  source          String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  source           String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  traits          RaceTrait[]
+  traits RaceTrait[]
 }
 
 model RaceTrait {
@@ -50,20 +50,20 @@ model RaceTrait {
   description String   @db.Text
   createdAt   DateTime @default(now())
 
-  race        Race     @relation(fields: [raceId], references: [id], onDelete: Cascade)
+  race Race @relation(fields: [raceId], references: [id], onDelete: Cascade)
 
   @@index([raceId])
 }
 
 model Character {
-  id          String   @id @default(uuid())
-  userId      String
-  name        String
-  data        Json     // The large blob used by characterService
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  data      Json // The large blob used by characterService
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   achievements PlayerAchievement[]
   roomsJoined  RoomPlayer[]
@@ -72,33 +72,32 @@ model Character {
 }
 
 model CharacterClass {
-  id              String   @id @default(uuid())
-  externalId      String   @unique // ID from the frontend (e.g., "barbarian", "wizard")
-  name            String
-  nameRu          String
-  description     Json?    // Changed from String to Json to store rich text array
-  image           String?  // Main image
-  gallery         String[] // Additional images
-  hitDie          Int
-  primaryAbility  String[]
-  savingThrows    String[]
-  armorProficiencies String[]
+  id                  String   @id @default(uuid())
+  externalId          String   @unique // ID from the frontend (e.g., "barbarian", "wizard")
+  name                String
+  nameRu              String
+  description         Json? // Changed from String to Json to store rich text array
+  image               String? // Main image
+  gallery             String[] // Additional images
+  hitDie              Int
+  primaryAbility      String[]
+  savingThrows        String[]
+  armorProficiencies  String[]
   weaponProficiencies String[]
-  skillChoices    String[]
-  skillCount      Int
-  subclassLevel   Int
-  source          String   // "srd" or "phb2024"
-  spellcasting    Json?    // Spellcasting data: { ability, cantripsKnown, spellsKnown, spellSlots }
-  classTable      Json?    // Full table data from JSON
-  multiclassing   Json?    // Multiclassing rules
-  startingGold    Int      @default(0) // Starting gold amount
-  startingEquipment Json?    // Rich equipment data from PHB 2024
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  skillChoices        String[]
+  skillCount          Int
+  subclassLevel       Int
+  source              String // "srd" or "phb2024"
+  spellcasting        Json? // Spellcasting data: { ability, cantripsKnown, spellsKnown, spellSlots }
+  classTable          Json? // Full table data from JSON
+  multiclassing       Json? // Multiclassing rules
+  startingGold        Int      @default(0) // Starting gold amount
+  startingEquipment   Json? // Rich equipment data from PHB 2024
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  features        ClassFeature[]
-  subclasses      Subclass[]
-  equipment       ClassEquipment[]
+  features   ClassFeature[]
+  subclasses Subclass[]
 
   @@index([externalId])
   @@index([source])
@@ -109,11 +108,11 @@ model ClassFeature {
   classId     String
   name        String
   nameRu      String
-  description Json?    // Changed to Json for rich text
+  description Json? // Changed to Json for rich text
   level       Int
   createdAt   DateTime @default(now())
 
-  class       CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  class CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
 
   @@index([classId])
 }
@@ -121,16 +120,16 @@ model ClassFeature {
 model Subclass {
   id          String   @id @default(uuid())
   classId     String
-  externalId  String   // ID from frontend
+  externalId  String // ID from frontend
   name        String
   nameRu      String
-  description Json?    // Changed to Json for rich text
+  description Json? // Changed to Json for rich text
   source      String   @default("phb2024")
   createdAt   DateTime @default(now())
 
-  class       CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
-  features    SubclassFeature[]
-  classTable  Json?    // Subclass specific table overrides if any
+  class      CharacterClass    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  features   SubclassFeature[]
+  classTable Json? // Subclass specific table overrides if any
 
   @@index([classId])
   @@index([externalId])
@@ -141,11 +140,11 @@ model SubclassFeature {
   subclassId  String
   name        String
   nameRu      String
-  description Json?    // Changed to Json for rich text
+  description Json? // Changed to Json for rich text
   level       Int
   createdAt   DateTime @default(now())
 
-  subclass    Subclass @relation(fields: [subclassId], references: [id], onDelete: Cascade)
+  subclass Subclass @relation(fields: [subclassId], references: [id], onDelete: Cascade)
 
   @@index([subclassId])
 }
@@ -156,11 +155,11 @@ model Equipment {
   name        String
   nameRu      String
   category    String
-  cost        Json     // { quantity: number, unit: string }
+  cost        Json // { quantity: number, unit: string }
   weight      Float?
   source      String
   description Json?
-  damage      Json?    // { dice: string, type: string }
+  damage      Json? // { dice: string, type: string }
   armorClass  Int?
   armorType   String?
   maxDexBonus Int?
@@ -169,56 +168,40 @@ model Equipment {
   updatedAt   DateTime @updatedAt
 
   backgroundEquipment BackgroundEquipment[]
-  classEquipment      ClassEquipment[]
 }
 
 model Background {
-  id                  String   @id @default(uuid())
-  externalId          String   @unique // ID from the frontend (e.g., "acolyte", "artisan")
-  name                String
-  nameRu              String
-  description         String   @db.Text
-  skillProficiencies  String[] // Array of skill IDs
-  toolProficiencies   String[] // Array of tool names
-  languages           Int      // Number of additional languages
-  startingGold        Int
-  originFeat          String
-  abilityScoreIncrease Json    // { options: string[], amount: number[] }
-  source              String   // "phb2024", etc.
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  externalId           String   @unique // ID from the frontend (e.g., "acolyte", "artisan")
+  name                 String
+  nameRu               String
+  description          String   @db.Text
+  skillProficiencies   String[] // Array of skill IDs
+  toolProficiencies    String[] // Array of tool names
+  languages            Int // Number of additional languages
+  startingGold         Int
+  originFeat           String
+  abilityScoreIncrease Json // { options: string[], amount: number[] }
+  source               String // "phb2024", etc.
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  equipment           BackgroundEquipment[]
+  equipment BackgroundEquipment[]
 
   @@index([externalId])
   @@index([source])
 }
 
 model BackgroundEquipment {
-  id            String     @id @default(uuid())
-  backgroundId  String
-  itemId        String
-  quantity      Int        @default(1)
+  id           String @id @default(uuid())
+  backgroundId String
+  itemId       String
+  quantity     Int    @default(1)
 
-  background    Background @relation(fields: [backgroundId], references: [id], onDelete: Cascade)
-  equipment     Equipment  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  background Background @relation(fields: [backgroundId], references: [id], onDelete: Cascade)
+  equipment  Equipment  @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   @@index([backgroundId])
-  @@index([itemId])
-}
-
-model ClassEquipment {
-  id            String         @id @default(uuid())
-  classId       String
-  itemId        String
-  quantity      Int            @default(1)
-  isChoice      Boolean        @default(false)
-  choiceGroup   Int?           // For choices like "A or B"
-
-  class         CharacterClass @relation(fields: [classId], references: [id], onDelete: Cascade)
-  equipment     Equipment      @relation(fields: [itemId], references: [id], onDelete: Cascade)
-
-  @@index([classId])
   @@index([itemId])
 }
 
@@ -227,13 +210,13 @@ model Spell {
   externalId  String   @unique // ID from the frontend (e.g., "fire-bolt", "magic-missile")
   name        String
   nameRu      String
-  level       Int      // 0 for cantrips, 1-9 for spell levels
-  school      String   // School of magic (e.g., "Воплощение", "Вызов")
+  level       Int // 0 for cantrips, 1-9 for spell levels
+  school      String // School of magic (e.g., "Воплощение", "Вызов")
   castingTime String
   range       String
   components  String
   duration    String
-  description Json     // Array of description paragraphs (can include strings and table objects)
+  description Json // Array of description paragraphs (can include strings and table objects)
   classes     String[] // Array of class IDs that can use this spell
   source      String   @default("phb2024")
   createdAt   DateTime @default(now())
@@ -266,10 +249,10 @@ model PlayerAchievement {
   grantedById   String
   grantedAt     DateTime @default(now())
 
-  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-  user          User        @relation("PlayerAchievements", fields: [userId], references: [id], onDelete: Cascade)
-  character     Character?  @relation(fields: [characterId], references: [id], onDelete: SetNull)
-  grantedBy     User        @relation("GrantedAchievements", fields: [grantedById], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user        User        @relation("PlayerAchievements", fields: [userId], references: [id], onDelete: Cascade)
+  character   Character?  @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  grantedBy   User        @relation("GrantedAchievements", fields: [grantedById], references: [id], onDelete: Cascade)
 
   @@index([achievementId])
   @@index([userId])
@@ -287,8 +270,8 @@ model Room {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  master     User     @relation("RoomMaster", fields: [masterId], references: [id], onDelete: Cascade)
-  players    RoomPlayer[]
+  master  User         @relation("RoomMaster", fields: [masterId], references: [id], onDelete: Cascade)
+  players RoomPlayer[]
 }
 
 model RoomPlayer {
