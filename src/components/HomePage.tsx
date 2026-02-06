@@ -206,6 +206,10 @@ export function HomePage({ onNavigate }: HomePageProps) {
         navigate(`/glossary#${result.id}`);
         setSearchQuery("");
         return;
+      case "feat":
+        navigate(`/feats#${result.id}`);
+        setSearchQuery("");
+        return;
     }
 
     setSearchQuery("");
@@ -535,6 +539,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                   "spells",
                   "equipment",
                   "glossary",
+                  "feats",
                 ].includes(item.id)
               )
               .map((item, index) => {

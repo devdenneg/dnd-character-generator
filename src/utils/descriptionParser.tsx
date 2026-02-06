@@ -18,6 +18,7 @@ export interface ParsedElement {
     | "roll"
     | "glossary"
     | "spell"
+    | "feat"
     | "item"
     | "bestiary"
     | "link";
@@ -173,6 +174,21 @@ export function parseDescriptionLine(line: string): ParsedElement[] {
         break;
       }
 
+      case "feat": {
+        // Формат: {@feat название} или {@feat название|externalId} или {@feat название|url:externalId}
+        const parts = tagContent.split("|");
+        const label = parts[0];
+        const urlPart = parts[1] || label.toLowerCase().replace(/\s+/g, "-");
+        const externalId = urlPart.replace("url:", ""); // Убираем префикс url: если есть
+        elements.push({
+          type: "feat",
+          label,
+          url: externalId,
+          content: label,
+        });
+        break;
+      }
+
       case "item": {
         // Формат: {@item название} или {@item название|url}
         const parts = tagContent.split("|");
@@ -266,12 +282,48 @@ export function renderElement(element: ParsedElement, index: number, options?: R
       return <RollButton key={index} formula={element.content as string} />;
 
     case "glossary":
-      // Пока без ссылки, так как глоссарий не готов
+      // Ссылка на глоссарий
+      if (element.url) {
+        return (
+          <Link
+            key={index}
+            to={`/glossary#${element.url}`}
+            state={options?.linkState}
+            className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors cursor-help"
+          >
+            {element.label || renderContent(element.content, options)}
+          </Link>
+        );
+      }
       return (
         <span
           key={index}
-          className="underline decoration-dotted underline-offset-2 cursor-help"
+          className="text-indigo-400 underline decoration-dotted underline-offset-2 cursor-help"
           title="Термин из глоссария"
+        >
+          {element.label || renderContent(element.content, options)}
+        </span>
+      );
+
+    case "feat":
+      // Ссылка на черту
+      if (element.url) {
+        return (
+          <Link
+            key={index}
+            to={`/feats#${element.url}`}
+            state={options?.linkState}
+            className="text-amber-500 hover:text-amber-400 underline underline-offset-2 transition-colors"
+          >
+            {element.label || renderContent(element.content, options)}
+          </Link>
+        );
+      }
+      return (
+        <span
+          key={index}
+          className="text-amber-500 underline decoration-dotted underline-offset-2"
+          title="Черта"
         >
           {element.label || renderContent(element.content, options)}
         </span>
@@ -440,6 +492,7 @@ export function parseDescriptionToPlainText(
           .replace(/{@sub\\s+([^}]+)\\}/g, "$1")
           .replace(/{@roll\\s+([^}]+)\\}/g, "$1")
           .replace(/{@glossary\\s+([^|}]+)(?:\\|[^}]+)?\\}/g, "$1")
+          .replace(/{@feat\\s+([^}]+)(?:\\|[^}]+)?\\}/g, "$1")
           .replace(/{@spell\\s+([^}]+)\\}/g, "$1")
           .replace(/{@item\\s+([^}]+)(?:\\|[^}]+)?\\}/g, "$1")
           .replace(/{@bestiary\\s+([^}]+)\\}/g, "$1")

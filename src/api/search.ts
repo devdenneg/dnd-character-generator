@@ -5,7 +5,7 @@ interface SearchResult {
   id: string;
   name: string;
   nameRu: string;
-  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary";
+  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary" | "feat";
   category: string;
 }
 

@@ -82,7 +82,6 @@ export default function FeatsPage() {
   }, [searchQuery, navigate, location.pathname, location.hash, location.search]);
 
   const openFeat = (id: string) => {
-    const currentHash = location.hash.replace("#", "");
     navigate(`${location.pathname}${location.search}#${id}`, { replace: false });
   };
 
