@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from "../middleware/authMiddleware";
 import { searchBackgrounds } from "../services/backgroundService";
 import { searchClasses } from "../services/classService";
 import { searchEquipment } from "../services/equipmentService";
+import { getGlobalSearchFeats } from "../services/featService";
 import { searchGlossaryTerms } from "../services/glossaryService";
 import { searchRaces } from "../services/raceService";
 import { searchSpells } from "../services/spellService";
@@ -20,13 +21,14 @@ export async function search(req: AuthenticatedRequest, res: Response) {
     }
 
     // Search in parallel across all types
-    const [races, classes, backgrounds, spells, equipment, glossary] = await Promise.all([
+    const [races, classes, backgrounds, spells, equipment, glossary, feats] = await Promise.all([
       searchRaces(query),
       searchClasses(query),
       searchBackgrounds(query),
       searchSpells(query),
       searchEquipment(query),
       searchGlossaryTerms(query),
+      getGlobalSearchFeats(query),
     ]);
 
     // Combine all results
@@ -37,6 +39,7 @@ export async function search(req: AuthenticatedRequest, res: Response) {
       ...spells,
       ...equipment,
       ...glossary,
+      ...feats,
     ];
 
     res.status(200).json({

@@ -4,6 +4,8 @@ import type {
     CharacterData,
     CharacterResponse,
     CharactersListResponse,
+    FeatFull,
+    FeatMeta,
     GlossaryListResponse,
     GlossaryTermFull
 } from "@/types/api";
@@ -640,6 +642,22 @@ export const glossaryApi = {
   // Get full term data
   get: async (id: string) => {
     const response = await apiClient.get<ApiResponse<{ term: GlossaryTermFull }>>(`/glossary/${id}`);
+    return response.data;
+  },
+};
+
+// Feats API
+export const featsApi = {
+  list: async (search?: string) => {
+    const params = search ? { search } : {};
+    const response = await apiClient.get<ApiResponse<FeatMeta[]>>("/feats", {
+      params,
+    });
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get<ApiResponse<FeatFull>>(`/feats/${id}`);
     return response.data;
   },
 };

@@ -21,6 +21,8 @@
     "seed:spells": "ts-node seed-spells.ts",
     "seed:equipment": "ts-node seed-equip.ts",
     "seed:glossary": "ts-node import-glossary.ts",
+    "seed:feats": "ts-node import-feats.ts",
+    "seed:features": "tsx seed-features-only.ts",
     "generate:classes:csv": "ts-node generate-classes-csv.ts"
   },
   "keywords": [

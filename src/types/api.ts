@@ -195,3 +195,23 @@ export interface GlossaryListResponse {
     pages: number;
   };
 }
+
+/**
+ * Feat metadata (list view)
+ */
+export interface FeatMeta {
+  id: string;
+  name: string;
+  nameRu: string;
+  category: string;
+  prerequisite: string | null;
+  source: string;
+}
+
+/**
+ * Full feat data
+ */
+export interface FeatFull extends FeatMeta {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  description: any[];
+}

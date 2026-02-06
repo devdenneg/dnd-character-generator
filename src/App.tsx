@@ -4,6 +4,7 @@ import { ClassDetailsPage } from "@/components/ClassDetailsPage";
 import { ClassesPage } from "@/components/ClassesPage";
 import { CreateRoomPage } from "@/components/CreateRoomPage";
 import { EquipmentPage } from "@/components/EquipmentPage";
+import FeatsPage from "@/components/FeatsPage";
 import GlossaryPage from "@/components/GlossaryPage";
 import { HomePage } from "@/components/HomePage";
 import { JoinRoomPage } from "@/components/JoinRoomPage";
@@ -325,6 +326,7 @@ function AppRoutes() {
         />
         <Route path="/achievements" element={<PlayerAchievementsPage />} />
         <Route path="/glossary" element={<GlossaryPage />} />
+        <Route path="/feats" element={<FeatsPage />} />
         <Route path="/upload-content" element={<UploadContentPage onBack={() => window.location.hash = "/"} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -18,6 +18,7 @@ import backgroundRoutes from "./routes/backgrounds";
 import characterRoutes from "./routes/characters";
 import classRoutes from "./routes/classes";
 import equipmentRoutes from "./routes/equipment";
+import featRoutes from "./routes/feats";
 import glossaryRoutes from "./routes/glossaryRoutes";
 import raceRoutes from "./routes/races";
 import roomRoutes from "./routes/rooms";
@@ -102,6 +103,7 @@ app.use("/api/spells", spellRoutes);
 app.use("/api/equipment", equipmentRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/feats", featRoutes);
 app.use("/api/glossary", glossaryRoutes);
 
 // 404 handler

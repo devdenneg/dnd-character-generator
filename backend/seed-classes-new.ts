@@ -98,9 +98,15 @@ async function main() {
     const classFeatures: any[] = [];
 
     (cls.features || []).forEach((feat: any) => {
+        // Use key as the English name (unslugified or just as is)
+        // Since the 'name' field in optimized data is Russian
+        const englishName = feat.key
+            ? feat.key.split('-').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+            : "Unknown Feature";
+
         // Add the base feature
         classFeatures.push({
-            name: feat.name || "Unknown Feature",
+            name: englishName,
             nameRu: feat.name || "Неизвестное умение",
             description: feat.description || [],
             level: feat.level || 1
@@ -110,7 +116,7 @@ async function main() {
         if (feat.scaling && Array.isArray(feat.scaling)) {
             feat.scaling.forEach((scalingEntry: any) => {
                 classFeatures.push({
-                    name: scalingEntry.name || feat.name || "Unknown Feature",
+                    name: englishName + " (Scaling)",
                     nameRu: scalingEntry.name || feat.name || "Неизвестное умение",
                     description: scalingEntry.description || [],
                     level: scalingEntry.level || 1

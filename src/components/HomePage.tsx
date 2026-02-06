@@ -32,7 +32,7 @@ interface SearchResult {
   id: string;
   name: string;
   nameRu: string;
-  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary";
+  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary" | "feat";
   category: string;
 }
 
@@ -146,7 +146,15 @@ const MENU_ITEMS: MenuItem[] = [
     gradient: "from-emerald-500 to-green-600",
     roles: ["player", "master"],
     inDevelopment: false,
-    image: undefined, // Можно добавить картинку, если есть
+    image: undefined,
+  },
+  {
+    id: "feats",
+    title: "Черты",
+    description: "Бонусы и особенности персонажа",
+    gradient: "from-amber-500 to-orange-600",
+    roles: ["player", "master"],
+    inDevelopment: false,
   },
 ];
 
