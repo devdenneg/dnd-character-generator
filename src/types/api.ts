@@ -161,6 +161,7 @@ export interface AuthResponse {
 export interface ApiError {
   error: string;
   message?: string;
+}
 
 /**
  * Glossary term metadata (list view)
