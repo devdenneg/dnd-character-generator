@@ -420,7 +420,7 @@ export function renderElement(element: ParsedElement, index: number, options?: R
  * @returns React элементы для отображения
  */
 export function parseEquipmentDescription(
-  description: string | string[] | undefined
+  description: string | string[] | any[] | undefined
 ): React.ReactNode {
   if (!description) {
     return null;
@@ -432,15 +432,61 @@ export function parseEquipmentDescription(
   return (
     <div className="space-y-2">
       {lines.map((line, lineIndex) => {
-        const elements = parseDescriptionLine(line);
-        return (
-          <p
-            key={lineIndex}
-            className="text-sm text-muted-foreground leading-relaxed"
-          >
-            {renderContent(elements)}
-          </p>
-        );
+        // Если это объект (например, список)
+        if (typeof line === "object" && line !== null && "type" in line) {
+          if (line.type === "list") {
+            const listItems = line.content || [];
+            return (
+              <ul key={lineIndex} className="list-disc pl-5 space-y-1">
+                {listItems.map((item: string, itemIndex: number) => (
+                  <li key={itemIndex} className="text-sm text-muted-foreground leading-relaxed">
+                    {renderContent(parseDescriptionLine(item))}
+                  </li>
+                ))}
+              </ul>
+            );
+          }
+          if (line.type === "table") {
+             // Basic table support
+             return (
+                <div key={lineIndex} className="overflow-x-auto my-2">
+                   <table className="w-full text-sm">
+                      <thead>
+                         <tr className="border-b border-border">
+                            {line.colLabels?.map((header: string, i: number) => (
+                               <th key={i} className="text-left font-medium p-2 text-muted-foreground">{renderContent(parseDescriptionLine(header))}</th>
+                            ))}
+                         </tr>
+                      </thead>
+                      <tbody>
+                         {line.rows?.map((row: string[], i: number) => (
+                            <tr key={i} className="border-b border-border/50">
+                               {row.map((cell: string, j: number) => (
+                                  <td key={j} className="p-2 text-muted-foreground">{renderContent(parseDescriptionLine(cell))}</td>
+                               ))}
+                            </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                </div>
+             )
+          }
+        }
+
+        // Если это строка
+        if (typeof line === "string") {
+          const elements = parseDescriptionLine(line);
+          return (
+            <p
+              key={lineIndex}
+              className="text-sm text-muted-foreground leading-relaxed"
+            >
+              {renderContent(elements)}
+            </p>
+          );
+        }
+
+        return null;
       })}
     </div>
   );

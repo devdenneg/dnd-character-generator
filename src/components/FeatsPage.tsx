@@ -207,7 +207,11 @@ export default function FeatsPage() {
               </div>
 
               <div className="prose prose-invert prose-sm max-w-none">
-                {parseEquipmentDescription(selectedFeat.description)}
+                {parseEquipmentDescription(
+                  Array.isArray(selectedFeat.description)
+                    ? selectedFeat.description
+                    : [selectedFeat.description]
+                )}
               </div>
             </div>
           ) : (

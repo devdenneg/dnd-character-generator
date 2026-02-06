@@ -225,6 +225,9 @@ function HomePageWrapper() {
       case "upload-content":
         navigate("/upload-content");
         break;
+      case "feats":
+        navigate(itemId ? `/feats#${itemId}` : "/feats");
+        break;
       default:
         navigate("/");
     }

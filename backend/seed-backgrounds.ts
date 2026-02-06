@@ -13,12 +13,7 @@ const backgroundsData = [
     skillProficiencies: ["insight", "religion"],
     toolProficiencies: ["Набор каллиграфа"],
     languages: 2,
-    equipment: [
-      "Священный символ",
-      "Молитвенник",
-      "Набор каллиграфа",
-      "Одежда путешественника",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 15,
     originFeat: "Посвящённый в магию (Жрец)",
     abilityScoreIncrease: {
@@ -36,7 +31,7 @@ const backgroundsData = [
     skillProficiencies: ["investigation", "persuasion"],
     toolProficiencies: ["Инструменты ремесленника (на выбор)"],
     languages: 1,
-    equipment: ["Инструменты ремесленника", "Одежда путешественника"],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 25,
     originFeat: "Самоделкин",
     abilityScoreIncrease: {
@@ -54,7 +49,7 @@ const backgroundsData = [
     skillProficiencies: ["deception", "sleight_of_hand"],
     toolProficiencies: ["Набор для подделок"],
     languages: 1,
-    equipment: ["Набор для подделок", "Костюм", "Красивая одежда"],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 15,
     originFeat: "Одарённый",
     abilityScoreIncrease: {
@@ -72,7 +67,7 @@ const backgroundsData = [
     skillProficiencies: ["sleight_of_hand", "stealth"],
     toolProficiencies: ["Воровские инструменты"],
     languages: 1,
-    equipment: ["Воровские инструменты", "Ломик", "Тёмная одежда с капюшоном"],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 15,
     originFeat: "Бдительный",
     abilityScoreIncrease: {
@@ -90,7 +85,7 @@ const backgroundsData = [
     skillProficiencies: ["acrobatics", "performance"],
     toolProficiencies: ["Музыкальный инструмент (на выбор)"],
     languages: 1,
-    equipment: ["Музыкальный инструмент", "Костюм", "Зеркало", "Духи"],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 11,
     originFeat: "Музыкант",
     abilityScoreIncrease: {
@@ -108,14 +103,7 @@ const backgroundsData = [
     skillProficiencies: ["animal_handling", "nature"],
     toolProficiencies: ["Инструменты плотника"],
     languages: 1,
-    equipment: [
-      "Серп",
-      "Инструменты плотника",
-      "Комплект целителя",
-      "Железный горшок",
-      "Лопата",
-      "Дорожная одежда",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 30,
     originFeat: "Крепкий",
     abilityScoreIncrease: {
@@ -133,16 +121,7 @@ const backgroundsData = [
     skillProficiencies: ["athletics", "perception"],
     toolProficiencies: ["Игровой набор (на выбор)"],
     languages: 1,
-    equipment: [
-      "Копьё",
-      "Лёгкий арбалет",
-      "20 болтов",
-      "Игровой набор (выбранный выше)",
-      "Закрытый фонарь",
-      "Кандалы",
-      "Колчан",
-      "Одежда путешественника",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 12,
     originFeat: "Бдительный",
     abilityScoreIncrease: {
@@ -160,15 +139,7 @@ const backgroundsData = [
     skillProficiencies: ["stealth", "survival"],
     toolProficiencies: ["Инструменты картографа"],
     languages: 1,
-    equipment: [
-      "Короткий лук",
-      "20 Стрел",
-      "Инструменты картографа",
-      "Спальник",
-      "Колчан",
-      "Палатка",
-      "Дорожная одежда",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 3,
     originFeat: "Посвящённый в магию (Друид)",
     abilityScoreIncrease: {
@@ -186,13 +157,7 @@ const backgroundsData = [
     skillProficiencies: ["medicine", "religion"],
     toolProficiencies: ["Набор травника"],
     languages: 1,
-    equipment: [
-      "Набор травника",
-      "Спальник",
-      "Лампа",
-      "Масло (3 фляги)",
-      "Одежда путешественника",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 16,
     originFeat: "Лекарь",
     abilityScoreIncrease: {
@@ -210,12 +175,7 @@ const backgroundsData = [
     skillProficiencies: ["animal_handling", "persuasion"],
     toolProficiencies: ["Инструменты навигатора"],
     languages: 1,
-    equipment: [
-      "Инструменты навигатора",
-      "Мул",
-      "Повозка",
-      "Одежда путешественника",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 22,
     originFeat: "Везунчик",
     abilityScoreIncrease: {
@@ -233,12 +193,7 @@ const backgroundsData = [
     skillProficiencies: ["history", "persuasion"],
     toolProficiencies: ["Игровой набор (на выбор)"],
     languages: 1,
-    equipment: [
-      "Игровой набор",
-      "Красивая одежда",
-      "Духи",
-      "Перстень с печатью",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 29,
     originFeat: "Одарённый",
     abilityScoreIncrease: {
@@ -256,13 +211,7 @@ const backgroundsData = [
     skillProficiencies: ["arcana", "history"],
     toolProficiencies: ["Набор каллиграфа"],
     languages: 2,
-    equipment: [
-      "Боевой посох",
-      "Инструменты каллиграфа",
-      "Книга (история)",
-      "Пергамент (8 листов)",
-      "Мантия",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 8,
     originFeat: "Посвящённый в магию (Волшебник)",
     abilityScoreIncrease: {
@@ -280,12 +229,7 @@ const backgroundsData = [
     skillProficiencies: ["acrobatics", "perception"],
     toolProficiencies: ["Инструменты навигатора"],
     languages: 1,
-    equipment: [
-      "Кинжал",
-      "Инструменты навигатора",
-      "Верёвка (50 футов)",
-      "Дорожная одежда",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 20,
     originFeat: "Дебошир",
     abilityScoreIncrease: {
@@ -303,13 +247,7 @@ const backgroundsData = [
     skillProficiencies: ["investigation", "perception"],
     toolProficiencies: ["Набор каллиграфа"],
     languages: 2,
-    equipment: [
-      "Инструменты каллиграфа",
-      "Отличная одежда",
-      "Лампа",
-      "Масло (3 фляги)",
-      "Пергамент (12 листов)",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 23,
     originFeat: "Умелец",
     abilityScoreIncrease: {
@@ -327,15 +265,7 @@ const backgroundsData = [
     skillProficiencies: ["athletics", "intimidation"],
     toolProficiencies: ["Игровой набор (на выбор)"],
     languages: 1,
-    equipment: [
-      "Копьё",
-      "Короткий лук",
-      "20 Стрел",
-      "Игровой набор (выбранный выше)",
-      "Набор целителя",
-      "Колчан",
-      "Дорожная одежда",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 14,
     originFeat: "Дикий атакующий",
     abilityScoreIncrease: {
@@ -353,14 +283,7 @@ const backgroundsData = [
     skillProficiencies: ["insight", "stealth"],
     toolProficiencies: ["Воровские инструменты"],
     languages: 1,
-    equipment: [
-      "2 Кинжала",
-      "Воровские инструменты",
-      "Игровой набор (любой)",
-      "Спальник",
-      "2 Кошеля",
-      "Дорожная одежда",
-    ],
+    equipment: [], // TODO: mapping equipment names to IDs requires a lookup or seed order change
     startingGold: 16,
     originFeat: "Везунчик",
     abilityScoreIncrease: {
