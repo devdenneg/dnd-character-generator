@@ -4,7 +4,7 @@ import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
 import { FeatFull, FeatMeta } from "@/types/api";
 import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import { Search, Star } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function FeatsPage() {
@@ -31,9 +31,7 @@ export default function FeatsPage() {
   const [selectedFeat, setSelectedFeat] = useState<FeatFull | null>(null);
   const [loadingFeat, setLoadingFeat] = useState(false);
 
-  // Navigation history for drawer
-  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
-  const prevHashRef = useRef<string>("");
+
 
   // Fetch feats list
   useEffect(() => {
@@ -85,14 +83,10 @@ export default function FeatsPage() {
 
   const openFeat = (id: string) => {
     const currentHash = location.hash.replace("#", "");
-    if (currentHash && currentHash !== id) {
-      setNavigationHistory((prev) => [...prev, currentHash]);
-    }
     navigate(`${location.pathname}${location.search}#${id}`, { replace: false });
   };
 
   const closeDrawer = () => {
-    setNavigationHistory([]);
     navigate(`${location.pathname}${location.search}`, { replace: true });
   };
 
