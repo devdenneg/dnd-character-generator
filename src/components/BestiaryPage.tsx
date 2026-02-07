@@ -56,6 +56,20 @@ interface MonsterFull {
   imageUrl: string;
 }
 
+const parseCR = (cr: string) => {
+  if (!cr) return 0;
+  if (cr.includes("/")) {
+    const [num, den] = cr.split("/");
+    return parseInt(num) / parseInt(den);
+  }
+  return parseFloat(cr) || 0;
+};
+
+const formatMod = (score: number) => {
+  const mod = Math.floor((score - 10) / 2);
+  return mod >= 0 ? `+${mod}` : `${mod}`;
+};
+
 export function BestiaryPage({ onBack }: { onBack?: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -108,14 +122,6 @@ export function BestiaryPage({ onBack }: { onBack?: () => void }) {
     });
   }, [monsters, searchTerm, sortOption]);
 
-  const parseCR = (cr: string) => {
-      if (!cr) return 0;
-      if (cr.includes("/")) {
-          const [num, den] = cr.split("/");
-          return parseInt(num) / parseInt(den);
-      }
-      return parseFloat(cr) || 0;
-  };
 
   const openMonster = (externalId: string) => {
     navigate(`${location.pathname}#${externalId}`);
@@ -125,10 +131,6 @@ export function BestiaryPage({ onBack }: { onBack?: () => void }) {
     navigate(location.pathname);
   };
 
-  const formatMod = (score: number) => {
-    const mod = Math.floor((score - 10) / 2);
-    return mod >= 0 ? `+${mod}` : `${mod}`;
-  };
 
   const renderStatBlock = (monster: MonsterFull) => {
     return (

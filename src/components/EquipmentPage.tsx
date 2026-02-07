@@ -126,6 +126,18 @@ interface EquipmentPageProps {
   onBack?: () => void;
 }
 
+// Convert cost to gold pieces for comparison
+const convertToGp = (cost: { quantity: number; unit: string }): number => {
+  const rates: Record<string, number> = {
+    cp: 0.01,
+    sp: 0.1,
+    ep: 0.5,
+    gp: 1,
+    pp: 10,
+  };
+  return cost.quantity * (rates[cost.unit] || 1);
+};
+
 export function EquipmentPage({ onBack }: EquipmentPageProps) {
   // Загружаем только мета-данные для списка
   const { data: metaData, error, refetch } = useBackendEquipmentMeta();
@@ -381,17 +393,6 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
     [metaData?.data?.equipment]
   );
 
-  // Convert cost to gold pieces for comparison
-  const convertToGp = (cost: { quantity: number; unit: string }): number => {
-    const rates: Record<string, number> = {
-      cp: 0.01,
-      sp: 0.1,
-      ep: 0.5,
-      gp: 1,
-      pp: 10,
-    };
-    return cost.quantity * (rates[cost.unit] || 1);
-  };
 
   // Filter by category, search, cost, armor types, and weapon properties
   const filteredEquipment = useMemo(() => {
