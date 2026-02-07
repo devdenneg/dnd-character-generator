@@ -198,9 +198,20 @@ export function parseDescriptionLine(line: string): ParsedElement[] {
         break;
       }
 
-      case "bestiary":
-        elements.push({ type: "bestiary", content: tagContent });
+      case "bestiary": {
+        // Формат: {@bestiary название} или {@bestiary название|url:externalId}
+        const parts = tagContent.split("|");
+        const label = parts[0];
+        const urlPart = parts[1] || "";
+        const externalId = urlPart.replace("url:", ""); // Убираем префикс url: если есть
+        elements.push({
+          type: "bestiary",
+          label,
+          url: externalId,
+          content: label,
+        });
         break;
+      }
 
       case "link": {
         // Формат: {@link текст|url}
@@ -378,14 +389,26 @@ export function renderElement(element: ParsedElement, index: number, options?: R
       );
 
     case "bestiary":
-      // Пока без ссылки
+      // Ссылка на существо
+      if (element.url) {
+        return (
+          <Link
+            key={index}
+            to={`/bestiary#${element.url}`}
+            state={options?.linkState}
+            className="text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors"
+          >
+            {element.label || renderContent(element.content, options)}
+          </Link>
+        );
+      }
       return (
         <span
           key={index}
           className="text-amber-400 underline decoration-dotted underline-offset-2"
           title="Существо"
         >
-          {renderContent(element.content, options)}
+          {element.label || renderContent(element.content, options)}
         </span>
       );
 

@@ -1,15 +1,15 @@
 import type {
-    ApiResponse,
-    AuthResponse,
-    CharacterData,
-    CharacterResponse,
-    CharactersListResponse,
-    FeatFull,
-    FeatMeta,
-    GlossaryListResponse,
-    GlossaryTermFull,
-    RaceFull,
-    RaceTrait
+  ApiResponse,
+  AuthResponse,
+  CharacterData,
+  CharacterResponse,
+  CharactersListResponse,
+  FeatFull,
+  FeatMeta,
+  GlossaryListResponse,
+  GlossaryTermFull,
+  RaceFull,
+  RaceTrait
 } from "@/types/api";
 
 import type { DescriptionItem } from "@/types/character";
@@ -665,6 +665,25 @@ export const searchApi = {
 
   random: async () => {
     const response = await apiClient.get("/search/random");
+    return response.data;
+  },
+};
+
+// Bestiary API
+export const bestiaryApi = {
+  listMeta: async (source?: string) => {
+    const params = source ? { source } : {};
+    const response = await apiClient.get("/bestiary/meta", { params });
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get(`/bestiary/${id}`);
+    return response.data;
+  },
+
+  search: async (query: string) => {
+    const response = await apiClient.get<ApiResponse<{ results: any[] }>>("/bestiary/search", { params: { q: query } });
     return response.data;
   },
 };

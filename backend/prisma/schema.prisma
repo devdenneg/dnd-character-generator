@@ -329,3 +329,45 @@ model Feat {
   @@index([name])
   @@index([nameRu])
 }
+
+model Monster {
+  id            String   @id @default(uuid())
+  externalId    String   @unique
+  name          String
+  nameRu        String
+  size          String
+  type          String
+  alignment     String
+  ac            Json
+  hp            Json
+  speed         String
+  str           Int
+  dex           Int
+  con           Int
+  int           Int
+  wis           Int
+  cha           Int
+  saves         Json?
+  skills        Json?
+  vulnerabilities String?
+  resistances   String?
+  immunities    String?
+  senses        String?
+  languages     String?
+  cr            String
+  traits        Json?
+  actions       Json?
+  reactions     Json?
+  legendary     Json?
+  description   Json?
+  source        String   @default("phb2024")
+  imageUrl      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([externalId])
+  @@index([name])
+  @@index([nameRu])
+  @@index([type])
+  @@index([cr])
+}

@@ -5,6 +5,7 @@ import { searchClasses } from "../services/classService";
 import { searchEquipment } from "../services/equipmentService";
 import { getGlobalSearchFeats } from "../services/featService";
 import { searchGlossaryTerms } from "../services/glossaryService";
+import { searchMonsters } from "../services/monsterService";
 import { searchRaces } from "../services/raceService";
 import { searchSpells } from "../services/spellService";
 
@@ -21,7 +22,7 @@ export async function search(req: AuthenticatedRequest, res: Response) {
     }
 
     // Search in parallel across all types
-    const [races, classes, backgrounds, spells, equipment, glossary, feats] = await Promise.all([
+    const [races, classes, backgrounds, spells, equipment, glossary, feats, monsters] = await Promise.all([
       searchRaces(query),
       searchClasses(query),
       searchBackgrounds(query),
@@ -29,6 +30,7 @@ export async function search(req: AuthenticatedRequest, res: Response) {
       searchEquipment(query),
       searchGlossaryTerms(query),
       getGlobalSearchFeats(query),
+      searchMonsters(query),
     ]);
 
     // Combine all results
@@ -40,6 +42,7 @@ export async function search(req: AuthenticatedRequest, res: Response) {
       ...equipment,
       ...glossary,
       ...feats,
+      ...monsters,
     ];
 
     res.status(200).json({
@@ -65,7 +68,7 @@ export async function getRandomContent(req: AuthenticatedRequest, res: Response)
     const queries = ["а", "о", "е", "и", " "];
     const randomQuery = queries[Math.floor(Math.random() * queries.length)];
 
-    const [races, classes, backgrounds, spells, equipment, glossary, feats] = await Promise.all([
+    const [races, classes, backgrounds, spells, equipment, glossary, feats, monsters] = await Promise.all([
       searchRaces(randomQuery),
       searchClasses(randomQuery),
       searchBackgrounds(randomQuery),
@@ -73,6 +76,7 @@ export async function getRandomContent(req: AuthenticatedRequest, res: Response)
       searchEquipment(randomQuery),
       searchGlossaryTerms(randomQuery),
       getGlobalSearchFeats(randomQuery),
+      searchMonsters(randomQuery),
     ]);
 
     const allResults = [
@@ -83,6 +87,7 @@ export async function getRandomContent(req: AuthenticatedRequest, res: Response)
       ...equipment,
       ...glossary,
       ...feats,
+      ...monsters,
     ];
 
     // Shuffle and slice

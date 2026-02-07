@@ -1,7 +1,7 @@
 // TanStack Query hooks for D&D 5e API
 
 import { useQuery } from "@tanstack/react-query";
-import { backgroundsApi, classesApi, equipmentApi, featsApi, racesApi, spellsApi } from "./client";
+import { backgroundsApi, bestiaryApi, classesApi, equipmentApi, featsApi, racesApi, spellsApi } from "./client";
 import { dnd5eApi } from "./dnd5e";
 
 // Query keys
@@ -256,6 +256,10 @@ export const backendQueryKeys = {
   featsMeta: (search?: string) => ["backend", "feats", "meta", search] as const,
   feat: (id: string) => ["backend", "feat", id] as const,
   featByExternalId: (externalId: string) => ["backend", "feat", "external", externalId] as const,
+  bestiaryMeta: (source?: string) => ["backend", "bestiary", "meta", source] as const,
+  bestiary: (id: string) => ["backend", "bestiary", id] as const,
+  bestiaryByExternalId: (externalId: string) => ["backend", "bestiary", "external", externalId] as const,
+  bestiarySearch: (query: string) => ["backend", "bestiary", "search", query] as const,
 };
 
 // Races (from backend - PHB 2024 data)
@@ -488,5 +492,32 @@ export function useBackendFeatByExternalId(externalId: string) {
     queryFn: () => featsApi.getByExternalId(externalId),
     enabled: !!externalId,
     staleTime: Infinity,
+  });
+}
+
+// Bestiary Hooks
+export function useBackendBestiaryMeta(source?: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.bestiaryMeta(source),
+    queryFn: () => bestiaryApi.listMeta(source),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useBackendBestiaryByExternalId(externalId: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.bestiaryByExternalId(externalId),
+    queryFn: () => bestiaryApi.get(externalId),
+    enabled: !!externalId,
+    staleTime: Infinity,
+  });
+}
+
+export function useBackendBestiarySearch(query: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.bestiarySearch(query),
+    queryFn: () => bestiaryApi.search(query),
+    enabled: !!query,
+    staleTime: 1 * 60 * 1000,
   });
 }

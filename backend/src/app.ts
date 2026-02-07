@@ -20,6 +20,7 @@ import classRoutes from "./routes/classes";
 import equipmentRoutes from "./routes/equipment";
 import featRoutes from "./routes/feats";
 import glossaryRoutes from "./routes/glossaryRoutes";
+import monsterRoutes from "./routes/monsters";
 import raceRoutes from "./routes/races";
 import roomRoutes from "./routes/rooms";
 import searchRoutes from "./routes/search";
@@ -105,6 +106,7 @@ app.use("/api/search", searchRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/feats", featRoutes);
 app.use("/api/glossary", glossaryRoutes);
+app.use("/api/bestiary", monsterRoutes);
 
 // 404 handler
 app.use((_req, res) => {

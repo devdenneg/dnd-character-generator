@@ -1,4 +1,5 @@
 import { BackgroundsPage } from "@/components/BackgroundsPage";
+import { BestiaryPage } from "@/components/BestiaryPage";
 import { BrowseRoomsPage } from "@/components/BrowseRoomsPage";
 import { ClassDetailsPage } from "@/components/ClassDetailsPage";
 import { ClassesPage } from "@/components/ClassesPage";
@@ -230,6 +231,9 @@ function HomePageWrapper() {
       case "feats":
         navigate(itemId ? `/feats#${itemId}` : "/feats");
         break;
+      case "bestiary":
+        navigate(itemId ? `/bestiary#${itemId}` : "/bestiary");
+        break;
       default:
         navigate("/");
     }
@@ -271,6 +275,16 @@ function EquipmentPageWrapper() {
   };
 
   return <EquipmentPage onBack={handleBack} />;
+}
+
+function BestiaryPageWrapper() {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate("/");
+  };
+
+  return <BestiaryPage onBack={handleBack} />;
 }
 
 function AppRoutes() {
@@ -329,6 +343,7 @@ function AppRoutes() {
         <Route path="/achievements" element={<PlayerAchievementsPage />} />
         <Route path="/glossary" element={<GlossaryPage />} />
         <Route path="/feats" element={<FeatsPage />} />
+        <Route path="/bestiary" element={<BestiaryPageWrapper />} />
         <Route path="/upload-content" element={<UploadContentPage onBack={() => window.location.hash = "/"} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

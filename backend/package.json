@@ -23,6 +23,7 @@
     "seed:glossary": "ts-node import-glossary.ts",
     "seed:feats": "ts-node import-feats.ts",
     "seed:features": "tsx seed-features-only.ts",
+    "seed:bestiary": "tsx seed-bestiary.ts",
     "generate:classes:csv": "ts-node generate-classes-csv.ts"
   },
   "keywords": [

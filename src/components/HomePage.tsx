@@ -33,7 +33,7 @@ interface SearchResult {
   id: string;
   name: string;
   nameRu: string;
-  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary" | "feat";
+  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary" | "feat" | "monster";
   category: string;
 }
 
@@ -118,6 +118,14 @@ const MENU_ITEMS: MenuItem[] = [
     roles: ["player", "master"],
     inDevelopment: false,
   },
+  {
+    id: "bestiary",
+    title: "Бестиарий",
+    description: "Монстры и существа",
+    gradient: "from-red-500 to-rose-600",
+    roles: ["player", "master"],
+    inDevelopment: false,
+  },
 ];
 
 export function HomePage({ onNavigate }: HomePageProps) {
@@ -185,6 +193,10 @@ export function HomePage({ onNavigate }: HomePageProps) {
         return;
       case "feat":
         navigate(`/feats#${result.id}`);
+        setSearchQuery("");
+        return;
+      case "monster":
+        navigate(`/bestiary#${result.id}`);
         setSearchQuery("");
         return;
     }
@@ -389,7 +401,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {visibleMenuItems
             .filter((item) =>
-              ["races", "classes", "backgrounds", "spells", "equipment", "glossary", "feats"].includes(item.id)
+              ["races", "classes", "backgrounds", "spells", "equipment", "glossary", "feats", "bestiary"].includes(item.id)
             )
             .map((item, index) => (
               <div
