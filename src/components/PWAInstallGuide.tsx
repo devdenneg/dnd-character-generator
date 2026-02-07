@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Share, Smartphone, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export function PWAInstallGuide() {
   const [isVisible, setIsVisible] = useState(false);
@@ -28,9 +29,9 @@ export function PWAInstallGuide() {
 
   if (!isVisible) return null;
 
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-50 p-4 animate-in slide-in-from-bottom duration-500">
-      <div className="max-w-md mx-auto bg-popover/95 backdrop-blur-md border border-border rounded-xl shadow-2xl p-5 relative">
+  return createPortal(
+    <div className="fixed inset-x-0 bottom-0 z-[10000] p-4 animate-in slide-in-from-bottom duration-500 pointer-events-none">
+      <div className="max-w-md mx-auto bg-popover/95 backdrop-blur-md border border-border rounded-xl shadow-2xl p-5 relative pointer-events-auto">
         <button
           onClick={handleClose}
           className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -68,6 +69,7 @@ export function PWAInstallGuide() {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

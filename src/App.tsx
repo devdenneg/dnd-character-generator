@@ -18,6 +18,7 @@ import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
 import { RaceDetailsPage } from "@/components/RaceDetailsPage";
 import { RacesPage } from "@/components/RacesPage";
 
+import { PullToRefresh } from "@/components/PullToRefresh";
 import ReloadPrompt from "@/components/ReloadPrompt";
 import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { SpellsPage } from "@/components/SpellsPage";
@@ -362,7 +363,9 @@ function App() {
               <DiceRollProvider>
                 <SocketProvider>
                   <BrowserRouter>
-                    <AppRoutes />
+                    <PullToRefresh>
+                      <AppRoutes />
+                    </PullToRefresh>
                     <ReloadPrompt />
                   </BrowserRouter>
                 </SocketProvider>
