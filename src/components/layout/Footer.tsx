@@ -1,7 +1,5 @@
-import { useNavigate } from "react-router-dom";
 
 export function Footer() {
-  const navigate = useNavigate();
 
   return (
     <footer className="border-t border-border/50 bg-card/40 backdrop-blur-sm mt-auto relative overflow-hidden">

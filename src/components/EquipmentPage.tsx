@@ -27,7 +27,7 @@ import {
     Wrench,
     X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 // Types
@@ -171,28 +171,6 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
 
   const selectedEquipment = selectedItemData?.data?.equipment || null;
 
-  // Отслеживаем изменения хеша для добавления в историю
-  const prevHashRef = useRef<string>("");
-
-  useEffect(() => {
-    const currentHash = location.hash.replace("#", "");
-    const prevHash = prevHashRef.current;
-
-    // Если хеш изменился и оба не пустые, добавляем предыдущий в историю
-    if (currentHash && prevHash && currentHash !== prevHash) {
-      setNavigationHistory((prev) => {
-        // Проверяем, не возвращаемся ли мы назад
-        if (prev.length > 0 && prev[prev.length - 1] === currentHash) {
-          // Это возврат назад, удаляем из истории
-          return prev.slice(0, -1);
-        }
-        // Это переход вперед, добавляем в историю
-        return [...prev, prevHash];
-      });
-    }
-
-    prevHashRef.current = currentHash;
-  }, [location.hash]);
 
   // Обработка изменения выбранного предмета
   useEffect(() => {
@@ -222,7 +200,6 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
 
   // Функция для закрытия drawer
   const closeDrawer = () => {
-    setNavigationHistory([]);
     navigate(location.pathname, { replace: true });
   };
 
