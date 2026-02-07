@@ -5,7 +5,7 @@ import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
 import { GlossaryTermFull, GlossaryTermMeta } from "@/types/api";
 import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import { Book, Search } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 
@@ -46,9 +46,6 @@ export default function GlossaryPage() {
   const [selectedTerm, setSelectedTerm] = useState<GlossaryTermFull | null>(null);
   const [loadingTerm, setLoadingTerm] = useState(false);
 
-  // Navigation history
-  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
-  const prevHashRef = useRef<string>("");
 
   // Fetch categories
   useEffect(() => {
@@ -95,23 +92,6 @@ export default function GlossaryPage() {
       .finally(() => setLoadingTerm(false));
   }, [selectedTermId]);
 
-  // Track hash changes for history
-  useEffect(() => {
-    const currentHash = location.hash.replace("#", "");
-    const prevHash = prevHashRef.current;
-
-    if (currentHash && prevHash && currentHash !== prevHash) {
-      setNavigationHistory((prev) => {
-        if (prev.length > 0 && prev[prev.length - 1] === currentHash) {
-          return prev.slice(0, -1);
-        }
-        return [...prev, prevHash];
-      });
-    }
-
-    prevHashRef.current = currentHash;
-  }, [location.hash]);
-
   // Sync state with URL
   useEffect(() => {
     const params = new URLSearchParams();
@@ -131,23 +111,13 @@ export default function GlossaryPage() {
   }, [selectedCategory, searchQuery, navigate, location.pathname, location.hash, location.search]);
 
   const openTerm = (id: string) => {
-    const currentHash = location.hash.replace("#", "");
-    if (currentHash && currentHash !== id) {
-      setNavigationHistory((prev) => [...prev, currentHash]);
-    }
-    navigate(`${location.pathname}${location.search}#${id}`, { replace: false });
-  };
-
-  const goBack = () => {
-    if (navigationHistory.length === 0) return;
-    const previousId = navigationHistory[navigationHistory.length - 1];
-    setNavigationHistory((prev) => prev.slice(0, -1));
-    navigate(`${location.pathname}${location.search}#${previousId}`, { replace: true });
+    navigate(`${location.pathname}${location.search}#${id}`);
   };
 
   const closeDrawer = () => {
-    setNavigationHistory([]);
-    navigate(`${location.pathname}${location.search}`, { replace: true });
+    if (location.hash) {
+      navigate(`${location.pathname}${location.search}`);
+    }
   };
 
 
@@ -259,19 +229,6 @@ export default function GlossaryPage() {
           onClose={closeDrawer}
           title={
             <div className="flex items-center gap-3">
-              {navigationHistory.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    goBack();
-                  }}
-                  className="mr-2"
-                >
-                  ← Назад
-                </Button>
-              )}
               <div className="flex-1">
                 {loadingTerm ? (
                   <div className="h-6 bg-muted/50 rounded w-48 animate-pulse" />

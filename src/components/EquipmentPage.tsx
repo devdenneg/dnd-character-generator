@@ -158,8 +158,6 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
     return props ? props.split(',') : [];
   });
 
-  // История навигации - храним externalId предметов
-  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
 
   // Текущий выбранный предмет определяется из URL
   const selectedEquipmentExternalId = useMemo(() => {
@@ -217,26 +215,10 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
 
   // Функция для открытия предмета
   const openEquipment = (externalId: string) => {
-    // Если уже открыт другой предмет, добавляем его в историю
-    const currentHash = location.hash.replace("#", "");
-    if (currentHash && currentHash !== externalId) {
-      setNavigationHistory((prev) => [...prev, currentHash]);
-    }
-
     // Обновляем URL
     navigate(`${location.pathname}#${externalId}`, { replace: false });
   };
 
-  // Функция для возврата назад
-  const goBack = () => {
-    if (navigationHistory.length === 0) return;
-
-    const previousExternalId = navigationHistory[navigationHistory.length - 1];
-    setNavigationHistory((prev) => prev.slice(0, -1));
-
-    // Переходим к предыдущему предмету
-    navigate(`${location.pathname}#${previousExternalId}`, { replace: true });
-  };
 
   // Функция для закрытия drawer
   const closeDrawer = () => {
@@ -771,35 +753,6 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
             onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
-                {(navigationHistory.length > 0) ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      goBack();
-                    }}
-                    className="mr-2"
-                  >
-                    ← Назад
-                  </Button>
-                ) : (
-                  (location.state as any)?.backUrl && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                         e.stopPropagation();
-                         navigate((location.state as any).backUrl, {
-                           state: { scrollY: (location.state as any).scrollY }
-                         });
-                      }}
-                      className="mr-2 text-primary hover:text-primary/80"
-                    >
-                      ← {(location.state as any).backLabel || "Назад"}
-                    </Button>
-                  )
-                )}
                 {isLoadingItem ? (
                   <>
                     <Loader2 className="w-5 h-5 text-primary animate-spin" />

@@ -20,3 +20,15 @@ export function useSearch(query: string) {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
+
+export function useRandomContent() {
+  return useQuery({
+    queryKey: ["search", "random"],
+    queryFn: async () => {
+      const response = await searchApi.random();
+      return response.data.results as SearchResult[];
+    },
+    staleTime: 0, // Always fresh on mount
+    refetchOnWindowFocus: false,
+  });
+}

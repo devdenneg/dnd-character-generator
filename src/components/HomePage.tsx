@@ -1,4 +1,4 @@
-import { useSearch } from "@/api/search";
+import { useRandomContent, useSearch } from "@/api/search";
 import backgroundsImage from "@/components/assets/backgrounds.jpg";
 import classesImage from "@/components/assets/classes.jpg";
 import createCharImage from "@/components/assets/createChar.jpg";
@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
-import { ChevronRight, Search, Upload, User, X } from "lucide-react";
-import { useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
+import { ChevronRight, RefreshCw, Search, Sparkles, Upload, User, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface HomePageProps {
@@ -100,45 +101,6 @@ const MENU_ITEMS: MenuItem[] = [
     inDevelopment: false,
     image: equipImage,
   },
-  // Скрытые пункты меню (временно закомментированы)
-  /*
-  {
-    id: "my-achievements",
-    title: "Мои достижения",
-    description: "Находится в разработке",
-    icon: Trophy,
-    gradient: "from-yellow-500 to-amber-500",
-    roles: ["player", "master"],
-    inDevelopment: true,
-  },
-  {
-    id: "join-room",
-    title: "Присоединиться к игре",
-    description: "Находится в разработке",
-    icon: DoorOpen,
-    gradient: "from-blue-500 to-cyan-500",
-    roles: ["player"],
-    inDevelopment: true,
-  },
-  {
-    id: "my-rooms",
-    title: "Мои комнаты",
-    description: "Управление игровыми комнатами",
-    icon: DoorOpen,
-    gradient: "from-amber-500 to-orange-500",
-    roles: ["master"],
-    inDevelopment: false,
-  },
-  {
-    id: "create-room",
-    title: "Создать комнату",
-    description: "Создайте новую игровую комнату",
-    icon: Plus,
-    gradient: "from-purple-500 to-pink-500",
-    roles: ["master"],
-    inDevelopment: false,
-  },
-  */
   {
     id: "glossary",
     title: "Глоссарий",
@@ -159,27 +121,38 @@ const MENU_ITEMS: MenuItem[] = [
 ];
 
 export function HomePage({ onNavigate }: HomePageProps) {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { openLogin, openRegister } = useAuthModal();
   const navigate = useNavigate();
 
-  // Секретная разблокировка для разработчика (7 кликов)
-  const [devClickCounts, setDevClickCounts] = useState<Record<string, number>>(
-    {}
-  );
-
-  // Загружаем разблокированные фичи из localStorage при инициализации
-  const [unlockedFeatures, setUnlockedFeatures] = useState<string[]>(() => {
-    const unlocked = localStorage.getItem("dev_unlocked_features");
-    return unlocked ? JSON.parse(unlocked) : [];
-  });
-
   // Состояние для поиска
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Используем API для поиска
-  const { data: searchResults = [], isLoading: isSearchLoading } =
-    useSearch(searchQuery);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: searchResults = [], isLoading: isSearchLoading } = useSearch(debouncedSearchQuery);
+
+  // Random Content Logic
+  const { data: randomContent = [], refetch: refetchRandom } = useRandomContent();
+  const [currentRandomIndex, setCurrentRandomIndex] = useState(0);
+  const [isRotating, setIsRotating] = useState(true);
+
+  useEffect(() => {
+    if (!isRotating || randomContent.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentRandomIndex((prev) => (prev + 1) % randomContent.length);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [isRotating, randomContent.length]);
+
+  const handleRandomClick = (item: SearchResult) => {
+    handleSearchResultClick(item);
+  };
+
+  const currentRandomItem = randomContent[currentRandomIndex];
 
   // Обработчик клика на результат поиска
   const handleSearchResultClick = (result: SearchResult) => {
@@ -187,21 +160,25 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
     switch (result.type) {
       case "race":
-        navigateTo = "races";
-        break;
+        navigate(`/races/${result.id}`);
+        setSearchQuery("");
+        return;
       case "class":
         navigate(`/classes/${result.id}`);
         setSearchQuery("");
         return;
       case "background":
-        navigateTo = "backgrounds";
-        break;
+         navigate(`/backgrounds#${result.id}`);
+         setSearchQuery("");
+         return;
       case "spell":
-        navigateTo = "spells";
-        break;
+         navigate(`/spells#${result.id}`);
+         setSearchQuery("");
+         return;
       case "equipment":
-        navigateTo = "equipment";
-        break;
+         navigate(`/equipment#${result.id}`);
+         setSearchQuery("");
+         return;
       case "glossary":
         navigate(`/glossary#${result.id}`);
         setSearchQuery("");
@@ -216,29 +193,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
     onNavigate(navigateTo, result.id);
   };
 
-  const handleDevClick = (itemId: string) => {
-    const currentCount = (devClickCounts[itemId] || 0) + 1;
-    const newCounts = { ...devClickCounts, [itemId]: currentCount };
-    setDevClickCounts(newCounts);
-
-    if (currentCount === 7) {
-      // Разблокируем фичу
-      const newUnlocked = [...unlockedFeatures, itemId];
-      setUnlockedFeatures(newUnlocked);
-      localStorage.setItem(
-        "dev_unlocked_features",
-        JSON.stringify(newUnlocked)
-      );
-
-      // Показываем уведомление
-      const itemTitle = MENU_ITEMS.find((i) => i.id === itemId)?.title;
-      alert(`🔓 Режим разработчика активирован для "${itemTitle}"`);
-
-      // Сбрасываем счётчик
-      const resetCounts = { ...newCounts, [itemId]: 0 };
-      setDevClickCounts(resetCounts);
-    }
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchQuery.trim()) {
@@ -253,10 +207,9 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 md:py-12">
-      {/* Auth Info for non-authenticated users - moved higher */}
+      {/* Auth Info for non-authenticated users */}
       {!isAuthenticated && (
         <div className="mb-12 bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-3xl p-8 md:p-10 animate-fade-in relative overflow-hidden">
-          {/* Background decorative element */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-accent/10 to-transparent rounded-tr-full" />
 
@@ -292,140 +245,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
         </div>
       )}
 
-      {/* Hero Section */}
-      {/* <div className="mb-16 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-6 animate-fade-in backdrop-blur-sm">
-              <Sparkles className="w-4 h-4" />
-              <span className="font-medium">PHB 2024 Edition</span>
-            </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-6 animate-fade-in-up delay-75">
-              <span className="text-gradient">D&D Generator</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in-up delay-100 leading-relaxed">
-              Полный комплект инструментов для мастеров и игроков Dungeons &
-              Dragons 5th Edition
-            </p>
-          </div> */}
-
-      {/* First Section: Characters */}
-      <div className="mb-16">
-        <div className="flex items-center justify-between gap-4 mb-8">
-          <div>
-            <h2 className="text-3xl font-display font-semibold text-foreground">
-              Персонажи
-            </h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Создание и управление персонажами
-            </p>
-          </div>
-        </div>
-
-        {isLoading ? (
-          // Loading skeleton
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {[1, 2].map((i) => (
-              <div
-                key={i}
-                className="w-full p-6 rounded-2xl border bg-card/60 backdrop-blur-sm border-border/50 animate-pulse"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-muted" />
-                  <div className="flex-1 space-y-3">
-                    <div className="h-6 bg-muted rounded w-3/4" />
-                    <div className="h-4 bg-muted rounded w-full" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          // Character items
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {visibleMenuItems
-              .filter(
-                (item) =>
-                  item.id === "character-wizard" || item.id === "my-characters"
-              )
-              .map((item, index) => {
-                const isDisabled =
-                  item.inDevelopment && !unlockedFeatures.includes(item.id);
-
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      if (isDisabled) {
-                        handleDevClick(item.id);
-                      } else {
-                        onNavigate(item.id);
-                      }
-                    }}
-                    className={`
-                          w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden
-                          ${
-                            isDisabled
-                              ? "bg-card/5 border-border/10 cursor-not-allowed grayscale"
-                              : "group animate-fade-in-up bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative"
-                          }
-                        `}
-                    style={{
-                      animationDelay: `${index * 100}ms`,
-                    }}
-                  >
-                    {/* Background image with fade effect */}
-                    {item.image && !isDisabled && (
-                      <div className="absolute inset-0">
-                        <img
-                          src={item.image}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                        {/* Fade overlay from left */}
-                        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/80 to-card/95" />
-                        {/* Top/bottom gradients for better text readability */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/40" />
-                      </div>
-                    )}
-
-                    {/* Glassmorphism glow effect */}
-                    {!isDisabled && !item.image && (
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity blur-xl`}
-                      />
-                    )}
-
-                    {/* Shine effect on hover */}
-                    {!isDisabled && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
-                    )}
-
-                    {/* Content */}
-                    <div className="flex items-start gap-5 relative z-5 p-6">
-                      {/* Text Content */}
-                      <div className="flex-1 min-w-0">
-                        <h3
-                          className={`font-semibold text-lg md:text-xl text-foreground mb-2 ${
-                            !isDisabled
-                              ? "group-hover:text-primary transition-colors"
-                              : ""
-                          }`}
-                        >
-                          {item.title}
-                        </h3>
-                        <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-          </div>
-        )}
-      </div>
-
-      {/* Second Section: Game Content */}
-      <div className="mb-16">
+      {/* First Section: Game Content (Reference) - Enabled */}
+      <div className="mb-16 relative">
         <div className="flex items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-3xl font-display font-semibold text-foreground">
@@ -437,6 +258,65 @@ export function HomePage({ onNavigate }: HomePageProps) {
           </div>
         </div>
 
+        {/* Random Article Block */}
+        {currentRandomItem && (
+          <div
+            className="mb-8 relative group cursor-pointer"
+            onMouseEnter={() => setIsRotating(false)}
+            onMouseLeave={() => setIsRotating(true)}
+            onClick={() => handleRandomClick(currentRandomItem)}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 flex items-center justify-between overflow-hidden group-hover:border-primary/30 transition-colors duration-300">
+
+              {/* Progress Fill Animation */}
+              {isRotating && (
+                 <div
+                   key={currentRandomIndex}
+                   className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary/10 to-transparent z-0 animate-[progress_10s_linear]"
+                 />
+              )}
+
+              <div className="flex items-center gap-6 relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                      Случайная статья
+                    </span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                       • {currentRandomItem.category}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-display font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                    {currentRandomItem.nameRu}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {currentRandomItem.name}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 relative z-10">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-background/50 hover:text-primary transition-colors"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        refetchRandom();
+                    }}
+                >
+                    <RefreshCw className="w-5 h-5" />
+                </Button>
+                <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-300" />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Search Input */}
         <div className="relative mb-6">
           <div className="relative">
@@ -447,7 +327,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="pl-10 pr-10 h-11 text-base bg-card/60 backdrop-blur-sm border-border/40 focus:border-primary/50"
+              className="pl-10 pr-10 h-11 text-base bg-card/60 backdrop-blur-sm border-border/40 focus:border-primary/50 transition-colors"
             />
             {searchQuery && (
               <button
@@ -459,7 +339,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             )}
           </div>
 
-          {/* Loading indicator */}
+          {/* Search Dropdowns */}
           {isSearchLoading && searchQuery && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-50 p-4 animate-fade-in">
               <div className="flex items-center justify-center gap-2">
@@ -469,7 +349,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </div>
           )}
 
-          {/* Search Results Dropdown */}
           {!isSearchLoading && searchQuery && searchResults.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-50 max-h-96 overflow-y-auto animate-fade-in">
               <div className="p-2">
@@ -488,9 +367,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                       <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                         {result.nameRu}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {result.name}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{result.name}</p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
                   </button>
@@ -499,7 +376,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </div>
           )}
 
-          {/* No Results Message */}
           {!isSearchLoading && searchQuery && searchResults.length === 0 && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-50 p-4 animate-fade-in">
               <p className="text-sm text-muted-foreground text-center">
@@ -509,150 +385,114 @@ export function HomePage({ onNavigate }: HomePageProps) {
           )}
         </div>
 
-        {isLoading ? (
-          // Loading skeleton
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[1, 2, 3, 4].map((i) => (
+        {/* Reference Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {visibleMenuItems
+            .filter((item) =>
+              ["races", "classes", "backgrounds", "spells", "equipment", "glossary", "feats"].includes(item.id)
+            )
+            .map((item, index) => (
               <div
-                key={i}
-                className="w-full p-6 rounded-2xl border bg-card/60 backdrop-blur-sm border-border/50 animate-pulse"
+                key={item.id}
+                className="group w-full text-left rounded-2xl border bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 transition-all cursor-pointer relative overflow-hidden aspect-[4/3] md:aspect-auto md:h-48"
+                onClick={() => onNavigate(item.id)}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-muted" />
-                  <div className="flex-1 space-y-3">
-                    <div className="h-6 bg-muted rounded w-3/4" />
-                    <div className="h-4 bg-muted rounded w-full" />
+                {item.image && (
+                  <div className="absolute inset-0 z-0">
+                    <img
+                      src={item.image}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card/95 via-card/50 to-transparent" />
                   </div>
+                )}
+                {!item.image && (
+                  <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-10 group-hover:opacity-20 transition-opacity`} />
+                )}
+
+                <div className="relative z-10 p-6 flex flex-col h-full justify-end">
+                  <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium leading-tight">
+                    {item.description}
+                  </p>
+                </div>
+
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ChevronRight className="w-5 h-5 text-primary" />
                 </div>
               </div>
             ))}
-          </div>
-        ) : (
-          // Content items
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {visibleMenuItems
-              .filter((item) =>
-                [
-                  "races",
-                  "classes",
-                  "backgrounds",
-                  "spells",
-                  "equipment",
-                  "glossary",
-                  "feats",
-                ].includes(item.id)
-              )
-              .map((item, index) => {
-                const isDisabled =
-                  item.inDevelopment && !unlockedFeatures.includes(item.id);
-
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      if (isDisabled) {
-                        handleDevClick(item.id);
-                      } else {
-                        onNavigate(item.id);
-                      }
-                    }}
-                    className={`
-                          w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden
-                          ${
-                            isDisabled
-                              ? "bg-card/5 border-border/10 cursor-not-allowed grayscale"
-                              : "group animate-fade-in-up bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative"
-                          }
-                        `}
-                    style={{
-                      animationDelay: `${index * 100}ms`,
-                    }}
-                  >
-                    {/* Background image with fade effect */}
-                    {item.image && !isDisabled && (
-                      <div className="absolute inset-0">
-                        <img
-                          src={item.image}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                        {/* Fade overlay from left */}
-                        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/80 to-card/95" />
-                        {/* Top/bottom gradients for better text readability */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/40" />
-                      </div>
-                    )}
-
-                    {/* Glassmorphism glow effect */}
-                    {!isDisabled && !item.image && (
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity blur-xl`}
-                      />
-                    )}
-
-                    {/* Shine effect on hover */}
-                    {!isDisabled && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
-                    )}
-
-                    {/* Content */}
-                    <div className="flex items-start gap-4 relative z-5 p-6">
-                      {/* Text Content */}
-                      <div className="flex-1 min-w-0">
-                        <h3
-                          className={`font-semibold text-base md:text-lg text-foreground mb-1 ${
-                            !isDisabled
-                              ? "group-hover:text-primary transition-colors"
-                              : ""
-                          }`}
-                        >
-                          {item.title}
-                        </h3>
-                        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* Upload Section - для всех авторизованных пользователей */}
-      {isAuthenticated && (
-        <div className="mb-16">
-          <div className="flex items-center justify-between gap-4 mb-6">
+      {/* Second Section: Characters - Disabled (Coming Soon) */}
+      <div className="mb-16 relative">
+        {/* Coming Soon Overlay */}
+        <div className="absolute inset-0 z-[var(--z-overlay)] bg-background/40 backdrop-blur-[2px] rounded-3xl flex items-center justify-center cursor-not-allowed">
+          <div className="bg-card/90 backdrop-blur-md border-2 border-primary/30 px-8 py-4 rounded-2xl shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-300">
+            <span className="text-2xl font-display font-bold text-primary uppercase tracking-widest">
+              Скоро будет
+            </span>
+          </div>
+        </div>
+
+        <div className="opacity-40 grayscale pointer-events-none">
+          <div className="flex items-center justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-3xl font-display font-semibold text-foreground">
-                Управление контентом
-              </h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                Загрузка и управление файлами
-              </p>
+              <h2 className="text-3xl font-display font-semibold text-foreground">Персонажи</h2>
+              <p className="text-muted-foreground text-sm mt-1">Создание и управление персонажами</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {visibleMenuItems
+              .filter((item) => item.id === "character-wizard" || item.id === "my-characters")
+              .map((item, index) => (
+                <div
+                  key={item.id}
+                  className="group w-full text-left rounded-2xl border bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 ease-out cursor-not-allowed relative overflow-hidden h-40"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {item.image && (
+                    <div className="absolute inset-0 z-0">
+                      <img
+                        src={item.image}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-card/95 via-card/50 to-transparent" />
+                    </div>
+                  )}
+                  <div className="relative z-10 p-6 flex flex-col h-full justify-end">
+                    <h3 className="font-semibold text-lg text-foreground mb-2">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Upload Section */}
+      {isAuthenticated && (
+        <div className="mb-16">
+          <h2 className="text-3xl font-display font-semibold text-foreground mb-6">Управление контентом</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
               onClick={() => onNavigate("upload-content")}
-              className="group w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative animate-fade-in-up"
+              className="group w-full text-left rounded-2xl border bg-card/40 backdrop-blur-md border-border/40 p-6 hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-500 opacity-0 group-hover:opacity-5 transition-opacity blur-xl" />
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
-
-              <div className="flex items-start gap-5 relative z-5 p-6">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-5 relative z-10">
+                <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center">
                   <Upload className="w-7 h-7 text-violet-500" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg md:text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
-                    Загрузка контента
-                  </h3>
-                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                    Загружайте изображения для использования в игре
-                  </p>
+                <div>
+                  <h3 className="font-semibold text-lg text-foreground mb-1">Загрузка контента</h3>
+                  <p className="text-sm text-muted-foreground">Загружайте изображения для использования в игре</p>
                 </div>
               </div>
             </button>
@@ -660,39 +500,22 @@ export function HomePage({ onNavigate }: HomePageProps) {
         </div>
       )}
 
-      {/* Master Section - только для мастеров */}
+      {/* Master Section */}
       {isAuthenticated && user?.role === "master" && (
         <div className="mb-16">
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-3xl font-display font-semibold text-foreground">
-                Панель Мастера
-              </h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                Инструменты для ведения игр
-              </p>
-            </div>
-          </div>
-
+          <h2 className="text-3xl font-display font-semibold text-foreground mb-6">Панель Мастера</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
               onClick={() => onNavigate("my-rooms")}
-              className="group w-full text-left rounded-2xl border transition-all duration-300 overflow-hidden bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer relative animate-fade-in-up"
+              className="group w-full text-left rounded-2xl border bg-card/40 backdrop-blur-md border-border/40 p-6 hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500 opacity-0 group-hover:opacity-5 transition-opacity blur-xl" />
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/0 to-transparent translate-x-[-100%] group-hover:animate-shine transition-transform" />
-
-              <div className="flex items-start gap-5 relative z-5 p-6">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-5 relative z-10">
+                <div className="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center">
                   <User className="w-7 h-7 text-amber-500" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg md:text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
-                    Мои комнаты
-                  </h3>
-                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                    Управление игровыми комнатами
-                  </p>
+                <div>
+                  <h3 className="font-semibold text-lg text-foreground mb-1">Мои комнаты</h3>
+                  <p className="text-sm text-muted-foreground">Управление игровыми комнатами</p>
                 </div>
               </div>
             </button>

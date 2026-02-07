@@ -54,3 +54,50 @@ export async function search(req: AuthenticatedRequest, res: Response) {
     });
   }
 }
+
+export async function getRandomContent(req: AuthenticatedRequest, res: Response) {
+  try {
+    const limit = 10;
+
+    // We'll search for a common letter "a" to get a broad range of results.
+    // This is a temporary solution until we add dedicated random methods to services.
+
+    const queries = ["а", "о", "е", "и", " "];
+    const randomQuery = queries[Math.floor(Math.random() * queries.length)];
+
+    const [races, classes, backgrounds, spells, equipment, glossary, feats] = await Promise.all([
+      searchRaces(randomQuery),
+      searchClasses(randomQuery),
+      searchBackgrounds(randomQuery),
+      searchSpells(randomQuery),
+      searchEquipment(randomQuery),
+      searchGlossaryTerms(randomQuery),
+      getGlobalSearchFeats(randomQuery),
+    ]);
+
+    const allResults = [
+      ...races,
+      ...classes,
+      ...backgrounds,
+      ...spells,
+      ...equipment,
+      ...glossary,
+      ...feats,
+    ];
+
+    // Shuffle and slice
+    const shuffled = allResults.sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, limit);
+
+    res.status(200).json({
+      success: true,
+      data: { results: selected },
+    });
+  } catch (error) {
+    console.error("Random content error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}

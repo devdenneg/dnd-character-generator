@@ -1,7 +1,7 @@
 import { spellsApi } from "@/api/client";
 import {
     useBackendSpellByExternalId,
-    useBackendSpellsMeta,
+    useBackendSpellsMeta
 } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ import {
     Wand2,
     X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 // Types
@@ -206,9 +206,6 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  // История навигации - храним externalId заклинаний
-  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
-
   // Синхронизация состояния с URL
   useEffect(() => {
     const params = new URLSearchParams();
@@ -253,29 +250,6 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
   const selectedSpell = selectedSpellData?.data?.spell || null;
 
-  // Отслеживаем изменения хеша для добавления в историю
-  const prevHashRef = useRef<string>("");
-
-  useEffect(() => {
-    const currentHash = location.hash.replace("#", "");
-    const prevHash = prevHashRef.current;
-
-    // Если хеш изменился и оба не пустые, добавляем предыдущий в историю
-    if (currentHash && prevHash && currentHash !== prevHash) {
-      setNavigationHistory((prev) => {
-        // Проверяем, не возвращаемся ли мы назад
-        if (prev.length > 0 && prev[prev.length - 1] === currentHash) {
-          // Это возврат назад, удаляем из истории
-          return prev.slice(0, -1);
-        }
-        // Это переход вперед, добавляем в историю
-        return [...prev, prevHash];
-      });
-    }
-
-    prevHashRef.current = currentHash;
-  }, [location.hash]);
-
   // Обработка изменения выбранного заклинания
   useEffect(() => {
     if (selectedSpell) {
@@ -295,31 +269,17 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
   // Функция для открытия заклинания
   const openSpell = (externalId: string) => {
-    // Если уже открыто другое заклинание, добавляем его в историю
-    const currentHash = location.hash.replace("#", "");
-    if (currentHash && currentHash !== externalId) {
-      setNavigationHistory((prev) => [...prev, currentHash]);
-    }
-
-    // Обновляем URL
-    navigate(`${location.pathname}#${externalId}`, { replace: false });
+    // Обновляем URL, добавляя запись в историю
+    navigate(`${location.pathname}#${externalId}`);
   };
 
-  // Функция для возврата назад
-  const goBack = () => {
-    if (navigationHistory.length === 0) return;
-
-    const previousExternalId = navigationHistory[navigationHistory.length - 1];
-    setNavigationHistory((prev) => prev.slice(0, -1));
-
-    // Переходим к предыдущему заклинанию
-    navigate(`${location.pathname}#${previousExternalId}`, { replace: true });
-  };
 
   // Функция для закрытия drawer
   const closeDrawer = () => {
-    setNavigationHistory([]);
-    navigate(location.pathname, { replace: true });
+    // Если есть хеш, убираем его (это закроет drawer)
+    if (location.hash) {
+      navigate(location.pathname);
+    }
   };
   const [editingSpell, setEditingSpell] = useState<SpellFormData>({
     externalId: "",
@@ -781,35 +741,6 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
             onClose={closeDrawer}
             title={
               <div className="flex items-center gap-3">
-                {(navigationHistory.length > 0) ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      goBack();
-                    }}
-                    className="mr-2"
-                  >
-                    ← Назад
-                  </Button>
-                ) : (
-                  (location.state as any)?.backUrl && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                         e.stopPropagation();
-                         navigate((location.state as any).backUrl, {
-                           state: { scrollY: (location.state as any).scrollY }
-                         });
-                      }}
-                      className="mr-2 text-primary hover:text-primary/80"
-                    >
-                      ← {(location.state as any).backLabel || "Назад"}
-                    </Button>
-                  )
-                )}
                 {isLoadingSpell ? (
                   <>
                     <Loader2 className="w-5 h-5 text-primary animate-spin" />

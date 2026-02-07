@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface SlideOverDrawerProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface SlideOverDrawerProps {
   children: ReactNode;
   actions?: ReactNode;
   className?: string; // Add className
+  showBackButton?: boolean;
 }
 
 export function SlideOverDrawer({
@@ -18,9 +20,11 @@ export function SlideOverDrawer({
   children,
   actions,
   className, // Destructure className
+  showBackButton = true,
 }: SlideOverDrawerProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [shouldRender, setShouldRender] = useState(isOpen);
+  const navigate = useNavigate();
 
   // Handle opening
   useEffect(() => {
@@ -52,15 +56,19 @@ export function SlideOverDrawer({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
 
-  // Prevent body scroll when open
+  // Prevent body scroll when open and handle scrollbar layout shift
   useEffect(() => {
     if (isOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
       document.body.style.overflow = "hidden";
     } else {
+      document.body.style.paddingRight = "";
       document.body.style.overflow = "";
     }
 
     return () => {
+      document.body.style.paddingRight = "";
       document.body.style.overflow = "";
     };
   }, [isOpen]);
@@ -68,7 +76,7 @@ export function SlideOverDrawer({
   if (!shouldRender) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-[200] flex justify-end">
       {/* Backdrop */}
       <div
         className={`absolute inset-0 bg-black/50 backdrop-blur-sm ${
@@ -85,8 +93,22 @@ export function SlideOverDrawer({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
-          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 overflow-hidden">
+            {showBackButton && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <div className="flex-1 truncate">
+               <h2 className="text-lg font-semibold text-foreground truncate">{title}</h2>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 ml-4">
             {actions}
             <Button
               variant="ghost"

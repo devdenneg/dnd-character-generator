@@ -662,6 +662,11 @@ export const searchApi = {
     const response = await apiClient.get("/search", { params: { q: query } });
     return response.data;
   },
+
+  random: async () => {
+    const response = await apiClient.get("/search/random");
+    return response.data;
+  },
 };
 
 // Upload API

@@ -1,9 +1,9 @@
-import { useNavigate } from "react-router-dom";
-import { LogIn, LogOut, User, Crown } from "lucide-react";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
-import { ThemeSelector } from "@/components/ThemeSelector";
+import { Crown, LogIn, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function Header() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export function Header() {
   };
 
   return (
-    <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-20 relative overflow-hidden">
+    <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-[100] relative">
       {/* Magical particles effect */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
