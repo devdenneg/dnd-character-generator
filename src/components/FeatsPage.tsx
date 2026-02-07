@@ -1,6 +1,7 @@
 import { useBackendFeat, useBackendFeatsMeta } from "@/api/hooks";
 import { Input } from "@/components/ui/input";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { SortSelect } from "@/components/ui/SortSelect";
 import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import { Loader2, Search, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -15,6 +16,7 @@ export default function FeatsPage() {
   const [searchQuery, setSearchQuery] = useState(
     () => searchParams.get("search") || ""
   );
+  const [sortOption, setSortOption] = useState("name_asc");
 
   // Selected feat from hash
   const selectedFeatId = useMemo(() => {
@@ -24,7 +26,24 @@ export default function FeatsPage() {
 
   // Data fetching
   const { data: metaData, isLoading: isLoadingList } = useBackendFeatsMeta(searchQuery);
-  const feats = metaData?.data || [];
+
+  const feats = useMemo(() => {
+      if (!metaData?.data) return [];
+      const data = [...metaData.data];
+
+      return data.sort((a, b) => {
+        switch (sortOption) {
+            case "name_asc":
+                return a.nameRu.localeCompare(b.nameRu);
+            case "name_desc":
+                return b.nameRu.localeCompare(a.nameRu);
+            case "source":
+                return a.source.localeCompare(b.source);
+            default:
+                return 0;
+        }
+      });
+  }, [metaData, sortOption]);
 
   const { data: featData, isLoading: isLoadingFeat } = useBackendFeat(selectedFeatId || "");
   const selectedFeat = featData?.data || null;
@@ -68,14 +87,25 @@ export default function FeatsPage() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Поиск черты..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+          {/* Search and Sort */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Поиск черты..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <SortSelect
+                value={sortOption}
+                onChange={setSortOption}
+                options={[
+                  { value: "name_asc", label: "Название (А-Я)" },
+                  { value: "name_desc", label: "Название (Я-А)" },
+                  { value: "source", label: "Источник" },
+                ]}
             />
           </div>
         </div>

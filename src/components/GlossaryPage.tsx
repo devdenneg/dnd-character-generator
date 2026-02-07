@@ -2,6 +2,7 @@ import { glossaryApi } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { SortSelect } from "@/components/ui/SortSelect";
 import { GlossaryTermFull, GlossaryTermMeta } from "@/types/api";
 import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import { Book, Search } from "lucide-react";
@@ -28,7 +29,29 @@ export default function GlossaryPage() {
     () => searchParams.get("search") || ""
   );
 
-  // Auto-switch to "all" category when search starts
+  const [sortOption, setSortOption] = useState("name_asc");
+
+  // Filtered and sorted terms
+  const filteredTerms = useMemo(() => {
+    let result = [...terms];
+
+    // Client-side search if needed (though backend handles it usually, we can double check or rely on backend)
+    // Assuming backend handles search, so "terms" are already filtered by search.
+    // But for sorting:
+    return result.sort((a, b) => {
+        switch (sortOption) {
+            case "name_asc":
+                return a.nameRu.localeCompare(b.nameRu);
+            case "name_desc":
+                return b.nameRu.localeCompare(a.nameRu);
+            case "source":
+                return (a.source || "").localeCompare(b.source || "");
+            default:
+                return 0;
+        }
+    });
+
+  }, [terms, sortOption]); // We don't depend on searchQuery here because terms are updated when searchQuery changes via effect
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     if (value.trim() && selectedCategory !== "all") {
@@ -131,19 +154,30 @@ export default function GlossaryPage() {
             <div>
               <h1 className="text-2xl font-bold text-foreground">Глоссарий</h1>
               <p className="text-sm text-muted-foreground">
-                {terms.length} терминов
+                {filteredTerms.length} терминов
               </p>
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Поиск термина..."
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
+          {/* Search and Sort */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Поиск термина..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <SortSelect
+                value={sortOption}
+                onChange={setSortOption}
+                options={[
+                  { value: "name_asc", label: "Название (А-Я)" },
+                  { value: "name_desc", label: "Название (Я-А)" },
+                  { value: "source", label: "Источник" },
+                ]}
             />
           </div>
         </div>
@@ -180,7 +214,7 @@ export default function GlossaryPage() {
               <div key={i} className="h-24 bg-muted/30 rounded-lg animate-pulse" />
             ))}
           </div>
-        ) : terms.length === 0 ? (
+        ) : filteredTerms.length === 0 ? (
           <div className="text-center py-12 bg-muted/30 rounded-lg">
             <Book className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-foreground mb-1">
@@ -192,7 +226,7 @@ export default function GlossaryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {terms.map((term) => (
+            {filteredTerms.map((term) => (
               <div
                 key={term.id}
                 onClick={() => openTerm(term.id)}

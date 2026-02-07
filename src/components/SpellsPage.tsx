@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { SortSelect } from "@/components/ui/SortSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DescriptionItem } from "@/types/character";
@@ -27,6 +28,8 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+
+
 
 // Types
 interface Spell {
@@ -205,6 +208,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
     return schools ? schools.split(',') : [];
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [sortOption, setSortOption] = useState("level_asc");
 
   // Синхронизация состояния с URL
   useEffect(() => {
@@ -477,8 +481,22 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
       });
     }
 
-    return filtered;
-  }, [spells, searchTerm, selectedClasses, selectedSchools]);
+    // Sorting
+    return filtered.sort((a: Spell, b: Spell) => {
+        switch (sortOption) {
+            case "level_asc":
+                return a.level - b.level || a.nameRu.localeCompare(b.nameRu);
+            case "level_desc":
+                return b.level - a.level || a.nameRu.localeCompare(b.nameRu);
+            case "name_asc":
+                return a.nameRu.localeCompare(b.nameRu);
+            case "name_desc":
+                return b.nameRu.localeCompare(a.nameRu);
+            default:
+                return 0;
+        }
+    });
+  }, [spells, searchTerm, selectedClasses, selectedSchools, sortOption]);
 
   // Группируем отфильтрованные заклинания по уровням
   const filteredSpellsByLevel: Record<number, Spell[]> = useMemo(() => {
@@ -585,14 +603,26 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
           </div>
 
           {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Поиск заклинаний..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-4 mb-3">
+             <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Поиск заклинаний..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+             </div>
+             <SortSelect
+                value={sortOption}
+                onChange={setSortOption}
+                options={[
+                  { value: "level_asc", label: "Уровень (0-9)" },
+                  { value: "level_desc", label: "Уровень (9-0)" },
+                  { value: "name_asc", label: "Название (А-Я)" },
+                  { value: "name_desc", label: "Название (Я-А)" },
+                ]}
+             />
           </div>
 
           {/* Filters Toggle */}

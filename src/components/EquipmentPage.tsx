@@ -1,31 +1,32 @@
 import { equipmentApi } from "@/api/client";
 import {
-  useBackendEquipmentByExternalId,
-  useBackendEquipmentMeta,
+    useBackendEquipmentByExternalId,
+    useBackendEquipmentMeta,
 } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { SortSelect } from "@/components/ui/SortSelect";
 import { useAuth } from "@/contexts/AuthContext";
 import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import { useMutation } from "@tanstack/react-query";
 import {
-  Backpack,
-  Filter,
-  Loader2,
-  Package,
-  Pencil,
-  Plus,
-  Save,
-  Scroll,
-  Search,
-  Shield,
-  Sword,
-  Trash2,
-  Wrench,
-  X,
+    Backpack,
+    Filter,
+    Loader2,
+    Package,
+    Pencil,
+    Plus,
+    Save,
+    Scroll,
+    Search,
+    Shield,
+    Sword,
+    Trash2,
+    Wrench,
+    X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -140,6 +141,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
   const [searchTerm, setSearchTerm] = useState(() =>
     searchParams.get('search') || ''
   );
+  const [sortOption, setSortOption] = useState("name_asc");
   const [showFilters, setShowFilters] = useState(false);
   const [minCost, setMinCost] = useState<number | undefined>(() => {
     const cost = searchParams.get('minCost');
@@ -446,8 +448,27 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
       );
     }
 
-    return filtered;
-  }, [equipment, selectedCategory, searchTerm, minCost, maxCost, selectedArmorTypes, selectedWeaponProperties]);
+
+
+    return filtered.sort((a: Equipment, b: Equipment) => {
+        switch (sortOption) {
+            case "name_asc":
+                return a.nameRu.localeCompare(b.nameRu);
+            case "name_desc":
+                return b.nameRu.localeCompare(a.nameRu);
+            case "cost_asc":
+                return convertToGp(a.cost) - convertToGp(b.cost);
+            case "cost_desc":
+                return convertToGp(b.cost) - convertToGp(a.cost);
+            case "weight_asc":
+                return (a.weight || 0) - (b.weight || 0);
+            case "weight_desc":
+                return (b.weight || 0) - (a.weight || 0);
+            default:
+                return 0;
+        }
+    });
+  }, [equipment, selectedCategory, searchTerm, minCost, maxCost, selectedArmorTypes, selectedWeaponProperties, sortOption]);
 
   // Get category info
   const getCategoryInfo = (category: string) => {
@@ -550,14 +571,28 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
             )}
           </div>
 
-          {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Поиск снаряжения..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+          {/* Search and Sort */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+            <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                placeholder="Поиск снаряжения..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+                />
+            </div>
+            <SortSelect
+                value={sortOption}
+                onChange={setSortOption}
+                options={[
+                  { value: "name_asc", label: "Название (А-Я)" },
+                  { value: "name_desc", label: "Название (Я-А)" },
+                  { value: "cost_asc", label: "Цена (возр.)" },
+                  { value: "cost_desc", label: "Цена (убыв.)" },
+                  { value: "weight_asc", label: "Вес (возр.)" },
+                  { value: "weight_desc", label: "Вес (убыв.)" },
+                ]}
             />
           </div>
 

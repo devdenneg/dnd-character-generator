@@ -1,6 +1,7 @@
 import { useBackendRacesMeta } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SortSelect } from "@/components/ui/SortSelect";
 import type { RaceMeta } from "@/types/api";
 import {
     AlertCircle,
@@ -14,6 +15,8 @@ export function RacesPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [sortOption, setSortOption] = useState("name_asc");
+
   const { data, isLoading, error } = useBackendRacesMeta();
 
   const races = useMemo(() => {
@@ -22,11 +25,26 @@ export function RacesPage() {
   }, [data]);
 
   const filteredRaces = useMemo(() => {
-    return races.filter((race: RaceMeta) =>
+    const filtered = races.filter((race: RaceMeta) =>
       race.nameRu.toLowerCase().includes(searchQuery.toLowerCase()) ||
       race.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [races, searchQuery]);
+
+    return filtered.sort((a, b) => {
+      switch (sortOption) {
+        case "name_asc":
+          return a.nameRu.localeCompare(b.nameRu);
+        case "name_desc":
+          return b.nameRu.localeCompare(a.nameRu);
+        case "source":
+          const sourceA = typeof a.source === 'string' ? a.source : a.source?.name?.rus || "";
+          const sourceB = typeof b.source === 'string' ? b.source : b.source?.name?.rus || "";
+          return sourceA.localeCompare(sourceB);
+        default:
+          return 0;
+      }
+    });
+  }, [races, searchQuery, sortOption]);
 
 
   if (isLoading) {
@@ -85,6 +103,15 @@ export function RacesPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <SortSelect
+            value={sortOption}
+            onChange={setSortOption}
+            options={[
+              { value: "name_asc", label: "Название (А-Я)" },
+              { value: "name_desc", label: "Название (Я-А)" },
+              { value: "source", label: "Источник" },
+            ]}
+          />
           <Button
             variant="outline"
             size="lg"

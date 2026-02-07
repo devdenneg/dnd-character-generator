@@ -5,25 +5,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { SortSelect } from "@/components/ui/SortSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMutation } from "@tanstack/react-query";
 import {
-  BookOpen,
-  Briefcase,
-  Crown,
-  Pencil,
-  Plus,
-  Save,
-  Scroll,
-  Ship,
-  Swords,
-  Trash2,
-  TreePine,
-  X,
+    BookOpen,
+    Briefcase,
+    Crown,
+    Pencil,
+    Plus,
+    Save,
+    Scroll,
+    Search,
+    Ship,
+    Swords,
+    Trash2,
+    TreePine,
+    X
 } from "lucide-react";
 import type { ElementType } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 // Types
@@ -145,8 +147,33 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   const [selectedBackground, setSelectedBackground] = useState<string | null>(
     null
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("name_asc");
 
-  // Handle hash navigation
+  const backgrounds = useMemo(() => data?.data?.backgrounds || [], [data]);
+
+  const filteredBackgrounds = useMemo(() => {
+    const filtered = backgrounds.filter((bg: Background) =>
+      bg.nameRu.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bg.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    return filtered.sort((a: Background, b: Background) => {
+      switch (sortOption) {
+        case "name_asc":
+          return a.nameRu.localeCompare(b.nameRu);
+        case "name_desc":
+          return b.nameRu.localeCompare(a.nameRu);
+        case "source":
+             // Simple source sort, can be improved if source is object
+            const sourceA = String(a.source || "");
+            const sourceB = String(b.source || "");
+            return sourceA.localeCompare(sourceB);
+        default:
+          return 0;
+      }
+    });
+  }, [backgrounds, searchQuery, sortOption]);
   useEffect(() => {
     const hash = location.hash.replace("#", "");
     if (hash) {
@@ -438,7 +465,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
     );
   }
 
-  const backgrounds = data?.data?.backgrounds || [];
+
 
   return (
     <>
@@ -475,8 +502,30 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
           </div>
         </div>
 
+          {/* Search and Sort */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Поиск предыстории..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <SortSelect
+              value={sortOption}
+              onChange={setSortOption}
+              options={[
+                { value: "name_asc", label: "Название (А-Я)" },
+                { value: "name_desc", label: "Название (Я-А)" },
+                { value: "source", label: "Источник" },
+              ]}
+            />
+          </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {backgrounds.map((background: Background, index: number) => {
+          {filteredBackgrounds.map((background: Background, index: number) => {
             // const Icon = BACKGROUND_ICONS[background.externalId] || BookOpen; // Icon unused in list view now
 
             return (
@@ -705,7 +754,7 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
           </SlideOverDrawer>
         )}
 
-        {backgrounds.length === 0 && (
+        {filteredBackgrounds.length === 0 && (
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">

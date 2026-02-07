@@ -2,10 +2,14 @@ import { useBackendBestiaryByExternalId, useBackendBestiaryMeta } from "@/api/ho
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { SortSelect } from "@/components/ui/SortSelect";
 import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+// ...
+
+
 
 interface BestiaryMeta {
   id: string;
@@ -56,6 +60,7 @@ export function BestiaryPage({ onBack }: { onBack?: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("name_asc");
 
   const { data: metaData, isLoading: isLoadingMeta } = useBackendBestiaryMeta();
 
@@ -84,8 +89,33 @@ export function BestiaryPage({ onBack }: { onBack?: () => void }) {
           m.type.toLowerCase().includes(lowerQuery)
       );
     }
-    return result;
-  }, [monsters, searchTerm]);
+
+
+    // Sort
+    return result.sort((a, b) => {
+        switch (sortOption) {
+            case "name_asc":
+                return a.nameRu.localeCompare(b.nameRu);
+            case "name_desc":
+                return b.nameRu.localeCompare(a.nameRu);
+            case "cr_asc":
+                return parseCR(a.cr) - parseCR(b.cr);
+            case "cr_desc":
+                return parseCR(b.cr) - parseCR(a.cr);
+            default:
+                return 0;
+        }
+    });
+  }, [monsters, searchTerm, sortOption]);
+
+  const parseCR = (cr: string) => {
+      if (!cr) return 0;
+      if (cr.includes("/")) {
+          const [num, den] = cr.split("/");
+          return parseInt(num) / parseInt(den);
+      }
+      return parseFloat(cr) || 0;
+  };
 
   const openMonster = (externalId: string) => {
     navigate(`${location.pathname}#${externalId}`);
@@ -217,13 +247,25 @@ export function BestiaryPage({ onBack }: { onBack?: () => void }) {
           </div>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Поиск по названию или типу..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-card/50 backdrop-blur"
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Поиск по названию или типу..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-card/50 backdrop-blur"
+            />
+          </div>
+          <SortSelect
+            value={sortOption}
+            onChange={setSortOption}
+            options={[
+              { value: "name_asc", label: "Название (А-Я)" },
+              { value: "name_desc", label: "Название (Я-А)" },
+              { value: "cr_asc", label: "Опасность (возр.)" },
+              { value: "cr_desc", label: "Опасность (убыв.)" },
+            ]}
           />
         </div>
       </div>

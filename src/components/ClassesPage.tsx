@@ -1,6 +1,7 @@
 import { useBackendClasses } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SortSelect } from "@/components/ui/SortSelect";
 import { mapBackendClassToFrontend } from "@/utils/classMapper";
 import {
     AlertCircle,
@@ -16,6 +17,8 @@ export function ClassesPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [sortOption, setSortOption] = useState("name_asc");
+
   const { data, isLoading, error } = useBackendClasses();
 
   const mappedClasses = useMemo(() => {
@@ -24,11 +27,22 @@ export function ClassesPage() {
   }, [data]);
 
   const filteredClasses = useMemo(() => {
-    return mappedClasses.filter((c: any) =>
+    const filtered = mappedClasses.filter((c: any) =>
       c.name.rus.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.name.eng.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [mappedClasses, searchQuery]);
+
+    return filtered.sort((a:any, b:any) => {
+        switch (sortOption) {
+            case "name_asc":
+                return a.name.rus.localeCompare(b.name.rus);
+            case "name_desc":
+                return b.name.rus.localeCompare(a.name.rus);
+            default:
+                return 0;
+        }
+    });
+  }, [mappedClasses, searchQuery, sortOption]);
 
   if (isLoading) {
     return (
@@ -86,6 +100,14 @@ export function ClassesPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <SortSelect
+            value={sortOption}
+            onChange={setSortOption}
+            options={[
+              { value: "name_asc", label: "Название (А-Я)" },
+              { value: "name_desc", label: "Название (Я-А)" },
+            ]}
+          />
           <Button
             variant="outline"
             size="lg"
