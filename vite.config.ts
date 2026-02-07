@@ -11,7 +11,7 @@ export default defineConfig(() => ({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['dndg.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['logo.png', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'D&D Character Generator',
         short_name: 'D&D Gen',
@@ -21,17 +21,17 @@ export default defineConfig(() => ({
         display: 'standalone',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'logo.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'logo.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'logo.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

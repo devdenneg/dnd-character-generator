@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { ArrowLeft, Award, Star, Trophy } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ArrowLeft, Star, Award } from "lucide-react";
-import { PlayerAchievement } from "../types/achievement";
 import { achievementApi } from "../api/achievement";
 import { Button } from "../components/ui/button";
+import { PlayerAchievement } from "../types/achievement";
 
 export const PlayerAchievementsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -90,7 +90,7 @@ export const PlayerAchievementsPage: React.FC = () => {
       <div className="ambient-glow ambient-glow-1" />
       <div className="ambient-glow ambient-glow-2" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">

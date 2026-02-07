@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { getErrorMessage } from "@/utils/errorHandling";
+import { ArrowLeft, CheckCircle, Trophy, User } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Trophy, User, CheckCircle } from "lucide-react";
-import { Achievement, PlayerAchievement, ACHIEVEMENT_ICONS, AchievementIcon } from "../types/achievement";
 import { achievementApi } from "../api/achievement";
 import { roomsApi } from "../api/client";
 import { AchievementCard } from "../components/AchievementCard";
@@ -9,7 +9,7 @@ import { PlayerAchievementCard } from "../components/PlayerAchievementCard";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
-import { getErrorMessage } from "@/utils/errorHandling";
+import { Achievement, ACHIEVEMENT_ICONS, AchievementIcon, PlayerAchievement } from "../types/achievement";
 
 interface RoomPlayer {
   id: string;
@@ -193,7 +193,7 @@ export const MasterAchievementsPage: React.FC = () => {
       <div className="ambient-glow ambient-glow-1" />
       <div className="ambient-glow ambient-glow-2" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">

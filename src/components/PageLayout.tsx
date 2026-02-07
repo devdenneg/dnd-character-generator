@@ -24,6 +24,11 @@ export function PageLayout({
         <div className="ambient-glow ambient-glow-1" />
         <div className="ambient-glow ambient-glow-2" />
         <DiceBackground />
+
+        {/* Background Logo Decoration */}
+        <div className="absolute bottom-[-10%] left-[-10%] w-[60%] max-w-[800px] opacity-[0.07] pointer-events-none select-none -rotate-12">
+          <img src="/logo.png" alt="" className="w-full h-auto" />
+        </div>
       </div>
 
       {/* Content */}

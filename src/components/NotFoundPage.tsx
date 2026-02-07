@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Ghost, Home } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function NotFoundPage() {
@@ -24,8 +24,8 @@ export function NotFoundPage() {
         </div>
 
         {/* Icon */}
-        <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-float">
-          <Ghost className="w-12 h-12 text-white" />
+        <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-card border border-border/50 flex items-center justify-center animate-float shadow-xl">
+          <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain" />
         </div>
 
         {/* Message */}

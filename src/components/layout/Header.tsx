@@ -44,30 +44,23 @@ export function Header() {
         />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-4 md:py-4 relative">
+      <div className="max-w-7xl mx-auto px-4 py-4 md:py-4 relative">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <button
-            style={{ position: "relative" }}
             onClick={() => {
                 navigate("/");
                 setIsMenuOpen(false);
             }}
-            className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity group relative z-[110]"
+            className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity group relative z-[110] flex items-center gap-2"
           >
-            <span className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-gradient-animated group-hover:scale-105 transition-transform">
-              🎲G
-            </span>
-            <span
-              className="font-display font-bold text-lg md:text-xl lg:text-2xl"
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "30%",
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              DND
+            <img
+              src="/logo.png"
+              alt="D&D Generator"
+              className="h-12 md:h-16 w-auto group-hover:scale-105 transition-transform"
+            />
+            <span className="font-display font-bold text-lg md:text-xl lg:text-2xl text-gradient-animated tracking-tight">
+              DND GENERATOR
             </span>
           </button>
 
@@ -164,10 +157,8 @@ export function Header() {
           {/* Menu Header with Logo and Close Button */}
           <div className="flex items-center justify-between p-4 border-b border-border/50">
             <div className="flex items-center gap-2">
-              <span className="text-3xl font-display font-bold text-gradient-animated">
-                🎲G
-              </span>
-              <span className="font-display font-bold text-xl">DND</span>
+              <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
+              <span className="font-display font-bold text-xl text-gradient-animated">DND GENERATOR</span>
             </div>
             <button
               className="p-2 hover:bg-accent/10 rounded-lg transition-colors"
