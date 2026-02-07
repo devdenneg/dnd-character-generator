@@ -2,33 +2,37 @@ import { Response } from "express";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
 import {
-  getAllRaces,
-  getRaceById,
-  getRaceByExternalId,
   createRace,
-  updateRace,
   deleteRace,
+  getAllRaces,
+  getRaceByExternalId,
+  getRaceById,
+  RaceInput,
   searchRaces,
+  updateRace
 } from "../services/raceService";
+
 
 // Validation schemas
 const createRaceSchema = z.object({
   externalId: z.string().min(1, "External ID is required"),
   name: z.string().min(1, "Name is required"),
   nameRu: z.string().min(1, "Russian name is required"),
-  description: z.string().min(1, "Description is required"),
-  speed: z.number().int().positive("Speed must be positive"),
-  size: z.enum(["Small", "Medium", "Large"], {
-    errorMap: () => ({ message: "Size must be Small, Medium, or Large" }),
-  }),
-  source: z.enum(["srd", "phb2024"], {
-    errorMap: () => ({ message: "Source must be srd or phb2024" }),
-  }),
+  description: z.any(),
+  speed: z.string().min(1, "Speed is required"),
+  size: z.string().min(1, "Size is required"),
+  source: z.any(),
+  image: z.string().optional(),
+  gallery: z.array(z.string()).optional().default([]),
+  hasLineages: z.boolean().optional().default(false),
+  lastUsername: z.string().optional(),
+  properties: z.any().optional(),
   traits: z.array(
     z.object({
-      name: z.string().min(1, "Trait name is required"),
-      nameRu: z.string().min(1, "Trait Russian name is required"),
-      description: z.string().min(1, "Trait description is required"),
+      externalId: z.string().optional(),
+      name: z.string().min(1),
+      nameRu: z.string().min(1),
+      description: z.any(),
     })
   ),
 });
@@ -37,20 +41,28 @@ const updateRaceSchema = z.object({
   externalId: z.string().min(1).optional(),
   name: z.string().min(1).optional(),
   nameRu: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
-  speed: z.number().int().positive().optional(),
-  size: z.enum(["Small", "Medium", "Large"]).optional(),
-  source: z.enum(["srd", "phb2024"]).optional(),
+  description: z.any().optional(),
+  speed: z.string().min(1).optional(),
+  size: z.string().optional(),
+  source: z.any().optional(),
+  image: z.string().optional(),
+  gallery: z.array(z.string()).optional(),
+  hasLineages: z.boolean().optional(),
+  lastUsername: z.string().optional(),
+  properties: z.any().optional(),
   traits: z
     .array(
       z.object({
+        externalId: z.string().optional(),
         name: z.string().min(1),
         nameRu: z.string().min(1),
-        description: z.string().min(1),
+        description: z.any(),
       })
     )
     .optional(),
 });
+
+
 
 // Public endpoints - no authentication required
 export async function list(req: AuthenticatedRequest, res: Response) {
@@ -198,7 +210,8 @@ export async function create(req: AuthenticatedRequest, res: Response) {
     // }
 
     const validatedData = createRaceSchema.parse(req.body);
-    const race = await createRace(validatedData);
+    const race = await createRace(validatedData as any as RaceInput);
+
 
     res.status(201).json({
       success: true,
@@ -243,7 +256,8 @@ export async function update(req: AuthenticatedRequest, res: Response) {
     // }
 
     const validatedData = updateRaceSchema.parse(req.body);
-    const race = await updateRace(id, validatedData);
+    const race = await updateRace(id, validatedData as any as Partial<RaceInput>);
+
 
     if (!race) {
       res.status(404).json({

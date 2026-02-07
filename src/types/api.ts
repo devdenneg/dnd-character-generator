@@ -215,3 +215,42 @@ export interface FeatFull extends FeatMeta {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   description: any[];
 }
+/**
+ * Race metadata (list view)
+ */
+export interface RaceMeta {
+  id: string;
+  externalId: string;
+  name: string;
+  nameRu: string;
+  speed: string;
+  size: string;
+  source: any;
+  image?: string | null;
+  hasLineages: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Race trait
+ */
+export interface RaceTrait {
+  id: string;
+  externalId: string | null;
+  name: string;
+  nameRu: string;
+  description: any[];
+  createdAt: string;
+}
+
+/**
+ * Full race data
+ */
+export interface RaceFull extends RaceMeta {
+  description: any[];
+  gallery: string[];
+  lastUsername?: string | null;
+  properties?: any;
+  traits: RaceTrait[];
+}

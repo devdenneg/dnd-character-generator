@@ -7,8 +7,11 @@ import type {
     FeatFull,
     FeatMeta,
     GlossaryListResponse,
-    GlossaryTermFull
+    GlossaryTermFull,
+    RaceFull,
+    RaceTrait
 } from "@/types/api";
+
 import type { DescriptionItem } from "@/types/character";
 import type { StartingEquipment } from "@/types/equipment";
 import type { SpellcastingConfig } from "@/types/spellcasting";
@@ -214,44 +217,20 @@ export const racesApi = {
     return response.data;
   },
 
-  create: async (data: {
-    externalId: string;
-    name: string;
-    nameRu: string;
-    description: string;
-    speed: number;
-    size: "Small" | "Medium" | "Large";
-    source: string;
-    traits: Array<{
-      name: string;
-      nameRu: string;
-      description: string;
-    }>;
-  }) => {
-    const response = await apiClient.post("/races", data);
+  create: async (data: Omit<RaceFull, 'id' | 'createdAt' | 'updatedAt' | 'traits'> & { traits: Omit<RaceTrait, 'id' | 'createdAt'>[] }) => {
+    const response = await apiClient.post<ApiResponse<RaceFull>>("/races", data);
     return response.data;
   },
 
+
   update: async (
     id: string,
-    data: {
-      externalId?: string;
-      name?: string;
-      nameRu?: string;
-      description?: string;
-      speed?: number;
-      size?: "Small" | "Medium" | "Large";
-      source?: string;
-      traits?: Array<{
-        name: string;
-        nameRu: string;
-        description: string;
-      }>;
-    }
+    data: Partial<Omit<RaceFull, 'id' | 'createdAt' | 'updatedAt' | 'traits'> & { traits: Omit<RaceTrait, 'id' | 'createdAt'>[] }>
   ) => {
-    const response = await apiClient.put(`/races/${id}`, data);
+    const response = await apiClient.put<ApiResponse<RaceFull>>(`/races/${id}`, data);
     return response.data;
   },
+
 
   delete: async (id: string) => {
     const response = await apiClient.delete(`/races/${id}`);

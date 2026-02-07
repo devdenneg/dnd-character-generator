@@ -14,7 +14,9 @@ import { MyRoomsPage } from "@/components/MyRoomsPage";
 import { NotFoundPage } from "@/components/NotFoundPage";
 import { PageLayout } from "@/components/PageLayout";
 import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
+import { RaceDetailsPage } from "@/components/RaceDetailsPage";
 import { RacesPage } from "@/components/RacesPage";
+
 import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { SpellsPage } from "@/components/SpellsPage";
 import { UploadContentPage } from "@/components/UploadContentPage";
@@ -236,15 +238,8 @@ function HomePageWrapper() {
   return <HomePage onNavigate={handleNavigate} />;
 }
 
-function RacesPageWrapper() {
-  const navigate = useNavigate();
+// RacesPageWrapper removed as it's no longer needed for internal state
 
-  const handleBack = () => {
-    navigate("/");
-  };
-
-  return <RacesPage onBack={handleBack} />;
-}
 
 
 
@@ -304,7 +299,9 @@ function AppRoutes() {
   // Определяем, нужно ли показывать Header и Footer
   const isCharacterWizard = location.pathname === "/character";
   const isClassDetails = location.pathname.startsWith("/classes/") && location.pathname !== "/classes";
-  const showHeaderFooter = !isCharacterWizard && !isClassDetails;
+  const isRaceDetails = location.pathname.startsWith("/races/") && location.pathname !== "/races";
+  const showHeaderFooter = !isCharacterWizard && !isClassDetails && !isRaceDetails;
+
 
   return (
     <PageLayout showHeader={showHeaderFooter} showFooter={showHeaderFooter}>
@@ -312,7 +309,9 @@ function AppRoutes() {
         <Route path="/" element={<HomePageWrapper />} />
         <Route path="/character" element={<CharacterWizardPage />} />
         <Route path="/my-characters" element={<MyCharactersPage />} />
-        <Route path="/races" element={<RacesPageWrapper />} />
+        <Route path="/races" element={<RacesPage />} />
+        <Route path="/races/:raceId" element={<RaceDetailsPage />} />
+
         <Route path="/classes" element={<ClassesPage />} />
         <Route path="/classes/:classId" element={<ClassDetailsPage />} />
         <Route path="/backgrounds" element={<BackgroundsPageWrapper />} />

@@ -31,11 +31,16 @@ model Race {
   externalId       String   @unique
   name             String
   nameRu           String
-  description      String   @db.Text
-  speed            Int
+  description      Json     // Changed to Json for rich text
+  speed            String   // Changed to String as it contains text like "30 футов"
   size             String
   abilityIncreases Json?
-  source           String
+  source           Json     // Changed to Json for structured source info
+  image            String?
+  gallery          String[]
+  hasLineages      Boolean  @default(false)
+  lastUsername     String?
+  properties       Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -45,15 +50,17 @@ model Race {
 model RaceTrait {
   id          String   @id @default(uuid())
   raceId      String
+  externalId  String?
   name        String
   nameRu      String
-  description String   @db.Text
+  description Json     // Changed to Json for rich text
   createdAt   DateTime @default(now())
 
   race Race @relation(fields: [raceId], references: [id], onDelete: Cascade)
 
   @@index([raceId])
 }
+
 
 model Character {
   id        String   @id @default(uuid())
