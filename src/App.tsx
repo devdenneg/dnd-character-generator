@@ -18,10 +18,11 @@ import { PlayerAchievementsPage } from "@/components/PlayerAchievementsPage";
 import { RaceDetailsPage } from "@/components/RaceDetailsPage";
 import { RacesPage } from "@/components/RacesPage";
 
+import ReloadPrompt from "@/components/ReloadPrompt";
 import { RoomDetailsPage } from "@/components/RoomDetailsPage";
 import { SpellsPage } from "@/components/SpellsPage";
-import { UploadContentPage } from "@/components/UploadContentPage";
 import { Button } from "@/components/ui/button";
+import { UploadContentPage } from "@/components/UploadContentPage";
 import {
     AbilitiesStep,
     AbilityIncreaseStep,
@@ -362,6 +363,7 @@ function App() {
                 <SocketProvider>
                   <BrowserRouter>
                     <AppRoutes />
+                    <ReloadPrompt />
                   </BrowserRouter>
                 </SocketProvider>
               </DiceRollProvider>
