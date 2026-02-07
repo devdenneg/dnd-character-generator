@@ -132,7 +132,7 @@ export function ClassDetailsPage() {
 
 
   return (
-    <PageLayout showHeader={false} showFooter={false}>
+    <PageLayout>
       <div className="flex flex-col min-h-screen animate-fade-in pb-20 bg-background font-sans selection:bg-primary/20">
         {/* --- Hero Section --- */}
         <div className="relative w-full h-[50vh] min-h-[400px] overflow-hidden select-none bg-black group">
@@ -153,11 +153,10 @@ export function ClassDetailsPage() {
                     <Button
                         variant="ghost"
                         className="text-white/70 hover:text-white hover:bg-white/10 -ml-4"
-                        // Navigate back to classes list
-          onClick={() => navigate("/classes")}
+                        onClick={() => navigate(-1)}
                     >
                         <ChevronLeft className="w-5 h-5 mr-2" />
-                        К списку классов
+                        Назад
                     </Button>
                 </div>
 

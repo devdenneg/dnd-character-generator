@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { DiceBackground } from "./DiceBackground";
-import { Header } from "./layout/Header";
 import { Footer } from "./layout/Footer";
+import { Header } from "./layout/Header";
 
 interface PageLayoutProps {
   children: ReactNode;

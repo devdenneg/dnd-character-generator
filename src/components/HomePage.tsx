@@ -1,8 +1,11 @@
 import { useRandomContent, useSearch } from "@/api/search";
 import backgroundsImage from "@/components/assets/backgrounds.jpg";
+import bestiaryImage from "@/components/assets/beasts.jpg";
 import classesImage from "@/components/assets/classes.jpg";
 import createCharImage from "@/components/assets/createChar.jpg";
 import equipImage from "@/components/assets/equip.jpg";
+import featsImage from "@/components/assets/feats.jpg";
+import glossaryImage from "@/components/assets/gloss.jpg";
 import myCharImage from "@/components/assets/myChar.jpg";
 import racesImage from "@/components/assets/races.jpg";
 import spellsImage from "@/components/assets/spells.jpg";
@@ -14,8 +17,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { ChevronRight, RefreshCw, Search, Sparkles, Upload, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PWAInstallGuide } from "./PWAInstallGuide";
 import { MenuItem } from "../constants/menuItems";
+import { PWAInstallGuide } from "./PWAInstallGuide";
 
 interface HomePageProps {
   onNavigate: (page: string, itemId?: string) => void;
@@ -110,7 +113,7 @@ const MENU_ITEMS: MenuItem[] = [
     gradient: "from-emerald-500 to-green-600",
     roles: ["player", "master"],
     inDevelopment: false,
-    image: undefined,
+    image: glossaryImage,
   },
   {
     id: "feats",
@@ -119,6 +122,7 @@ const MENU_ITEMS: MenuItem[] = [
     gradient: "from-amber-500 to-orange-600",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: featsImage,
   },
   {
     id: "bestiary",
@@ -127,6 +131,7 @@ const MENU_ITEMS: MenuItem[] = [
     gradient: "from-red-500 to-rose-600",
     roles: ["player", "master"],
     inDevelopment: false,
+    image: bestiaryImage,
   },
 ];
 
@@ -283,6 +288,36 @@ export function HomePage({ onNavigate }: HomePageProps) {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl p-4 md:p-6 flex items-center justify-between overflow-hidden group-hover:border-primary/30 transition-colors duration-300">
+
+              {/* Background Image */}
+              {(() => {
+                 const images: Record<string, string> = {
+                     race: racesImage,
+                     class: classesImage,
+                     background: backgroundsImage,
+                     spell: spellsImage,
+                     equipment: equipImage,
+                     glossary: glossaryImage,
+                     feat: featsImage,
+                     monster: bestiaryImage
+                 };
+                 const bgImage = images[currentRandomItem.type];
+
+                 if (bgImage) {
+                     return (
+                        <div className="absolute inset-y-0 right-0 w-2/3 md:w-1/2 z-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+                             <img
+                                src={bgImage}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                style={{ maskImage: "linear-gradient(to right, transparent 0%, black 40%)" }}
+                             />
+                             <div className="absolute inset-0 bg-gradient-to-l from-transparent via-card/50 to-card/10" />
+                        </div>
+                     );
+                 }
+                 return null;
+              })()}
 
               {/* Progress Fill Animation */}
               {isRotating && (
