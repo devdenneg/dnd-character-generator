@@ -108,11 +108,11 @@ export function RacesPage() {
         {filteredRaces.map((race: RaceMeta) => (
           <div
             key={race.id}
-            className="group relative flex sm:block gap-3 sm:gap-0 p-2 sm:p-0 h-24 sm:h-[280px] w-full overflow-hidden rounded-xl bg-card sm:bg-card text-card-foreground shadow-sm transition-all duration-300 sm:duration-500 ease-out hover:shadow-md sm:hover:shadow-xl sm:hover:-translate-y-1 cursor-pointer border border-border/50 hover:border-primary/50"
+            className="group relative flex sm:block gap-3 sm:gap-0 p-2 sm:p-0 min-h-24 h-auto sm:h-[280px] w-full overflow-hidden rounded-xl bg-card sm:bg-card text-card-foreground shadow-sm transition-all duration-300 sm:duration-500 ease-out hover:shadow-md sm:hover:shadow-xl sm:hover:-translate-y-1 cursor-pointer border border-border/50 hover:border-primary/50"
             onClick={() => navigate(`/races/${race.externalId}`)}
           >
               {/* Image Background (Desktop) / Thumbnail (Mobile) */}
-              <div className="relative w-20 sm:w-full h-full sm:h-full rounded-lg sm:rounded-none overflow-hidden flex-shrink-0">
+              <div className="relative w-32 sm:w-full h-full sm:h-full rounded-lg sm:rounded-none overflow-hidden flex-shrink-0">
                   <img
                       src={race.image || "/images/placeholders/race.webp"}
                       alt={race.nameRu}
