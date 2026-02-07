@@ -15,20 +15,21 @@ import { ChevronRight, RefreshCw, Search, Sparkles, Upload, User, X } from "luci
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PWAInstallGuide } from "./PWAInstallGuide";
+import { MenuItem } from "../constants/menuItems";
 
 interface HomePageProps {
   onNavigate: (page: string, itemId?: string) => void;
 }
 
-interface MenuItem {
+interface SearchResult {
   id: string;
-  title: string;
-  description: string;
-  gradient: string;
-  roles: ("player" | "master")[];
-  inDevelopment: boolean;
-  image?: string;
+  name: string;
+  nameRu: string;
+  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary" | "feat" | "monster";
+  category: string;
 }
+
+
 
 interface SearchResult {
   id: string;
@@ -281,7 +282,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             onClick={() => handleRandomClick(currentRandomItem)}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 flex items-center justify-between overflow-hidden group-hover:border-primary/30 transition-colors duration-300">
+            <div className="relative bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl p-4 md:p-6 flex items-center justify-between overflow-hidden group-hover:border-primary/30 transition-colors duration-300">
 
               {/* Progress Fill Animation */}
               {isRotating && (
@@ -291,41 +292,41 @@ export function HomePage({ onNavigate }: HomePageProps) {
                  />
               )}
 
-              <div className="flex items-center gap-6 relative z-10">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+              <div className="flex items-center gap-4 md:gap-6 relative z-10 overflow-hidden">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-primary animate-pulse" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                      Случайная статья
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded-md whitespace-nowrap">
+                      Случайная
                     </span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    <span className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider truncate">
                        • {currentRandomItem.category}
                     </span>
                   </div>
-                  <h3 className="text-xl font-display font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                  <h3 className="text-base md:text-xl font-display font-bold text-foreground group-hover:text-primary transition-colors duration-300 truncate">
                     {currentRandomItem.nameRu}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs md:text-sm text-muted-foreground truncate hidden sm:block">
                     {currentRandomItem.name}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 relative z-10">
+              <div className="flex items-center gap-2 md:gap-4 relative z-10 pl-2">
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full hover:bg-background/50 hover:text-primary transition-colors"
+                    className="h-8 w-8 md:h-10 md:w-10 rounded-full hover:bg-background/50 hover:text-primary transition-colors"
                     onClick={(e) => {
                         e.stopPropagation();
                         refetchRandom();
                     }}
                 >
-                    <RefreshCw className="w-5 h-5" />
+                    <RefreshCw className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
-                <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-300" />
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-300" />
               </div>
             </div>
           </div>
@@ -400,7 +401,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
         </div>
 
         {/* Reference Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Reference Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {visibleMenuItems
             .filter((item) =>
               ["races", "classes", "backgrounds", "spells", "equipment", "glossary", "feats", "bestiary"].includes(item.id)
@@ -408,7 +410,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             .map((item, index) => (
               <div
                 key={item.id}
-                className="group w-full text-left rounded-2xl border bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 transition-all cursor-pointer relative overflow-hidden aspect-[4/3] md:aspect-auto md:h-48"
+                className="group w-full text-left rounded-xl md:rounded-2xl border bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 transition-all cursor-pointer relative overflow-hidden aspect-[1/1] md:aspect-auto md:h-48"
                 onClick={() => onNavigate(item.id)}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
@@ -419,24 +421,24 @@ export function HomePage({ onNavigate }: HomePageProps) {
                       alt=""
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-card/95 via-card/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent md:from-card/95 md:via-card/50" />
                   </div>
                 )}
                 {!item.image && (
-                  <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-10 group-hover:opacity-20 transition-opacity`} />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-20 group-hover:opacity-30 transition-opacity`} />
                 )}
 
-                <div className="relative z-10 p-6 flex flex-col h-full justify-end">
-                  <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-primary transition-colors">
+                <div className="relative z-10 p-3 md:p-6 flex flex-col h-full justify-end">
+                  <h3 className="font-semibold text-sm md:text-lg text-white md:text-foreground mb-0.5 md:mb-1 group-hover:text-primary transition-colors leading-tight">
                     {item.title}
                   </h3>
-                  <p className="text-xs text-muted-foreground font-medium leading-tight">
+                  <p className="text-[10px] md:text-xs text-gray-300 md:text-muted-foreground font-medium leading-tight line-clamp-2 md:line-clamp-none">
                     {item.description}
                   </p>
                 </div>
 
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ChevronRight className="w-5 h-5 text-primary" />
+                <div className="absolute top-2 right-2 md:top-4 md:right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                 </div>
               </div>
             ))}

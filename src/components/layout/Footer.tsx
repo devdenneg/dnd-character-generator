@@ -39,7 +39,7 @@ export function Footer() {
                 ✨
               </span>
             </div>
-            <p className="text-sm text-muted-foreground mb-4 group-hover:text-foreground/80 transition-colors duration-300">
+            <p className="text-xs md:text-sm text-muted-foreground mb-4 group-hover:text-foreground/80 transition-colors duration-300">
               Инструменты для мастеров и игроков Dungeons & Dragons 5th Edition
             </p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground relative">
