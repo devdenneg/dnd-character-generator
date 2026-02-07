@@ -14,6 +14,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { ChevronRight, RefreshCw, Search, Sparkles, Upload, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PWAInstallGuide } from "./PWAInstallGuide";
 
 interface HomePageProps {
   onNavigate: (page: string, itemId?: string) => void;
@@ -219,6 +220,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 md:py-12">
+      <PWAInstallGuide />
       {/* Auth Info for non-authenticated users */}
       {!isAuthenticated && (
         <div className="mb-12 bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-3xl p-8 md:p-10 animate-fade-in relative overflow-hidden">
