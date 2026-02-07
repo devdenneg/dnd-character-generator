@@ -1,29 +1,29 @@
-import { useBackendBackgroundsMeta, useBackendEquipmentMeta, useBackendBackground } from "@/api/hooks";
 import { backgroundsApi } from "@/api/client";
+import { useBackendBackground, useBackendBackgroundsMeta, useBackendEquipmentMeta } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMutation } from "@tanstack/react-query";
 import {
   BookOpen,
   Briefcase,
-  Scroll,
   Crown,
-  Swords,
-  Ship,
-  TreePine,
-  Plus,
   Pencil,
-  Trash2,
+  Plus,
   Save,
+  Scroll,
+  Ship,
+  Swords,
+  Trash2,
+  TreePine,
   X,
 } from "lucide-react";
-import { useState, useEffect } from "react";
 import type { ElementType } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 // Types
@@ -477,22 +477,16 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {backgrounds.map((background: Background, index: number) => {
-            const Icon = BACKGROUND_ICONS[background.externalId] || BookOpen;
+            // const Icon = BACKGROUND_ICONS[background.externalId] || BookOpen; // Icon unused in list view now
 
             return (
-              <button
+              <div
                 key={background.id + index}
                 id={`background-${background.id}`}
                 onClick={() => setSelectedBackground(background.id)}
-                className="w-full text-left p-4 rounded-lg border transition-all bg-card border-border hover:border-primary/50"
+                className="p-4 rounded-lg border cursor-pointer transition-all bg-card border-border hover:border-primary/50"
               >
-                <div className="flex items-start gap-3">
-                  {/* Icon */}
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
-                    <Icon className="w-5 h-5 text-white" />
-                  </div>
-
-                  {/* Content */}
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm text-foreground truncate">
                       {background.nameRu}
@@ -500,20 +494,25 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                     <p className="text-xs text-muted-foreground truncate">
                       {background.name}
                     </p>
-                    <div className="flex items-center gap-1 flex-wrap mt-1">
-                      <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                        {background.skillProficiencies.length} навыка
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                        {background.startingGold} зм
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                        {background.languages} языков
-                      </span>
-                    </div>
                   </div>
+                  {/* Optional: Source or other badge could go here if needed,
+                      but Backgrounds don't have a single obvious "badge" like School.
+                      Maybe we just leave it or put one of the tags here?
+                      Let's stick to the content tags below for now. */}
                 </div>
-              </button>
+
+                <div className="flex items-center gap-2 flex-wrap mt-1">
+                  <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                    {background.skillProficiencies.length} навыка
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+                    {background.startingGold} зм
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded bg-muted/50 text-muted-foreground">
+                    {background.languages} языков
+                  </span>
+                </div>
+              </div>
             );
           })}
         </div>

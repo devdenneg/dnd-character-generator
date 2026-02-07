@@ -242,21 +242,29 @@ export function BestiaryPage({ onBack }: { onBack?: () => void }) {
             <div
               key={monster.id}
               onClick={() => openMonster(monster.externalId)}
-              className="group p-4 rounded-xl border bg-card hover:bg-accent/50 hover:border-primary/50 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+              className="p-4 rounded-lg border cursor-pointer transition-all bg-card border-border hover:border-primary/50"
             >
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
-                  {monster.nameRu}
-                </h3>
-                <span className="text-xs font-mono font-bold bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm text-foreground truncate">
+                    {monster.nameRu}
+                  </h3>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {monster.name}
+                  </p>
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground whitespace-nowrap flex-shrink-0">
                   CR {monster.cr}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mb-2">{monster.name}</p>
-              <div className="flex gap-2 text-xs text-muted-foreground/80">
-                <span className="capitalize">{monster.size}</span>
-                <span>•</span>
-                <span className="capitalize">{monster.type}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground/80 capitalize">
+                  {monster.size}
+                </span>
+                <span className="text-xs text-muted-foreground/80">•</span>
+                <span className="text-xs text-muted-foreground/80 capitalize">
+                  {monster.type}
+                </span>
               </div>
             </div>
           ))}

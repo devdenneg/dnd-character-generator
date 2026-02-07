@@ -105,10 +105,7 @@ export default function FeatsPage() {
                 onClick={() => openFeat(feat.id)}
                 className="p-4 rounded-lg border cursor-pointer transition-all bg-card border-border hover:border-primary/50"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-amber-500 to-orange-600">
-                    <Star className="w-5 h-5 text-white" />
-                  </div>
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm text-foreground truncate">
                       {feat.nameRu}
@@ -116,12 +113,10 @@ export default function FeatsPage() {
                     <p className="text-xs text-muted-foreground truncate">
                       {feat.name}
                     </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                        {feat.category}
-                      </span>
-                    </div>
                   </div>
+                  <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary whitespace-nowrap flex-shrink-0">
+                    {feat.category}
+                  </span>
                 </div>
               </div>
             ))}

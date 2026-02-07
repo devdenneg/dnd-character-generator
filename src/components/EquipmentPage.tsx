@@ -1,7 +1,7 @@
 import { equipmentApi } from "@/api/client";
 import {
-    useBackendEquipmentByExternalId,
-    useBackendEquipmentMeta,
+  useBackendEquipmentByExternalId,
+  useBackendEquipmentMeta,
 } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,20 +12,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { parseEquipmentDescription } from "@/utils/descriptionParser";
 import { useMutation } from "@tanstack/react-query";
 import {
-    Backpack,
-    Filter,
-    Loader2,
-    Package,
-    Pencil,
-    Plus,
-    Save,
-    Scroll,
-    Search,
-    Shield,
-    Sword,
-    Trash2,
-    Wrench,
-    X,
+  Backpack,
+  Filter,
+  Loader2,
+  Package,
+  Pencil,
+  Plus,
+  Save,
+  Scroll,
+  Search,
+  Shield,
+  Sword,
+  Trash2,
+  Wrench,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -456,7 +456,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
 
   const renderEquipmentCard = (equip: Equipment) => {
     const categoryInfo = getCategoryInfo(equip.category);
-    const Icon = categoryInfo.icon;
+    // const Icon = categoryInfo.icon; // Icon unused in list view now
 
     return (
       <div
@@ -465,10 +465,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
         onClick={() => openEquipment(equip.externalId)}
         className="p-4 rounded-lg border cursor-pointer transition-all bg-card border-border hover:border-primary/50"
       >
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary to-accent">
-            <Icon className="w-5 h-5 text-white" />
-          </div>
+        <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm text-foreground truncate">
               {equip.nameRu}
@@ -476,20 +473,20 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
             <p className="text-xs text-muted-foreground truncate">
               {equip.name}
             </p>
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-                {categoryInfo.label}
-              </span>
-              <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
-                {equip.cost.quantity} {equip.cost.unit}
-              </span>
-              {equip.weight !== undefined && (
-                <span className="text-xs px-2 py-0.5 rounded bg-muted/50">
-                  {equip.weight} кг
-                </span>
-              )}
-            </div>
           </div>
+          <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary whitespace-nowrap flex-shrink-0">
+            {categoryInfo.label}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">
+            {equip.cost.quantity} {equip.cost.unit}
+          </span>
+          {equip.weight !== undefined && (
+            <span className="text-xs px-2 py-0.5 rounded bg-muted/50 text-muted-foreground">
+              {equip.weight} кг
+            </span>
+          )}
         </div>
       </div>
     );
