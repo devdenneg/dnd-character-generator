@@ -1,5 +1,10 @@
 import { backgroundsApi } from "@/api/client";
-import { useBackendBackground, useBackendBackgroundsMeta, useBackendEquipmentMeta } from "@/api/hooks";
+import {
+  useBackendBackground,
+  useBackendBackgroundsMeta,
+  useBackendEquipmentMeta,
+  useBackendFeatsMeta,
+} from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +31,7 @@ import {
 } from "lucide-react";
 import type { ElementType } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Types
 interface Equipment {
@@ -140,10 +145,19 @@ interface BackgroundsPageProps {
   onBack?: () => void;
 }
 
+function normalizeLookupValue(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[()]/g, "");
+}
+
 export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   const { data, isLoading, error, refetch } = useBackendBackgroundsMeta();
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [selectedBackground, setSelectedBackground] = useState<string | null>(
     null
   );
@@ -227,6 +241,25 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
   // Load equipment from backend only when needed (in edit/create mode)
   const { data: equipmentData } = useBackendEquipmentMeta(undefined, isCreateModalOpen || isEditModalOpen);
   const allEquipment = equipmentData?.data?.equipment || [];
+  const { data: featsMetaData } = useBackendFeatsMeta();
+  const featLookup = useMemo(() => {
+    const byId = new Map<string, { id: string; name: string; nameRu: string }>();
+    const byName = new Map<string, { id: string; name: string; nameRu: string }>();
+    const feats = featsMetaData?.data ?? [];
+
+    for (const feat of feats) {
+      byId.set(feat.id.toLowerCase(), feat);
+      byName.set(normalizeLookupValue(feat.name), feat);
+      byName.set(normalizeLookupValue(feat.nameRu), feat);
+    }
+
+    return { byId, byName };
+  }, [featsMetaData]);
+  const resolveOriginFeat = (originFeat: string) => {
+    const byId = featLookup.byId.get(originFeat.toLowerCase());
+    if (byId) return byId;
+    return featLookup.byName.get(normalizeLookupValue(originFeat)) ?? null;
+  };
 
   // Create background mutation
   const createBackgroundMutation = useMutation({
@@ -701,9 +734,13 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                                 key={item.id}
                                 className="p-2 rounded bg-muted/30 border border-border/30"
                               >
-                                <div className="text-sm font-medium">
+                                <button
+                                  type="button"
+                                  onClick={() => navigate(`/equipment#${item.externalId}`)}
+                                  className="text-sm font-medium text-left text-primary hover:underline"
+                                >
                                   {item.nameRu || item.name}
-                                </div>
+                                </button>
                                 <div className="text-xs text-muted-foreground">
                                   {item.cost.quantity} {item.cost.unit}
                                   {item.weight && ` • ${item.weight} кг`}
@@ -720,9 +757,25 @@ export function BackgroundsPage({ onBack }: BackgroundsPageProps) {
                       <h4 className="font-medium text-foreground mb-2">
                         Черта происхождения
                       </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {background.originFeat}
-                      </p>
+                      {(() => {
+                        const feat = resolveOriginFeat(background.originFeat);
+                        if (!feat) {
+                          return (
+                            <p className="text-sm text-muted-foreground">
+                              {background.originFeat}
+                            </p>
+                          );
+                        }
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/feats#${feat.id}`)}
+                            className="text-sm text-primary hover:underline"
+                          >
+                            {feat.nameRu || feat.name}
+                          </button>
+                        );
+                      })()}
                     </div>
 
                     {/* Ability Score Increase */}

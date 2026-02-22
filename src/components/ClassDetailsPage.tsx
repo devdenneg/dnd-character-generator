@@ -1,4 +1,4 @@
-import { useBackendClassByExternalId } from "@/api/hooks";
+import { useBackendClassByExternalId, useBackendEquipmentMeta } from "@/api/hooks";
 import { PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,33 @@ import { ArrowRight, BookOpen, ChevronLeft, Loader2, Shield, Swords } from "luci
 import { useEffect, useMemo } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ContentRenderer } from "./content/ContentRenderer";
+
+interface StartingEquipmentItem {
+  equipmentId: string;
+  quantity?: number;
+}
+
+interface StartingEquipmentOption {
+  label?: string;
+  items?: StartingEquipmentItem[];
+}
+
+interface StartingEquipmentBlock {
+  type: "fixed" | "choice" | "or";
+  items?: StartingEquipmentItem[];
+  options?: StartingEquipmentOption[];
+  goldAlternative?: number;
+}
+
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
+function parseStartingEquipment(data: unknown): StartingEquipmentBlock[] {
+  return asArray<StartingEquipmentBlock>(data).filter(
+    (block) => block?.type === "fixed" || block?.type === "choice" || block?.type === "or"
+  );
+}
 
 export function ClassDetailsPage() {
   const { classId } = useParams();
@@ -24,6 +51,14 @@ export function ClassDetailsPage() {
   };
 
   const { data: backendResponse, isLoading, error } = useBackendClassByExternalId(classId || "");
+  const { data: equipmentMetaResponse } = useBackendEquipmentMeta();
+  const equipmentList =
+    (equipmentMetaResponse as { data?: { equipment?: Array<{ id: string; externalId: string; nameRu: string; name: string }> } } | undefined)
+      ?.data?.equipment ?? [];
+  const equipmentById = useMemo(
+    () => new Map(equipmentList.map((item) => [item.id, item])),
+    [equipmentList]
+  );
 
   const selectedClass = useMemo(() => {
     if (backendResponse?.data?.class) {
@@ -257,9 +292,102 @@ export function ClassDetailsPage() {
                                     <div className="prose prose-zinc dark:prose-invert max-w-none">
                                         <h2 className="font-display text-3xl mb-6">Начальное снаряжение</h2>
                                         <p className="lead text-xl text-muted-foreground mb-8">
-                                            Вы начинаете со следующим снаряжением в дополнение к снаряжению, полученному за ваше происхождение:
+                                            Структура PHB 2024: фиксированные предметы, выборы и альтернатива золотом.
                                         </p>
-                                        <ContentRenderer content={selectedClass.equipment as any} />
+                                        {(() => {
+                                          const blocks = parseStartingEquipment(selectedClass.equipment);
+                                          if (blocks.length === 0) {
+                                            return <ContentRenderer content={selectedClass.equipment as any} />;
+                                          }
+
+                                          return (
+                                            <div className="space-y-6">
+                                              {blocks.map((block, index) => {
+                                                if (block.type === "or") {
+                                                  return (
+                                                    <div
+                                                      key={`gold-${index}`}
+                                                      className="rounded-lg border border-border/50 bg-muted/20 p-4"
+                                                    >
+                                                      <p className="font-medium">
+                                                        Либо начать с золотом: {block.goldAlternative ?? 0} зм
+                                                      </p>
+                                                    </div>
+                                                  );
+                                                }
+
+                                                if (block.type === "fixed") {
+                                                  const unique = new Map<string, number>();
+                                                  for (const item of asArray<StartingEquipmentItem>(block.items)) {
+                                                    if (!item.equipmentId) continue;
+                                                    unique.set(
+                                                      item.equipmentId,
+                                                      (unique.get(item.equipmentId) ?? 0) + (item.quantity ?? 1)
+                                                    );
+                                                  }
+
+                                                  return (
+                                                    <div key={`fixed-${index}`} className="space-y-2">
+                                                      <h3 className="text-lg font-semibold">Фиксированное снаряжение</h3>
+                                                      <ul className="space-y-1">
+                                                        {Array.from(unique.entries()).map(([equipmentId, quantity]) => {
+                                                          const eq = equipmentById.get(equipmentId);
+                                                          const label = eq?.nameRu ?? eq?.name ?? equipmentId;
+                                                          return (
+                                                            <li key={equipmentId} className="text-sm">
+                                                              <a
+                                                                href={`/equipment#${eq?.externalId ?? equipmentId}`}
+                                                                className="text-primary hover:underline"
+                                                              >
+                                                                {label}
+                                                              </a>{" "}
+                                                              x{quantity}
+                                                            </li>
+                                                          );
+                                                        })}
+                                                      </ul>
+                                                    </div>
+                                                  );
+                                                }
+
+                                                return (
+                                                  <div key={`choice-${index}`} className="space-y-2">
+                                                    <h3 className="text-lg font-semibold">Выбор ({index + 1})</h3>
+                                                    <div className="space-y-2">
+                                                      {asArray<StartingEquipmentOption>(block.options).map((option, optionIndex) => (
+                                                        <div
+                                                          key={`option-${index}-${optionIndex}`}
+                                                          className="rounded-lg border border-border/50 bg-card/40 p-3"
+                                                        >
+                                                          <p className="text-sm font-medium mb-2">
+                                                            {option.label || `Вариант ${optionIndex + 1}`}
+                                                          </p>
+                                                          <ul className="space-y-1">
+                                                            {asArray<StartingEquipmentItem>(option.items).map((item) => {
+                                                              const eq = equipmentById.get(item.equipmentId);
+                                                              const label = eq?.nameRu ?? eq?.name ?? item.equipmentId;
+                                                              return (
+                                                                <li key={`${optionIndex}-${item.equipmentId}`} className="text-sm">
+                                                                  <a
+                                                                    href={`/equipment#${eq?.externalId ?? item.equipmentId}`}
+                                                                    className="text-primary hover:underline"
+                                                                  >
+                                                                    {label}
+                                                                  </a>{" "}
+                                                                  x{item.quantity ?? 1}
+                                                                </li>
+                                                              );
+                                                            })}
+                                                          </ul>
+                                                        </div>
+                                                      ))}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          );
+                                        })()}
                                     </div>
                                 </Card>
                             </TabsContent>

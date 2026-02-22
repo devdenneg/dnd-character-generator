@@ -54,8 +54,8 @@ const EQUIPMENT_ALIASES: Record<string, string[]> = {
   "2-shortswords": ["shortsword"],
   "5-javelins": ["javelin"],
   "2-pouches": ["pouch"],
-  "traveler-clothes": ["travelers-clothes", "traveller-clothes"],
-  "calligraphers-supplies": ["calligrapher-supplies"],
+  "traveler-clothes": ["travelers-clothes", "traveller-clothes", "clothes-traveler-s"],
+  "calligraphers-supplies": ["calligrapher-supplies", "calligrapher-s-supplies"],
   "thieves-tools": ["thieves-tool"],
   "forgery-kit": ["forger-kit"],
   "gamingset": ["gaming-set"],
@@ -66,6 +66,20 @@ const EQUIPMENT_ALIASES: Record<string, string[]> = {
   "parchment-12": ["parchment"],
   "musical-instrument": ["instrument"],
   "simple-weapon": ["club", "quarterstaff", "mace"],
+  "explorers-pack": ["explorer-s-pack"],
+  "entertainers-pack": ["entertainer-s-pack"],
+  "priests-pack": ["priest-s-pack"],
+  "dungeoneers-pack": ["dungeoneer-s-pack"],
+  "burglars-pack": ["burglar-s-pack"],
+  "scholars-pack": ["scholar-s-pack"],
+  "fine-clothes": ["clothes-fine"],
+  "healers-kit": ["healer-s-kit"],
+  "navigators-tools": ["navigator-s-tools"],
+  "cartographers-tools": ["cartographer-s-tools"],
+  "carpenters-tools": ["carpenter-s-tools"],
+  "artisans-tools": ["smith-s-tools"],
+  "prayer-book": ["book"],
+  "iron-pot": ["pot-iron"],
 };
 
 const ORIGIN_FEAT_CANDIDATES: Record<string, string[]> = {
@@ -514,23 +528,68 @@ function normalize(value: string): string {
   return value.trim().toLowerCase().replace(/[_\s]+/g, "-");
 }
 
-async function resolveEquipmentId(ref: string): Promise<string | null> {
-  const candidates = [ref, ...(EQUIPMENT_ALIASES[ref] ?? [])].map(normalize);
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values.filter(Boolean)));
+}
 
-  for (const candidate of candidates) {
+function classExternalIdCandidates(raw: string): string[] {
+  const base = normalize(raw);
+  return unique([base, `${base}-phb`, `${base}-phb2024`]);
+}
+
+function equipmentExternalIdCandidates(raw: string): string[] {
+  const base = normalize(raw);
+  const withoutNumericSuffix = base.replace(/-\d+$/, "");
+  return unique([
+    base,
+    withoutNumericSuffix,
+    `${base}-phb`,
+    `${withoutNumericSuffix}-phb`,
+    `${base}-phb2024`,
+    `${withoutNumericSuffix}-phb2024`,
+  ]);
+}
+
+async function resolveClass(raw: string): Promise<{ id: string; externalId: string; subclassLevel: number } | null> {
+  const byExternalId = await prisma.characterClass.findFirst({
+    where: {
+      externalId: {
+        in: classExternalIdCandidates(raw),
+      },
+    },
+    select: { id: true, externalId: true, subclassLevel: true },
+  });
+  if (byExternalId) return byExternalId;
+
+  const byName = await prisma.characterClass.findFirst({
+    where: {
+      OR: [
+        { name: { contains: raw, mode: "insensitive" } },
+        { nameRu: { contains: raw, mode: "insensitive" } },
+      ],
+    },
+    select: { id: true, externalId: true, subclassLevel: true },
+  });
+  if (byName) return byName;
+
+  return null;
+}
+
+async function resolveEquipmentId(ref: string): Promise<string | null> {
+  const rawCandidates = unique([ref, ...(EQUIPMENT_ALIASES[ref] ?? [])].map(normalize));
+  const externalIdCandidates = unique(rawCandidates.flatMap((candidate) => equipmentExternalIdCandidates(candidate)));
+
+  for (const candidate of externalIdCandidates) {
     const exact = await prisma.equipment.findFirst({
       where: {
-        OR: [
-          { externalId: candidate },
-          { externalId: candidate.replace(/-\d+$/, "") },
-        ],
+        externalId: candidate,
       },
       select: { id: true },
     });
     if (exact?.id) return exact.id;
   }
 
-  for (const candidate of candidates) {
+  for (const candidate of rawCandidates) {
     const byName = await prisma.equipment.findFirst({
       where: {
         OR: [
@@ -578,10 +637,7 @@ async function updateClassStartingEquipment() {
   const missingEquipment: string[] = [];
 
   for (const seed of CLASS_SEEDS) {
-    const cls = await prisma.characterClass.findUnique({
-      where: { externalId: seed.classExternalId },
-      select: { id: true },
-    });
+    const cls = await resolveClass(seed.classExternalId);
 
     if (!cls) {
       missingClasses.push(seed.classExternalId);
@@ -723,10 +779,7 @@ async function upsertSubclasses() {
   const missingClasses: string[] = [];
 
   for (const spec of SUBCLASSES) {
-    const parent = await prisma.characterClass.findUnique({
-      where: { externalId: spec.classExternalId },
-      select: { id: true, subclassLevel: true },
-    });
+    const parent = await resolveClass(spec.classExternalId);
 
     if (!parent) {
       missingClasses.push(spec.classExternalId);
