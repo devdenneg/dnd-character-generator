@@ -14,7 +14,8 @@
     "prisma:migrate:status": "prisma migrate status",
     "prisma:studio": "prisma studio",
     "migration:generate": "node scripts/generate-migration.js",
-    "migration:apply": "node migrate-production.js"
+    "migration:apply": "node migrate-production.js",
+    "seed:phb2024": "ts-node scripts/seed-phb2024-data.ts"
   },
   "keywords": [
     "dnd",

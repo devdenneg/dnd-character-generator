@@ -2,9 +2,11 @@ import { useRandomContent, useSearch } from "@/api/search";
 import backgroundsImage from "@/components/assets/backgrounds.jpg";
 import bestiaryImage from "@/components/assets/beasts.jpg";
 import classesImage from "@/components/assets/classes.jpg";
+import createCharImage from "@/components/assets/createChar.jpg";
 import equipImage from "@/components/assets/equip.jpg";
 import featsImage from "@/components/assets/feats.jpg";
 import glossaryImage from "@/components/assets/gloss.jpg";
+import myCharImage from "@/components/assets/myChar.jpg";
 import racesImage from "@/components/assets/races.jpg";
 import spellsImage from "@/components/assets/spells.jpg";
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,24 @@ interface SearchResult {
 }
 
 const MENU_ITEMS: MenuItem[] = [
+  {
+    id: "character-wizard",
+    title: "Создание персонажа",
+    description: "Пошаговый мастер создания персонажа",
+    gradient: "from-primary to-accent",
+    roles: ["player", "master"],
+    inDevelopment: false,
+    image: createCharImage,
+  },
+  {
+    id: "my-characters",
+    title: "Мои персонажи",
+    description: "Список, приватность и быстрые ссылки",
+    gradient: "from-emerald-500 to-teal-500",
+    roles: ["player", "master"],
+    inDevelopment: false,
+    image: myCharImage,
+  },
   {
     id: "races",
     title: "Расы",
@@ -410,7 +430,18 @@ export function HomePage({ onNavigate }: HomePageProps) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {visibleMenuItems
             .filter((item) =>
-              ["races", "classes", "backgrounds", "spells", "equipment", "glossary", "feats", "bestiary"].includes(item.id)
+              [
+                "character-wizard",
+                "my-characters",
+                "races",
+                "classes",
+                "backgrounds",
+                "spells",
+                "equipment",
+                "glossary",
+                "feats",
+                "bestiary",
+              ].includes(item.id)
             )
             .map((item, index) => (
               <div

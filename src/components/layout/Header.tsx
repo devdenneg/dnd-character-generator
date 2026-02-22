@@ -181,12 +181,20 @@ export function Header() {
                   {/* Navigation Links */}
                   <div className="grid grid-cols-1 gap-4">
                       {MENU_ITEMS
-                          .filter(item => ["races", "classes", "backgrounds", "spells", "equipment", "glossary", "feats", "bestiary"].includes(item.id))
+                          .filter(item => ["character-wizard", "my-characters", "races", "classes", "backgrounds", "spells", "equipment", "glossary", "feats", "bestiary"].includes(item.id))
                           .map((item) => (
                           <button
                               key={item.id}
                               onClick={() => {
-                                  navigate(item.id === "bestiary" ? "/bestiary" : `/${item.id}`);
+                                  const target =
+                                    item.id === "character-wizard"
+                                      ? "/character"
+                                      : item.id === "my-characters"
+                                      ? "/my-characters"
+                                      : item.id === "bestiary"
+                                      ? "/bestiary"
+                                      : `/${item.id}`;
+                                  navigate(target);
                                   setIsMenuOpen(false);
                               }}
                               className="flex items-center gap-4 p-4 rounded-xl bg-card/50 border border-border/30 hover:bg-primary/5 hover:border-primary/30 transition-all text-left group"

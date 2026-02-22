@@ -15,6 +15,7 @@ import { standardTimeout } from "./middleware/timeout";
 import achievementRoutes from "./routes/achievements";
 import authRoutes from "./routes/auth";
 import backgroundRoutes from "./routes/backgrounds";
+import characterRoutes from "./routes/characters";
 import classRoutes from "./routes/classes";
 import equipmentRoutes from "./routes/equipment";
 import featRoutes from "./routes/feats";
@@ -93,6 +94,7 @@ app.use("/uploads", express.static("uploads"));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/characters", characterRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/achievements", achievementRoutes);
 app.use("/api/races", raceRoutes);

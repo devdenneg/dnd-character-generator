@@ -1,6 +1,8 @@
 import type {
   ApiResponse,
   AuthResponse,
+  CharacterResponse,
+  CharactersListResponse,
   FeatFull,
   FeatMeta,
   GlossaryListResponse,
@@ -79,6 +81,52 @@ export const authApi = {
 
   me: async () => {
     const response = await apiClient.get("/auth/me");
+    return response.data;
+  },
+};
+
+export const charactersApi = {
+  create: async (data: Record<string, unknown>) => {
+    const response = await apiClient.post<CharacterResponse>("/characters", data);
+    return response.data;
+  },
+
+  list: async () => {
+    const response = await apiClient.get<CharactersListResponse>("/characters");
+    return response.data;
+  },
+
+  get: async (id: string) => {
+    const response = await apiClient.get<CharacterResponse>(`/characters/${id}`);
+    return response.data;
+  },
+
+  getByShortId: async (shortId: string) => {
+    const response = await apiClient.get<CharacterResponse>(`/characters/s/${shortId}`);
+    return response.data;
+  },
+
+  update: async (id: string, data: Record<string, unknown>) => {
+    const response = await apiClient.put<CharacterResponse>(`/characters/${id}`, data);
+    return response.data;
+  },
+
+  levelUp: async (id: string, data: Record<string, unknown>) => {
+    const response = await apiClient.patch<CharacterResponse>(`/characters/${id}/level-up`, data);
+    return response.data;
+  },
+
+  setPrivacy: async (id: string, isPublic: boolean) => {
+    const response = await apiClient.patch<CharacterResponse>(`/characters/${id}/privacy`, {
+      isPublic,
+    });
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete<{ success: boolean; message?: string }>(
+      `/characters/${id}`
+    );
     return response.data;
   },
 };

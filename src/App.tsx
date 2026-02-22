@@ -27,6 +27,14 @@ import { DiceRollProvider } from "@/contexts/DiceRollContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { TelegramProvider } from "@/contexts/TelegramContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import {
+  CharacterCreatorPage,
+  EditCharacterPage,
+  LevelUpCharacterPage,
+  MyCharactersPage,
+  PublicCharacterPage,
+  RequireAuth,
+} from "@/features/character-creator";
 import "@/i18n";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -52,6 +60,12 @@ function HomePageWrapper() {
 
   const handleNavigate = (page: string, itemId?: string) => {
     switch (page) {
+      case "character-wizard":
+        navigate("/character");
+        break;
+      case "my-characters":
+        navigate("/my-characters");
+        break;
       case "races":
         navigate(itemId ? `/races#${itemId}` : "/races");
         break;
@@ -142,6 +156,11 @@ function AppRoutes() {
     <PageLayout showHeader={showHeaderFooter} showFooter={showHeaderFooter}>
       <Routes>
         <Route path="/" element={<HomePageWrapper />} />
+        <Route path="/character" element={<RequireAuth><CharacterCreatorPage /></RequireAuth>} />
+        <Route path="/my-characters" element={<RequireAuth><MyCharactersPage /></RequireAuth>} />
+        <Route path="/my-characters/:id/edit" element={<RequireAuth><EditCharacterPage /></RequireAuth>} />
+        <Route path="/my-characters/:id/level-up" element={<RequireAuth><LevelUpCharacterPage /></RequireAuth>} />
+        <Route path="/character/:shortId" element={<PublicCharacterPage />} />
         <Route path="/races" element={<RacesPage />} />
         <Route path="/races/:raceId" element={<RaceDetailsPage />} />
         <Route path="/classes" element={<ClassesPage />} />

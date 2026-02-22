@@ -23,11 +23,30 @@ export interface ApiResponse<T> {
  */
 export interface CharacterEntity {
   id: string;
+  shortId: string;
   name: string;
+  level: number;
+  experience: number;
+  isPublic: boolean;
   data: CharacterData;
   userId: string;
   createdAt: string;
   updatedAt: string;
+  isOwner?: boolean;
+}
+
+export interface CharacterResponse {
+  success: boolean;
+  data: {
+    character: CharacterEntity;
+  };
+}
+
+export interface CharactersListResponse {
+  success: boolean;
+  data: {
+    characters: CharacterEntity[];
+  };
 }
 
 /**

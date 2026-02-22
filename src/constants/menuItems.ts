@@ -1,6 +1,8 @@
 import backgroundsImage from "@/components/assets/backgrounds.jpg";
 import classesImage from "@/components/assets/classes.jpg";
+import createCharImage from "@/components/assets/createChar.jpg";
 import equipImage from "@/components/assets/equip.jpg";
+import myCharImage from "@/components/assets/myChar.jpg";
 import racesImage from "@/components/assets/races.jpg";
 import spellsImage from "@/components/assets/spells.jpg";
 
@@ -15,6 +17,24 @@ export interface MenuItem {
 }
 
 export const MENU_ITEMS: MenuItem[] = [
+  {
+    id: "character-wizard",
+    title: "Создание персонажа",
+    description: "Пошаговый мастер создания персонажа",
+    gradient: "from-primary to-accent",
+    roles: ["player", "master"],
+    inDevelopment: false,
+    image: createCharImage,
+  },
+  {
+    id: "my-characters",
+    title: "Мои персонажи",
+    description: "Список, приватность и быстрые ссылки",
+    gradient: "from-emerald-500 to-teal-500",
+    roles: ["player", "master"],
+    inDevelopment: false,
+    image: myCharImage,
+  },
   {
     id: "races",
     title: "Расы",
