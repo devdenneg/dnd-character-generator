@@ -18,12 +18,14 @@ interface StartingEquipmentItem {
 interface StartingEquipmentOption {
   label?: string;
   items?: StartingEquipmentItem[];
+  gold?: number;
 }
 
 interface StartingEquipmentBlock {
   type: "fixed" | "choice" | "or";
   items?: StartingEquipmentItem[];
   options?: StartingEquipmentOption[];
+  gold?: number;
   goldAlternative?: number;
 }
 
@@ -345,6 +347,9 @@ export function ClassDetailsPage() {
                                                             </li>
                                                           );
                                                         })}
+                                                        {typeof block.gold === "number" && block.gold > 0 ? (
+                                                          <li className="text-sm">Золото: {block.gold} зм</li>
+                                                        ) : null}
                                                       </ul>
                                                     </div>
                                                   );
@@ -378,6 +383,9 @@ export function ClassDetailsPage() {
                                                                 </li>
                                                               );
                                                             })}
+                                                            {typeof option.gold === "number" && option.gold > 0 ? (
+                                                              <li className="text-sm">Золото: {option.gold} зм</li>
+                                                            ) : null}
                                                           </ul>
                                                         </div>
                                                       ))}

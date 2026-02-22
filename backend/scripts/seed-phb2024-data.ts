@@ -6,13 +6,13 @@ type EquipmentRef = {
 };
 
 type ClassEquipmentBlock =
-  | { type: "fixed"; items: EquipmentRef[] }
-  | { type: "choice"; options: Array<{ label: string; items: EquipmentRef[] }> }
+  | { type: "fixed"; items: EquipmentRef[]; gold?: number }
+  | { type: "choice"; options: Array<{ label: string; items: EquipmentRef[]; gold?: number }> }
   | { type: "or"; goldAlternative: number };
 
 type ClassEquipmentBlockResolved =
-  | { type: "fixed"; items: Array<{ equipmentId: string; quantity: number }> }
-  | { type: "choice"; options: Array<{ label: string; items: Array<{ equipmentId: string; quantity: number }> }> }
+  | { type: "fixed"; items: Array<{ equipmentId: string; quantity: number }>; gold?: number }
+  | { type: "choice"; options: Array<{ label: string; items: Array<{ equipmentId: string; quantity: number }>; gold?: number }> }
   | { type: "or"; goldAlternative: number };
 
 type ClassSeed = {
@@ -102,7 +102,7 @@ const CLASS_SEEDS: ClassSeed[] = [
     classExternalId: "barbarian",
     startingGold: 75,
     startingEquipment: [
-      { type: "fixed", items: [{ ref: "greataxe" }, { ref: "4-handaxes", qty: 4 }, { ref: "explorers-pack" }] },
+      { type: "fixed", items: [{ ref: "greataxe" }, { ref: "4-handaxes", qty: 4 }, { ref: "explorers-pack" }], gold: 15 },
       { type: "or", goldAlternative: 75 },
     ],
   },
@@ -110,7 +110,7 @@ const CLASS_SEEDS: ClassSeed[] = [
     classExternalId: "bard",
     startingGold: 100,
     startingEquipment: [
-      { type: "fixed", items: [{ ref: "rapier" }, { ref: "entertainers-pack" }, { ref: "musical-instrument" }, { ref: "dagger" }] },
+      { type: "fixed", items: [{ ref: "rapier" }, { ref: "entertainers-pack" }, { ref: "musical-instrument" }, { ref: "dagger" }], gold: 28 },
       { type: "or", goldAlternative: 100 },
     ],
   },
@@ -140,7 +140,7 @@ const CLASS_SEEDS: ClassSeed[] = [
     classExternalId: "druid",
     startingGold: 50,
     startingEquipment: [
-      { type: "fixed", items: [{ ref: "shield" }, { ref: "quarterstaff" }, { ref: "leather-armor" }, { ref: "druidic-focus" }, { ref: "explorers-pack" }] },
+      { type: "fixed", items: [{ ref: "shield" }, { ref: "quarterstaff" }, { ref: "leather-armor" }, { ref: "druidic-focus" }, { ref: "explorers-pack" }], gold: 9 },
       { type: "or", goldAlternative: 50 },
     ],
   },
@@ -177,7 +177,7 @@ const CLASS_SEEDS: ClassSeed[] = [
     classExternalId: "monk",
     startingGold: 50,
     startingEquipment: [
-      { type: "fixed", items: [{ ref: "10-darts", qty: 10 }, { ref: "dungeoneers-pack" }] },
+      { type: "fixed", items: [{ ref: "10-darts", qty: 10 }, { ref: "dungeoneers-pack" }], gold: 11 },
       { type: "or", goldAlternative: 50 },
     ],
   },
@@ -215,7 +215,7 @@ const CLASS_SEEDS: ClassSeed[] = [
           { label: "Shortsword", items: [{ ref: "shortsword" }] },
         ],
       },
-      { type: "fixed", items: [{ ref: "shortbow" }, { ref: "20-arrows", qty: 20 }, { ref: "leather-armor" }, { ref: "2-daggers", qty: 2 }, { ref: "thieves-tools" }, { ref: "burglars-pack" }] },
+      { type: "fixed", items: [{ ref: "shortbow" }, { ref: "20-arrows", qty: 20 }, { ref: "leather-armor" }, { ref: "2-daggers", qty: 2 }, { ref: "thieves-tools" }, { ref: "burglars-pack" }], gold: 18 },
       { type: "or", goldAlternative: 110 },
     ],
   },
@@ -223,7 +223,7 @@ const CLASS_SEEDS: ClassSeed[] = [
     classExternalId: "sorcerer",
     startingGold: 50,
     startingEquipment: [
-      { type: "fixed", items: [{ ref: "2-daggers", qty: 2 }, { ref: "arcane-focus" }, { ref: "dungeoneers-pack" }] },
+      { type: "fixed", items: [{ ref: "2-daggers", qty: 2 }, { ref: "arcane-focus" }, { ref: "dungeoneers-pack" }], gold: 28 },
       { type: "or", goldAlternative: 50 },
     ],
   },
@@ -231,7 +231,7 @@ const CLASS_SEEDS: ClassSeed[] = [
     classExternalId: "warlock",
     startingGold: 100,
     startingEquipment: [
-      { type: "fixed", items: [{ ref: "leather-armor" }, { ref: "simple-weapon" }, { ref: "2-daggers", qty: 2 }, { ref: "arcane-focus" }, { ref: "dungeoneers-pack" }] },
+      { type: "fixed", items: [{ ref: "leather-armor" }, { ref: "simple-weapon" }, { ref: "2-daggers", qty: 2 }, { ref: "arcane-focus" }, { ref: "dungeoneers-pack" }], gold: 15 },
       { type: "or", goldAlternative: 100 },
     ],
   },
@@ -662,7 +662,7 @@ async function updateClassStartingEquipment() {
           }
           items.push({ equipmentId, quantity: item.qty ?? 1 });
         }
-        converted.push({ type: "fixed", items });
+        converted.push({ type: "fixed", items, ...(typeof block.gold === "number" ? { gold: block.gold } : {}) });
         continue;
       }
 
@@ -678,7 +678,11 @@ async function updateClassStartingEquipment() {
           items.push({ equipmentId, quantity: item.qty ?? 1 });
         }
         if (items.length > 0) {
-          options.push({ label: option.label, items });
+          options.push({
+            label: option.label,
+            items,
+            ...(typeof option.gold === "number" ? { gold: option.gold } : {}),
+          });
         }
       }
       converted.push({ type: "choice", options });
