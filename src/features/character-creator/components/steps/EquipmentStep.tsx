@@ -40,8 +40,6 @@ export function EquipmentStep({
   const setClassEquipmentChoiceIndexes = useCreatorStore(
     (state) => state.setClassEquipmentChoiceIndexes
   );
-  const wallet = useCreatorStore((state) => state.wallet);
-  const setWallet = useCreatorStore((state) => state.setWallet);
   const selected = useCreatorStore((state) => state.equipment);
   const setEquipment = useCreatorStore((state) => state.setEquipment);
 
@@ -95,6 +93,9 @@ export function EquipmentStep({
     () => selectedEquipmentCostCopper(selected, equipment),
     [selected, equipment]
   );
+  const classGold = useClassGoldAlternative ? selectedClass?.startingGold ?? 0 : 0;
+  const backgroundGold = selectedBackground?.startingGold ?? 0;
+  const totalStartingGold = classGold + backgroundGold;
   const classGoldBudgetCopper = Math.max(0, (selectedClass?.startingGold ?? 0) * 100);
   const remainingCopper = classGoldBudgetCopper - selectedCostCopper;
 
@@ -103,7 +104,6 @@ export function EquipmentStep({
 
     if (checked) {
       setIncludeClassEquipment(false);
-      setWallet({ ...wallet, gold: selectedClass?.startingGold ?? 0 });
       return;
     }
 
@@ -168,7 +168,7 @@ export function EquipmentStep({
           <div>
             <p className="font-medium">Взять золото вместо стартового набора</p>
             <p className="text-xs text-muted-foreground">
-              Бюджет класса: {selectedClass?.startingGold ?? 0} gp
+              Бюджет класса: {selectedClass?.startingGold ?? 0} зм
             </p>
           </div>
         </label>
@@ -249,6 +249,18 @@ export function EquipmentStep({
           ) : null}
         </div>
       ) : null}
+
+      <div className="rounded-lg border border-border/60 p-3 text-sm space-y-1">
+        <p className="font-medium">Стартовое золото (PHB 2024)</p>
+        <p className="text-muted-foreground">
+          От класса: <span className="font-medium">{classGold} зм</span>
+          {" · "}
+          от предыстории: <span className="font-medium">{backgroundGold} зм</span>
+        </p>
+        <p>
+          Итого в кошельке на старте: <span className="font-semibold">{totalStartingGold} зм</span>
+        </p>
+      </div>
     </div>
   );
 }

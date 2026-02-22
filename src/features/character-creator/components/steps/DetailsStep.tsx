@@ -6,9 +6,7 @@ import { useCreatorStore } from "../../store/creatorStore";
 
 export function DetailsStep() {
   const details = useCreatorStore((state) => state.details);
-  const level = useCreatorStore((state) => state.level);
   const setDetails = useCreatorStore((state) => state.setDetails);
-  const setLevel = useCreatorStore((state) => state.setLevel);
 
   return (
     <div className="space-y-6">
@@ -32,18 +30,7 @@ export function DetailsStep() {
           <Input
             value={details.alignment}
             onChange={(event) => setDetails({ alignment: event.target.value })}
-            placeholder="Lawful Good"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Уровень</Label>
-          <Input
-            type="number"
-            min={1}
-            max={20}
-            value={String(level)}
-            onChange={(event) => setLevel(Number(event.target.value) || 1)}
+            placeholder="Законопослушный добрый"
           />
         </div>
 

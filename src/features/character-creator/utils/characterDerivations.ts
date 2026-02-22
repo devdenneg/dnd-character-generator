@@ -37,6 +37,7 @@ export function buildDerivedSkills(input: {
   classSkills: string[];
   backgroundSkills: string[];
   featSkills: string[];
+  expertiseSkills?: string[];
   replacementSkills?: string[];
 }): DerivedSkill[] {
   const map = new Map<string, Set<string>>();
@@ -55,8 +56,14 @@ export function buildDerivedSkills(input: {
   add(input.featSkills, "Черта");
   add(input.replacementSkills ?? [], "Компенсация дубля");
 
+  const expertiseSet = new Set((input.expertiseSkills ?? []).map((skill) => normalizeSkill(skill)));
+
   return Array.from(map.entries())
-    .map(([id, sources]) => ({ id, sources: Array.from(sources) }))
+    .map(([id, sources]) => ({
+      id,
+      sources: Array.from(sources),
+      proficiencyMultiplier: expertiseSet.has(id) ? 2 : 1,
+    }))
     .sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -287,7 +294,7 @@ export function selectedEquipmentCostCopper(
 
 export function formatCopperAsGold(copper: number): string {
   const gp = copper / 100;
-  return Number.isInteger(gp) ? `${gp} gp` : `${gp.toFixed(2)} gp`;
+  return Number.isInteger(gp) ? `${gp} зм` : `${gp.toFixed(2)} зм`;
 }
 
 export function applyGoldToWallet(
@@ -330,7 +337,7 @@ export function classEquipmentSummary(selectedClass: ClassOption | null): string
   const segments: string[] = [];
   if (parsed.fixed.length > 0) segments.push(`фикс: ${parsed.fixed.length}`);
   if (parsed.choices.length > 0) segments.push(`выборов: ${parsed.choices.length}`);
-  if (parsed.hasGoldAlternative) segments.push(`альтернатива: ${selectedClass.startingGold} gp`);
+  if (parsed.hasGoldAlternative) segments.push(`альтернатива: ${selectedClass.startingGold} зм`);
 
   return segments.length > 0 ? segments.join(" | ") : "Нет данных";
 }
@@ -406,6 +413,19 @@ export function getSpellLimits(selectedClass: ClassOption | null, level = 1) {
   const slots = spellcasting.spellSlots?.[index] ?? [];
 
   return { hasSpellcasting: true, cantrips, spells, spellSlots: slots };
+}
+
+export function getMaxSpellLevelFromSlots(slots: number[] | undefined): number {
+  if (!slots || slots.length === 0) return 0;
+
+  let maxLevel = 0;
+  slots.forEach((count, index) => {
+    if (count > 0) {
+      maxLevel = index + 1;
+    }
+  });
+
+  return maxLevel;
 }
 
 export function getAvailableSpellsForClass(

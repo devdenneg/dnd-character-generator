@@ -9,10 +9,14 @@ import {
     Search,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export function RacesPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get("returnTo") || "";
+  const returnQuery = returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : "";
   const [searchQuery, setSearchQuery] = useState("");
 
   const [sortOption, setSortOption] = useState("name_asc");
@@ -115,10 +119,10 @@ export function RacesPage() {
           <Button
             variant="outline"
             size="lg"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(returnTo || "/")}
             className="h-12 px-8 font-medium hover:bg-primary hover:text-primary-foreground transition-all duration-300"
           >
-            На главную
+            {returnTo ? "Назад к созданию" : "На главную"}
           </Button>
         </div>
       </div>
@@ -136,7 +140,7 @@ export function RacesPage() {
           <div
             key={race.id}
             className="group relative flex sm:block gap-3 sm:gap-0 p-2 sm:p-0 min-h-24 h-auto sm:h-[280px] w-full overflow-hidden rounded-xl bg-card sm:bg-card text-card-foreground shadow-sm transition-all duration-300 sm:duration-500 ease-out hover:shadow-md sm:hover:shadow-xl sm:hover:-translate-y-1 cursor-pointer border border-border/50 hover:border-primary/50"
-            onClick={() => navigate(`/races/${race.externalId}`)}
+            onClick={() => navigate(`/races/${race.externalId}${returnQuery}`)}
           >
               {/* Image Background (Desktop) / Thumbnail (Mobile) */}
               <div className="relative w-32 sm:w-full h-full sm:h-full rounded-lg sm:rounded-none overflow-hidden flex-shrink-0">

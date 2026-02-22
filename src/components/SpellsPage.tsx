@@ -194,6 +194,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
 
   // Инициализируем состояние из URL параметров
   const searchParams = new URLSearchParams(location.search);
+  const returnTo = searchParams.get("returnTo") || "";
   const [selectedLevel, setSelectedLevel] = useState<number>(() => {
     const level = searchParams.get('level');
     return level ? parseInt(level) : 0;
@@ -213,6 +214,9 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   // Синхронизация состояния с URL
   useEffect(() => {
     const params = new URLSearchParams();
+    if (returnTo) {
+      params.set("returnTo", returnTo);
+    }
 
     if (selectedLevel !== 0) {
       params.set('level', selectedLevel.toString());
@@ -240,7 +244,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
         hash: location.hash,
       }, { replace: true });
     }
-  }, [selectedLevel, searchTerm, selectedClasses, selectedSchools, navigate, location.pathname, location.hash, location.search]);
+  }, [returnTo, selectedLevel, searchTerm, selectedClasses, selectedSchools, navigate, location.pathname, location.hash, location.search]);
 
   // Текущее выбранное заклинание определяется из URL
   const selectedSpellExternalId = useMemo(() => {
@@ -274,7 +278,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   // Функция для открытия заклинания
   const openSpell = (externalId: string) => {
     // Обновляем URL, добавляя запись в историю
-    navigate(`${location.pathname}#${externalId}`);
+    navigate(`${location.pathname}${location.search}#${externalId}`);
   };
 
 
@@ -282,7 +286,7 @@ export function SpellsPage({ onBack }: SpellsPageProps) {
   const closeDrawer = () => {
     // Если есть хеш, убираем его (это закроет drawer)
     if (location.hash) {
-      navigate(location.pathname);
+      navigate(`${location.pathname}${location.search}`);
     }
   };
   const [editingSpell, setEditingSpell] = useState<SpellFormData>({

@@ -78,11 +78,25 @@ export interface BackgroundOption {
   externalId: string;
   name: string;
   nameRu: string;
+  startingGold?: number;
   skillProficiencies: string[];
+  skillProficienciesMeta?: Array<{
+    id: string;
+    nameRu: string;
+  }>;
   toolProficiencies?: string[];
   languages?: number;
   equipment?: BackgroundEquipmentItem[];
   originFeat: string;
+  originFeatMeta?: {
+    id: string;
+    name: string;
+    nameRu: string;
+    category?: string;
+    prerequisite?: string | null;
+    source?: string;
+    description?: unknown;
+  } | null;
   abilityScoreIncrease: {
     options: string[];
     amount: number[];
@@ -105,10 +119,38 @@ export interface ClassOption {
   primaryAbility?: string[];
   savingThrows?: string[];
   skillChoices: string[];
+  skillChoicesMeta?: Array<{
+    id: string;
+    nameRu: string;
+  }>;
+  availableSkillsMeta?: Array<{
+    id: string;
+    nameRu: string;
+  }>;
+  subclassLevel?: number;
   skillCount: number;
   startingGold: number;
   startingEquipment?: unknown;
   spellcasting?: SpellcastingConfig;
+}
+
+export interface SubclassFeatureOption {
+  id: string;
+  level: number;
+  name: string;
+  nameRu: string;
+  description?: unknown;
+}
+
+export interface SubclassOption {
+  id: string;
+  classId: string;
+  externalId: string;
+  name: string;
+  nameRu: string;
+  source: string;
+  description?: unknown;
+  features?: SubclassFeatureOption[];
 }
 
 export interface SpellOption {
@@ -144,6 +186,7 @@ export interface EquipmentOption {
 export interface DerivedSkill {
   id: string;
   sources: string[];
+  proficiencyMultiplier?: number;
 }
 
 export interface SkillConflict {

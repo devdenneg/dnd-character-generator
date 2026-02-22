@@ -272,6 +272,11 @@ export const classesApi = {
     return response.data;
   },
 
+  getSubclasses: async (id: string) => {
+    const response = await apiClient.get(`/classes/${id}/subclasses`);
+    return response.data;
+  },
+
   create: async (data: {
     externalId: string;
     name: string;

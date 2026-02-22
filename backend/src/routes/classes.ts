@@ -5,6 +5,7 @@ import {
   listMeta,
   getOne,
   getByExternalId,
+  getSubclasses,
   create,
   update,
   remove,
@@ -16,6 +17,7 @@ const router = Router();
 router.get("/meta", listMeta); // Must be before /:id to avoid conflict
 router.get("/", list);
 router.get("/external/:externalId", getByExternalId);
+router.get("/:id/subclasses", getSubclasses); // Must be before /:id to avoid conflict
 router.get("/:id", getOne);
 
 // Admin endpoints - require authentication for modifying

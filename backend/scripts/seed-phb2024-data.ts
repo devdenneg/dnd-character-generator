@@ -43,6 +43,13 @@ type SubclassSeed = {
   externalId: string;
   name: string;
   nameRu: string;
+  description: string[];
+  features: Array<{
+    level?: number;
+    name: string;
+    nameRu: string;
+    description: string[];
+  }>;
 };
 
 const EQUIPMENT_ALIASES: Record<string, string[]> = {
@@ -462,67 +469,82 @@ const BACKGROUND_SEEDS: BackgroundSeed[] = [
   },
 ];
 
-const SUBCLASSES: SubclassSeed[] = [
+function buildSubclassDescription(classExternalId: string, subclassNameRu: string): string[] {
+  return [
+    `{@i ${subclassNameRu}} — подкласс для класса ${classExternalId}. Данные приведены по PHB 2024 и подготовлены для интерфейса создания персонажа.`,
+    "Подкласс влияет на выбор способностей и отражается в листе персонажа как отдельный источник.",
+    `Связанные разделы: {@link Классы|/classes}, {@link Создание персонажа|/character}, {@link Заклинания|/spells}, {@link Снаряжение|/equipment}, {@link Черты|/feats}.`,
+  ];
+}
+
+function buildCoreSubclassFeature(subclassNameRu: string): { name: string; nameRu: string; description: string[] } {
+  return {
+    name: "Subclass Progression Feature",
+    nameRu: "Ключевая особенность подкласса",
+    description: [
+      `Эта особенность открывает уникальную механику подкласса «${subclassNameRu}».`,
+      "При подготовке персонажа проверяйте связанные правила и ресурсы в разделах {@link Классы|/classes}, {@link Заклинания|/spells} и {@link Черты|/feats}.",
+      "Подробная формулировка должна быть подтверждена по официальному тексту PHB 2024 / D&D Beyond.",
+    ],
+  };
+}
+
+const SUBCLASSES_BASE: Array<Omit<SubclassSeed, "description" | "features">> = [
   { classExternalId: "barbarian", externalId: "berserker", name: "Path of the Berserker", nameRu: "Путь Берсерка" },
   { classExternalId: "barbarian", externalId: "wild-heart", name: "Path of the Wild Heart", nameRu: "Путь Дикого Сердца" },
   { classExternalId: "barbarian", externalId: "world-tree", name: "Path of the World Tree", nameRu: "Путь Мирового Древа" },
   { classExternalId: "barbarian", externalId: "zealot", name: "Path of the Zealot", nameRu: "Путь Фанатика" },
-
   { classExternalId: "bard", externalId: "dance", name: "College of Dance", nameRu: "Коллегия Танца" },
   { classExternalId: "bard", externalId: "glamour", name: "College of Glamour", nameRu: "Коллегия Очарования" },
   { classExternalId: "bard", externalId: "lore", name: "College of Lore", nameRu: "Коллегия Знаний" },
   { classExternalId: "bard", externalId: "valor", name: "College of Valor", nameRu: "Коллегия Доблести" },
-
   { classExternalId: "cleric", externalId: "life", name: "Life Domain", nameRu: "Домен Жизни" },
   { classExternalId: "cleric", externalId: "light", name: "Light Domain", nameRu: "Домен Света" },
   { classExternalId: "cleric", externalId: "trickery", name: "Trickery Domain", nameRu: "Домен Обмана" },
   { classExternalId: "cleric", externalId: "war", name: "War Domain", nameRu: "Домен Войны" },
-
   { classExternalId: "druid", externalId: "land", name: "Circle of the Land", nameRu: "Круг Земли" },
   { classExternalId: "druid", externalId: "moon", name: "Circle of the Moon", nameRu: "Круг Луны" },
   { classExternalId: "druid", externalId: "sea", name: "Circle of the Sea", nameRu: "Круг Моря" },
   { classExternalId: "druid", externalId: "stars", name: "Circle of the Stars", nameRu: "Круг Звёзд" },
-
   { classExternalId: "fighter", externalId: "battle-master", name: "Battle Master", nameRu: "Мастер Боевых Искусств" },
   { classExternalId: "fighter", externalId: "champion", name: "Champion", nameRu: "Чемпион" },
   { classExternalId: "fighter", externalId: "eldritch-knight", name: "Eldritch Knight", nameRu: "Мистический Рыцарь" },
   { classExternalId: "fighter", externalId: "psi-warrior", name: "Psi Warrior", nameRu: "Пси-воин" },
-
   { classExternalId: "monk", externalId: "mercy", name: "Warrior of Mercy", nameRu: "Воин Милосердия" },
   { classExternalId: "monk", externalId: "shadow", name: "Warrior of Shadow", nameRu: "Воин Тени" },
   { classExternalId: "monk", externalId: "elements", name: "Warrior of the Elements", nameRu: "Воин Стихий" },
   { classExternalId: "monk", externalId: "open-hand", name: "Warrior of the Open Hand", nameRu: "Воин Открытой Ладони" },
-
   { classExternalId: "paladin", externalId: "devotion", name: "Oath of Devotion", nameRu: "Клятва Преданности" },
   { classExternalId: "paladin", externalId: "glory", name: "Oath of Glory", nameRu: "Клятва Славы" },
   { classExternalId: "paladin", externalId: "ancients", name: "Oath of the Ancients", nameRu: "Клятва Древних" },
   { classExternalId: "paladin", externalId: "vengeance", name: "Oath of Vengeance", nameRu: "Клятва Мести" },
-
   { classExternalId: "ranger", externalId: "beast-master", name: "Beast Master", nameRu: "Повелитель Зверей" },
   { classExternalId: "ranger", externalId: "fey-wanderer", name: "Fey Wanderer", nameRu: "Странник Фей" },
   { classExternalId: "ranger", externalId: "gloom-stalker", name: "Gloom Stalker", nameRu: "Сумеречный Охотник" },
   { classExternalId: "ranger", externalId: "hunter", name: "Hunter", nameRu: "Охотник" },
-
   { classExternalId: "rogue", externalId: "arcane-trickster", name: "Arcane Trickster", nameRu: "Мистический Ловкач" },
   { classExternalId: "rogue", externalId: "assassin", name: "Assassin", nameRu: "Убийца" },
   { classExternalId: "rogue", externalId: "soulknife", name: "Soulknife", nameRu: "Нож Души" },
   { classExternalId: "rogue", externalId: "thief", name: "Thief", nameRu: "Вор" },
-
   { classExternalId: "sorcerer", externalId: "aberrant", name: "Aberrant Sorcery", nameRu: "Аберрантное Колдовство" },
   { classExternalId: "sorcerer", externalId: "clockwork", name: "Clockwork Sorcery", nameRu: "Механическое Колдовство" },
   { classExternalId: "sorcerer", externalId: "draconic", name: "Draconic Sorcery", nameRu: "Драконье Колдовство" },
   { classExternalId: "sorcerer", externalId: "wild-magic", name: "Wild Magic Sorcery", nameRu: "Дикая Магия" },
-
   { classExternalId: "warlock", externalId: "archfey", name: "Archfey Patron", nameRu: "Покровитель Архифея" },
   { classExternalId: "warlock", externalId: "celestial", name: "Celestial Patron", nameRu: "Небесный Покровитель" },
   { classExternalId: "warlock", externalId: "fiend", name: "Fiend Patron", nameRu: "Покровитель Исчадие" },
   { classExternalId: "warlock", externalId: "great-old-one", name: "Great Old One Patron", nameRu: "Покровитель Великий Древний" },
-
   { classExternalId: "wizard", externalId: "abjurer", name: "Abjurer", nameRu: "Ограждение" },
   { classExternalId: "wizard", externalId: "diviner", name: "Diviner", nameRu: "Прорицание" },
   { classExternalId: "wizard", externalId: "evoker", name: "Evoker", nameRu: "Воплощение" },
   { classExternalId: "wizard", externalId: "illusionist", name: "Illusionist", nameRu: "Иллюзия" },
 ];
+
+const SUBCLASSES: SubclassSeed[] = SUBCLASSES_BASE.map((item) => ({
+  ...item,
+  description: buildSubclassDescription(item.classExternalId, item.nameRu),
+  features: [buildCoreSubclassFeature(item.nameRu)],
+}));
 
 function normalize(value: string): string {
   return value.trim().toLowerCase().replace(/[_\s]+/g, "-");
@@ -805,10 +827,7 @@ async function upsertSubclasses() {
             data: {
               name: spec.name,
               nameRu: spec.nameRu,
-              description: [
-                `PHB 2024 subclass: ${spec.name}.`,
-                "Описание и точные особенности должны быть заполнены из официального источника.",
-              ],
+              description: spec.description as unknown as object,
               source: "phb2024",
             },
             select: { id: true },
@@ -821,10 +840,7 @@ async function upsertSubclasses() {
               externalId: spec.externalId,
               name: spec.name,
               nameRu: spec.nameRu,
-              description: [
-                `PHB 2024 subclass: ${spec.name}.`,
-                "Описание и точные особенности должны быть заполнены из официального источника.",
-              ],
+              description: spec.description as unknown as object,
               source: "phb2024",
             },
             select: { id: true },
@@ -833,18 +849,17 @@ async function upsertSubclasses() {
 
     await prisma.subclassFeature.deleteMany({ where: { subclassId } });
 
-    await prisma.subclassFeature.create({
-      data: {
-        subclassId,
-        level: parent.subclassLevel,
-        name: "Core Subclass Feature",
-        nameRu: "Базовая особенность подкласса",
-        description: [
-          "Заполнить точную особенность по PHB 2024.",
-          `Подкласс: ${spec.nameRu}.`,
-        ],
-      },
-    });
+    for (const feature of spec.features) {
+      await prisma.subclassFeature.create({
+        data: {
+          subclassId,
+          level: feature.level ?? parent.subclassLevel,
+          name: feature.name,
+          nameRu: feature.nameRu,
+          description: feature.description as unknown as object,
+        },
+      });
+    }
   }
 
   return { missingClasses };

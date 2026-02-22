@@ -7,6 +7,7 @@ import {
     getAllClasses,
     getAllClassesMeta,
     getClassByExternalId,
+    getClassSubclassesById,
     getClassById,
     searchClasses,
     updateClass
@@ -230,6 +231,37 @@ export async function getByExternalId(
     });
   } catch (error) {
     console.error("Get class by external ID error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function getSubclasses(req: AuthenticatedRequest, res: Response) {
+  try {
+    const id = req.params.id as string;
+    const classData = await getClassSubclassesById(id);
+
+    if (!classData) {
+      res.status(404).json({
+        success: false,
+        error: "Class not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        classId: classData.id,
+        classExternalId: classData.externalId,
+        subclassLevel: classData.subclassLevel,
+        subclasses: classData.subclasses,
+      },
+    });
+  } catch (error) {
+    console.error("Get class subclasses error:", error);
     res.status(500).json({
       success: false,
       error: "Internal server error",

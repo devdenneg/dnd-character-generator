@@ -11,6 +11,10 @@ import { ContentRenderer } from "./content/ContentRenderer";
 export function RaceDetailsPage() {
   const { raceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get("returnTo");
+  const backPath = returnTo && returnTo.startsWith("/") ? returnTo : -1;
 
 
   const { data: backendResponse, isLoading, error } = useBackendRaceByExternalId(raceId || "");
@@ -38,7 +42,9 @@ export function RaceDetailsPage() {
           <p className="text-muted-foreground mb-8">
             {error ? (error as any).message : "Мы не смогли найти запрашиваемую расу в нашей базе данных."}
           </p>
-          <Button onClick={() => navigate("/races")}>Вернуться к списку</Button>
+          <Button onClick={() => navigate(typeof backPath === "string" ? backPath : "/races")}>
+            {returnTo ? "Назад к созданию" : "Вернуться к списку"}
+          </Button>
         </div>
       </PageLayout>
     );
@@ -66,7 +72,7 @@ export function RaceDetailsPage() {
                     <Button
                         variant="ghost"
                         className="text-white/70 hover:text-white hover:bg-white/10 -ml-4"
-                        onClick={() => navigate(-1)}
+                        onClick={() => (typeof backPath === "string" ? navigate(backPath) : navigate(-1))}
                     >
                         <ChevronLeft className="w-5 h-5 mr-2" />
                         Назад

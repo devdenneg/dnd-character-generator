@@ -46,7 +46,14 @@ export function mapBackendClassToFrontend(backendClass: BackendCharacterClass): 
     subclassName: {
         rus: s.nameRu,
         eng: s.name
-    }
+    },
+    features: (s.features || []).map((feature) => ({
+      id: feature.id,
+      level: feature.level,
+      name: feature.name,
+      nameRu: feature.nameRu,
+      description: feature.description,
+    })),
   })) || [];
 
   return {

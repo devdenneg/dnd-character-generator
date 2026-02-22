@@ -234,6 +234,7 @@ export const backendQueryKeys = {
   classesBySource: (source: string) => ["backend", "classes", "source", source] as const,
   class: (id: string) => ["backend", "class", id] as const,
   classByExternalId: (externalId: string) => ["backend", "class", "external", externalId] as const,
+  classSubclasses: (id: string) => ["backend", "class", id, "subclasses"] as const,
   backgrounds: ["backend", "backgrounds"] as const,
   backgroundsMeta: ["backend", "backgrounds", "meta"] as const,
   backgroundsBySource: (source: string) => ["backend", "backgrounds", "source", source] as const,
@@ -335,6 +336,15 @@ export function useBackendClassByExternalId(externalId: string) {
     queryFn: () => classesApi.getByExternalId(externalId),
     enabled: !!externalId,
     staleTime: 5 * 60 * 1000, // 5 минут
+  });
+}
+
+export function useBackendClassSubclasses(id: string) {
+  return useQuery({
+    queryKey: backendQueryKeys.classSubclasses(id),
+    queryFn: () => classesApi.getSubclasses(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

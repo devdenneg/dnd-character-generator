@@ -1,5 +1,5 @@
-import { useBackendFeatsMeta } from "@/api/hooks";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { StepHeader } from "../shared/StepHeader";
@@ -11,46 +11,44 @@ interface OriginStepProps {
   backgrounds: BackgroundOption[];
 }
 
-function normalizeLookupValue(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .replace(/[()]/g, "");
-}
-
 export function OriginStep({ races, backgrounds }: OriginStepProps) {
   const navigate = useNavigate();
-  const { data: featsMetaData } = useBackendFeatsMeta();
   const raceId = useCreatorStore((state) => state.raceId);
   const backgroundId = useCreatorStore((state) => state.backgroundId);
+  const level = useCreatorStore((state) => state.level);
   const setRace = useCreatorStore((state) => state.setRace);
   const setBackground = useCreatorStore((state) => state.setBackground);
+  const setLevel = useCreatorStore((state) => state.setLevel);
   const selectedBackground = useMemo(
     () => backgrounds.find((item) => item.id === backgroundId) ?? null,
     [backgrounds, backgroundId]
   );
-  const featLookup = useMemo(() => {
-    const byId = new Map<string, { id: string; name: string; nameRu: string }>();
-    const byName = new Map<string, { id: string; name: string; nameRu: string }>();
-    const feats = featsMetaData?.data ?? [];
+  const selectedBackgroundOriginFeat = selectedBackground?.originFeatMeta ?? null;
+  const selectedFeatDescriptionPreview = useMemo(() => {
+    const raw = selectedBackgroundOriginFeat?.description;
+    if (!raw) return "";
 
-    for (const feat of feats) {
-      byId.set(feat.id.toLowerCase(), feat);
-      byName.set(normalizeLookupValue(feat.name), feat);
-      byName.set(normalizeLookupValue(feat.nameRu), feat);
-    }
+    const extractText = (value: unknown): string => {
+      if (typeof value === "string") return value;
+      if (Array.isArray(value)) return value.map((item) => extractText(item)).join(" ");
+      if (typeof value === "object" && value !== null) {
+        const entry = value as Record<string, unknown>;
+        if (typeof entry.text === "string") return entry.text;
+        if (Array.isArray(entry.entries)) {
+          return (entry.entries as unknown[]).map((item) => extractText(item)).join(" ");
+        }
+      }
+      return "";
+    };
 
-    return { byId, byName };
-  }, [featsMetaData]);
-  const resolveOriginFeat = (originFeat: string) => {
-    const byId = featLookup.byId.get(originFeat.toLowerCase());
-    if (byId) return byId;
-    return featLookup.byName.get(normalizeLookupValue(originFeat)) ?? null;
-  };
-  const selectedBackgroundOriginFeat = selectedBackground
-    ? resolveOriginFeat(selectedBackground.originFeat)
-    : null;
+    const plain = extractText(raw)
+      .replace(/\{@[^ ]+\s([^}|]+)(?:\|[^}]*)?\}/g, "$1")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!plain) return "";
+    return plain.length > 220 ? `${plain.slice(0, 220)}...` : plain;
+  }, [selectedBackgroundOriginFeat?.description]);
 
   return (
     <div className="space-y-6">
@@ -60,6 +58,23 @@ export function OriginStep({ races, backgrounds }: OriginStepProps) {
       />
 
       <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-2 md:col-span-2">
+          <Label>Стартовый уровень</Label>
+          <div className="flex items-center gap-3">
+            <Input
+              type="number"
+              min={1}
+              max={20}
+              value={String(level)}
+              onChange={(event) => setLevel(Number(event.target.value) || 1)}
+              className="max-w-40"
+            />
+            <p className="text-xs text-muted-foreground">
+              Влияет на лимиты заклинаний, итоговые хиты, бонус мастерства и расчеты листа.
+            </p>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label>Раса</Label>
           <div className="max-h-80 overflow-auto rounded-lg border border-border/60 bg-card/40">
@@ -94,7 +109,8 @@ export function OriginStep({ races, backgrounds }: OriginStepProps) {
                 <p className="font-medium">{background.nameRu}</p>
                 <p className="text-xs text-muted-foreground">
                   {background.name} • Черта происхождения:{" "}
-                  {resolveOriginFeat(background.originFeat)?.nameRu ||
+                  {background.originFeatMeta?.nameRu ||
+                    background.originFeatMeta?.name ||
                     background.originFeat}
                 </p>
               </button>
@@ -122,6 +138,9 @@ export function OriginStep({ races, backgrounds }: OriginStepProps) {
                 <span>{selectedBackground.originFeat}</span>
               )}
             </div>
+            {selectedFeatDescriptionPreview ? (
+              <p className="text-xs text-muted-foreground">{selectedFeatDescriptionPreview}</p>
+            ) : null}
             {selectedBackground.equipment && selectedBackground.equipment.length > 0 ? (
               <div>
                 <p className="text-sm text-muted-foreground mb-2">

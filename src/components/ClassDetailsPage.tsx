@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mapBackendClassToFrontend } from "@/utils/classMapper";
 import { translateAbility } from "@/utils/classTranslations";
+import { describeFeatureInfluence, detectSubclassImpacts } from "@/utils/subclassInsights";
 import { ArrowRight, BookOpen, ChevronLeft, Loader2, Shield, Swords } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -43,6 +44,8 @@ export function ClassDetailsPage() {
   const { classId } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
+  const backPath = returnTo && returnTo.startsWith("/") ? returnTo : "/classes";
 
   const viewTab = searchParams.get("tab") || "description";
   const setViewTab = (tab: string) => {
@@ -92,7 +95,9 @@ export function ClassDetailsPage() {
           <p className="text-muted-foreground mb-8">
             {error ? (error as any).message : "Мы не смогли найти запрашиваемый класс в нашей базе данных."}
           </p>
-          <Button onClick={() => navigate("/classes")}>Вернуться к списку</Button>
+          <Button onClick={() => navigate(backPath)}>
+            {returnTo ? "Назад к созданию" : "Вернуться к списку"}
+          </Button>
         </div>
       </PageLayout>
     );
@@ -551,11 +556,64 @@ export function ClassDetailsPage() {
                                                                  <span>{(subclass as any).source?.name?.rus || "Официальный источник"}</span>
                                                              </div>
                                                          </div>
-                                                         <Button variant="outline" size="sm" className="hidden md:flex">Подробнее</Button>
                                                     </div>
                                                     <div className="prose prose-zinc dark:prose-invert max-w-none">
                                                         <ContentRenderer content={subclass.description as any} />
                                                     </div>
+                                                    {Array.isArray((subclass as any).features) && (subclass as any).features.length > 0 ? (
+                                                      <div className="mt-6 space-y-3">
+                                                        <p className="text-sm font-semibold text-muted-foreground">
+                                                          Особенности подкласса
+                                                        </p>
+                                                        {(() => {
+                                                          const influence = describeFeatureInfluence((subclass as any).features);
+                                                          if (influence.length === 0) return null;
+                                                          return (
+                                                            <div className="flex flex-wrap gap-2">
+                                                              {influence.map((tag: string) => (
+                                                                <span
+                                                                  key={`${(subclass as any).key}-${tag}`}
+                                                                  className="rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-xs text-primary"
+                                                                >
+                                                                  Влияет на: {tag}
+                                                                </span>
+                                                              ))}
+                                                            </div>
+                                                          );
+                                                        })()}
+                                                        <div className="space-y-2">
+                                                          {(subclass as any).features.map((feature: any) => (
+                                                            <div
+                                                              key={feature.id ?? `${feature.level}-${feature.name}`}
+                                                              className="rounded-md border border-border/50 bg-card/40 p-3"
+                                                            >
+                                                              <p className="text-sm font-medium">
+                                                                Ур. {feature.level}: {feature.nameRu || feature.name}
+                                                              </p>
+                                                              {(() => {
+                                                                const tags = detectSubclassImpacts(feature.description);
+                                                                if (tags.length === 0) return null;
+                                                                return (
+                                                                  <div className="mt-2 flex flex-wrap gap-2">
+                                                                    {tags.map((tag) => (
+                                                                      <span
+                                                                        key={`${feature.id ?? feature.name}-${tag}`}
+                                                                        className="rounded-md border border-border/60 bg-muted/30 px-2 py-1 text-[11px] text-muted-foreground"
+                                                                      >
+                                                                        {tag}
+                                                                      </span>
+                                                                    ))}
+                                                                  </div>
+                                                                );
+                                                              })()}
+                                                              <div className="mt-2 prose prose-zinc dark:prose-invert max-w-none text-sm">
+                                                                <ContentRenderer content={feature.description as any} />
+                                                              </div>
+                                                            </div>
+                                                          ))}
+                                                        </div>
+                                                      </div>
+                                                    ) : null}
                                                </div>
                                            </Card>
                                        ))}

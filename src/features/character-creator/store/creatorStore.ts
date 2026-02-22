@@ -22,6 +22,7 @@ interface CreatorState {
   abilityIncreases: Partial<AbilityScores>;
   skills: string[];
   featSkills: string[];
+  expertiseSkills: string[];
   replacementSkills: string[];
   level: number;
   includeBackgroundEquipment: boolean;
@@ -46,6 +47,7 @@ interface CreatorState {
   setAbilityIncrease: (ability: AbilityKey, value: number) => void;
   toggleSkill: (skill: string) => void;
   toggleFeatSkill: (skill: string) => void;
+  toggleExpertiseSkill: (skill: string) => void;
   toggleReplacementSkill: (skill: string) => void;
   setReplacementSkills: (skills: string[]) => void;
   setLevel: (level: number) => void;
@@ -58,6 +60,8 @@ interface CreatorState {
   setEquipment: (equipment: EquipmentSelection[]) => void;
   toggleCantrip: (spellId: string) => void;
   toggleSpell: (spellId: string) => void;
+  setCantrips: (spellIds: string[]) => void;
+  setSpells: (spellIds: string[]) => void;
   setDetails: (details: Partial<CharacterDetails>) => void;
   setPublic: (isPublic: boolean) => void;
   reset: () => void;
@@ -102,6 +106,7 @@ export const useCreatorStore = create<CreatorState>()(
       abilityIncreases: {},
       skills: [],
       featSkills: [],
+      expertiseSkills: [],
       replacementSkills: [],
       level: 1,
       includeBackgroundEquipment: true,
@@ -132,8 +137,10 @@ export const useCreatorStore = create<CreatorState>()(
       setClass: (classId) =>
         set({
           classId,
+          subclassId: null,
           skills: [],
           featSkills: [],
+          expertiseSkills: [],
           replacementSkills: [],
           cantrips: [],
           spells: [],
@@ -169,6 +176,19 @@ export const useCreatorStore = create<CreatorState>()(
             ? state.featSkills.filter((item) => item !== skill)
             : [...state.featSkills, skill],
         })),
+      toggleExpertiseSkill: (skill) =>
+        set((state) => {
+          const normalized = skill.trim().toLowerCase();
+          const merged = Array.from(new Set([...state.skills, ...state.featSkills, ...state.replacementSkills]));
+          if (!merged.includes(normalized)) {
+            return state;
+          }
+          return {
+            expertiseSkills: state.expertiseSkills.includes(normalized)
+              ? state.expertiseSkills.filter((item) => item !== normalized)
+              : [...state.expertiseSkills, normalized],
+          };
+        }),
       toggleReplacementSkill: (skill) =>
         set((state) => ({
           replacementSkills: state.replacementSkills.includes(skill)
@@ -202,6 +222,8 @@ export const useCreatorStore = create<CreatorState>()(
             ? state.spells.filter((item) => item !== spellId)
             : [...state.spells, spellId],
         })),
+      setCantrips: (cantrips) => set({ cantrips: Array.from(new Set(cantrips)) }),
+      setSpells: (spells) => set({ spells: Array.from(new Set(spells)) }),
       setDetails: (details) =>
         set((state) => ({ details: { ...state.details, ...details } })),
       setPublic: (isPublic) => set({ isPublic }),
@@ -217,6 +239,7 @@ export const useCreatorStore = create<CreatorState>()(
           abilityIncreases: {},
           skills: [],
           featSkills: [],
+          expertiseSkills: [],
           replacementSkills: [],
           level: 1,
           includeBackgroundEquipment: true,
@@ -244,6 +267,7 @@ export const useCreatorStore = create<CreatorState>()(
         abilityIncreases: state.abilityIncreases,
         skills: state.skills,
         featSkills: state.featSkills,
+        expertiseSkills: state.expertiseSkills,
         replacementSkills: state.replacementSkills,
         level: state.level,
         includeBackgroundEquipment: state.includeBackgroundEquipment,

@@ -223,11 +223,14 @@ export function parseDescriptionLine(line: string): ParsedElement[] {
       }
 
       default:
-        // Неизвестный тег - оставляем как текст
-        elements.push({
-          type: "text",
-          content: line.substring(tagStart, tagEnd + 1),
-        });
+        // Неизвестный тег: берем только читаемую часть до "|" (без служебной разметки)
+        {
+          const plain = tagContent.split("|")[0]?.trim() || tagContent;
+          elements.push({
+            type: "text",
+            content: plain,
+          });
+        }
     }
 
     currentIndex = tagEnd + 1;

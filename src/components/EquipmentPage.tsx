@@ -147,6 +147,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
 
   // Инициализируем состояние из URL параметров
   const searchParams = new URLSearchParams(location.search);
+  const returnTo = searchParams.get("returnTo") || "";
   const [selectedCategory, setSelectedCategory] = useState<string>(() =>
     searchParams.get('category') || 'all'
   );
@@ -208,18 +209,21 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
   // Функция для открытия предмета
   const openEquipment = (externalId: string) => {
     // Обновляем URL
-    navigate(`${location.pathname}#${externalId}`, { replace: false });
+    navigate(`${location.pathname}${location.search}#${externalId}`, { replace: false });
   };
 
 
   // Функция для закрытия drawer
   const closeDrawer = () => {
-    navigate(location.pathname, { replace: true });
+    navigate(`${location.pathname}${location.search}`, { replace: true });
   };
 
   // Синхронизация состояния с URL
   useEffect(() => {
     const params = new URLSearchParams();
+    if (returnTo) {
+      params.set("returnTo", returnTo);
+    }
 
     if (selectedCategory !== 'all') {
       params.set('category', selectedCategory);
@@ -255,7 +259,7 @@ export function EquipmentPage({ onBack }: EquipmentPageProps) {
         hash: location.hash,
       }, { replace: true });
     }
-  }, [selectedCategory, searchTerm, minCost, maxCost, selectedArmorTypes, selectedWeaponProperties, navigate, location.pathname, location.hash, location.search]);
+  }, [returnTo, selectedCategory, searchTerm, minCost, maxCost, selectedArmorTypes, selectedWeaponProperties, navigate, location.pathname, location.hash, location.search]);
 
   // Функции управления фильтрами
   const toggleArmorType = (type: string) => {

@@ -1,4 +1,5 @@
 import prisma from "../db";
+import { toSkillMetaList } from "../utils/skills";
 
 export interface EquipmentWithQuantity {
   equipmentId: string;
@@ -23,6 +24,41 @@ export interface BackgroundInput {
   source: string;
 }
 
+async function attachBackgroundMeta<T extends { originFeat: string; skillProficiencies: string[] }>(
+  backgrounds: T[]
+) {
+  const featIds = Array.from(
+    new Set(
+      backgrounds
+        .map((background) => background.originFeat)
+        .filter((value): value is string => typeof value === "string" && value.length > 0)
+    )
+  );
+
+  const feats = featIds.length
+    ? await prisma.feat.findMany({
+        where: { id: { in: featIds } },
+        select: {
+          id: true,
+          name: true,
+          nameRu: true,
+          description: true,
+          category: true,
+          prerequisite: true,
+          source: true,
+        },
+      })
+    : [];
+
+  const featMap = new Map(feats.map((feat) => [feat.id, feat]));
+
+  return backgrounds.map((background) => ({
+    ...background,
+    skillProficienciesMeta: toSkillMetaList(background.skillProficiencies ?? []),
+    originFeatMeta: featMap.get(background.originFeat) ?? null,
+  }));
+}
+
 export async function getAllBackgrounds(source?: string) {
   const backgrounds = await prisma.background.findMany({
     where: source ? { source } : undefined,
@@ -36,13 +72,15 @@ export async function getAllBackgrounds(source?: string) {
     orderBy: [{ source: "asc" }, { name: "asc" }],
   });
 
-  return backgrounds.map((bg) => ({
+  const normalized = backgrounds.map((bg) => ({
     ...bg,
     equipment: bg.equipment.map((e) => ({
       ...e.equipment,
       quantity: e.quantity,
     })),
   }));
+
+  return attachBackgroundMeta(normalized);
 }
 
 export async function getBackgroundById(id: string) {
@@ -59,13 +97,16 @@ export async function getBackgroundById(id: string) {
 
   if (!background) return null;
 
-  return {
+  const normalized = {
     ...background,
     equipment: background.equipment.map((e) => ({
       ...e.equipment,
       quantity: e.quantity,
     })),
   };
+
+  const [enriched] = await attachBackgroundMeta([normalized]);
+  return enriched;
 }
 
 export async function getBackgroundByExternalId(externalId: string) {
@@ -82,13 +123,16 @@ export async function getBackgroundByExternalId(externalId: string) {
 
   if (!background) return null;
 
-  return {
+  const normalized = {
     ...background,
     equipment: background.equipment.map((e) => ({
       ...e.equipment,
       quantity: e.quantity,
     })),
   };
+
+  const [enriched] = await attachBackgroundMeta([normalized]);
+  return enriched;
 }
 
 export async function createBackground(input: BackgroundInput) {
@@ -123,13 +167,16 @@ export async function createBackground(input: BackgroundInput) {
     },
   });
 
-  return {
+  const normalized = {
     ...background,
     equipment: background.equipment.map((e) => ({
       ...e.equipment,
       quantity: e.quantity,
     })),
   };
+
+  const [enriched] = await attachBackgroundMeta([normalized]);
+  return enriched;
 }
 
 export async function createManyBackgrounds(inputs: BackgroundInput[]) {
@@ -168,13 +215,15 @@ export async function createManyBackgrounds(inputs: BackgroundInput[]) {
     )
   );
 
-  return results.map((bg) => ({
+  const normalized = results.map((bg) => ({
     ...bg,
     equipment: bg.equipment.map((e) => ({
       ...e.equipment,
       quantity: e.quantity,
     })),
   }));
+
+  return attachBackgroundMeta(normalized);
 }
 
 export async function updateBackground(
@@ -233,13 +282,16 @@ export async function updateBackground(
     },
   });
 
-  return {
+  const normalized = {
     ...background,
     equipment: background.equipment.map((e) => ({
       ...e.equipment,
       quantity: e.quantity,
     })),
   };
+
+  const [enriched] = await attachBackgroundMeta([normalized]);
+  return enriched;
 }
 
 export async function deleteBackground(id: string) {

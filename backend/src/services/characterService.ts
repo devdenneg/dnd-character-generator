@@ -197,7 +197,58 @@ function buildDataPayload(input: CreateCharacterInput, shortId: string): JsonRec
   };
 }
 
+async function validateSubclassForClass({
+  classId,
+  level,
+  subclassId,
+}: {
+  classId: string;
+  level: number;
+  subclassId?: string | null;
+}) {
+  const cls = await prisma.characterClass.findUnique({
+    where: { id: classId },
+    select: {
+      id: true,
+      subclassLevel: true,
+      subclasses: {
+        select: { id: true },
+      },
+    },
+  });
+
+  if (!cls) {
+    throw new ServiceValidationError("Selected class was not found");
+  }
+
+  const required = level >= cls.subclassLevel;
+  const subclassIds = new Set(cls.subclasses.map((item) => item.id));
+  const hasSubclass = Boolean(subclassId);
+
+  if (required && !hasSubclass) {
+    throw new ServiceValidationError(
+      `Subclass is required from level ${cls.subclassLevel} for this class`
+    );
+  }
+
+  if (!required && hasSubclass) {
+    throw new ServiceValidationError(
+      `Subclass cannot be selected before level ${cls.subclassLevel} for this class`
+    );
+  }
+
+  if (hasSubclass && !subclassIds.has(subclassId as string)) {
+    throw new ServiceValidationError("Selected subclass does not belong to the selected class");
+  }
+}
+
 export async function createCharacter(userId: string, input: CreateCharacterInput) {
+  await validateSubclassForClass({
+    classId: input.classId,
+    level: input.level,
+    subclassId: input.subclassId,
+  });
+
   const shortId = await ensureUniqueShortId();
   const data = buildDataPayload(input, shortId);
 
@@ -271,6 +322,32 @@ export async function updateCharacter(id: string, userId: string, input: UpdateC
   const currentData = asRecord(existing.data);
   const currentMeta = asRecord(currentData.meta);
   const currentProgression = asRecord(currentData.progression);
+  const classId = typeof currentData.classId === "string" ? currentData.classId : "";
+
+  if (!classId) {
+    throw new ServiceValidationError("Character class is missing in stored data");
+  }
+
+  if (input.level !== undefined || input.subclassId !== undefined) {
+    const effectiveLevel =
+      typeof input.level === "number"
+        ? input.level
+        : typeof currentProgression.level === "number"
+          ? currentProgression.level
+          : 1;
+    const effectiveSubclassId =
+      input.subclassId !== undefined
+        ? input.subclassId
+        : typeof currentData.subclassId === "string"
+          ? currentData.subclassId
+          : null;
+
+    await validateSubclassForClass({
+      classId,
+      level: effectiveLevel,
+      subclassId: effectiveSubclassId,
+    });
+  }
 
   const nextData: JsonRecord = {
     ...currentData,
@@ -323,10 +400,25 @@ export async function levelUpCharacter(id: string, userId: string, input: LevelU
   const currentProgression = getProgression(existing.data);
   const currentLevel = currentProgression.level;
   const nextLevel = currentLevel + 1;
+  const classId = typeof currentData.classId === "string" ? currentData.classId : "";
+  const currentSubclassId =
+    typeof currentData.subclassId === "string" ? currentData.subclassId : null;
+  const nextSubclassId =
+    input.subclassId !== undefined ? input.subclassId : currentSubclassId;
 
   if (nextLevel > 20) {
     throw new ServiceValidationError("Character is already at max level (20)");
   }
+
+  if (!classId) {
+    throw new ServiceValidationError("Character class is missing in stored data");
+  }
+
+  await validateSubclassForClass({
+    classId,
+    level: nextLevel,
+    subclassId: nextSubclassId,
+  });
 
   const classSnapshot = asRecord(currentData.classSnapshot);
   const spellcasting = asRecord(classSnapshot.spellcasting);

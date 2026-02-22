@@ -221,7 +221,7 @@ export function LevelUpCharacterPage() {
       return;
     }
 
-    if (limit > 0 && current.length >= limit) return;
+    if (limit <= 0 || current.length >= limit) return;
     setCurrent([...current, spellId]);
   };
 

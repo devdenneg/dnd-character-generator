@@ -38,11 +38,12 @@ function skillBonus(
   skillId: string,
   abilityScores: AbilityScores,
   proficiency: number,
-  proficient: boolean
+  proficient: boolean,
+  proficiencyMultiplier = 1
 ): number {
   const ability = (SKILL_TO_ABILITY[skillId] ?? "wisdom") as AbilityKey;
   const base = abilityModifier(abilityScores[ability]);
-  return base + (proficient ? proficiency : 0);
+  return base + (proficient ? proficiency * Math.max(1, proficiencyMultiplier) : 0);
 }
 
 export function CharacterSheetPreview({
@@ -67,33 +68,35 @@ export function CharacterSheetPreview({
   const perceptionProficient = skills.some((skill) => skill.id === "perception");
   const passive = passivePerception(abilityScores, perceptionProficient, proficiency);
   const casting = spellcastingAbilityModifier(classData, abilityScores);
+  const skillNameById = new Map((classData?.availableSkillsMeta ?? []).map((item) => [item.id, item.nameRu]));
+  const getSkillName = (skillId: string) => skillNameById.get(skillId) ?? skillId;
 
   return (
     <div className="space-y-6 rounded-lg border border-border/60 p-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded border border-border/40 p-3">
-          <p className="text-xs text-muted-foreground">Proficiency</p>
+          <p className="text-xs text-muted-foreground">Бонус мастерства</p>
           <p className="text-xl font-semibold">{formatSigned(proficiency)}</p>
         </div>
         <div className="rounded border border-border/40 p-3">
-          <p className="text-xs text-muted-foreground">Armor Class</p>
+          <p className="text-xs text-muted-foreground">Класс брони</p>
           <p className="text-xl font-semibold">{armor.total}</p>
           <p className="text-[11px] text-muted-foreground">{armor.formula}</p>
         </div>
         <div className="rounded border border-border/40 p-3">
-          <p className="text-xs text-muted-foreground">Hit Points</p>
+          <p className="text-xs text-muted-foreground">Хиты</p>
           <p className="text-xl font-semibold">{hp}</p>
-          <p className="text-[11px] text-muted-foreground">d{classData?.hitDie ?? 8} + CON</p>
+          <p className="text-[11px] text-muted-foreground">d{classData?.hitDie ?? 8} + мод. Телосложения</p>
         </div>
         <div className="rounded border border-border/40 p-3">
-          <p className="text-xs text-muted-foreground">Initiative</p>
+          <p className="text-xs text-muted-foreground">Инициатива</p>
           <p className="text-xl font-semibold">{formatSigned(initiative)}</p>
-          <p className="text-[11px] text-muted-foreground">Passive Perception {passive}</p>
+          <p className="text-[11px] text-muted-foreground">Пассивная внимательность {passive}</p>
         </div>
       </div>
 
       <div>
-        <p className="mb-2 font-medium">Ability Scores</p>
+        <p className="mb-2 font-medium">Характеристики</p>
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
           {ABILITY_ORDER.map((ability) => (
             <div key={ability} className="rounded border border-border/40 p-2 text-sm">
@@ -105,13 +108,13 @@ export function CharacterSheetPreview({
       </div>
 
       <div>
-        <p className="mb-2 font-medium">Saving Throws</p>
+        <p className="mb-2 font-medium">Спасброски</p>
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
           {saves.map((save) => (
             <div key={save.id} className="rounded border border-border/40 p-2 text-sm">
               <p className="font-medium">{save.label}</p>
               <p>
-                {formatSigned(save.value)} {save.proficient ? "(prof)" : ""}
+                {formatSigned(save.value)} {save.proficient ? "(владение)" : ""}
               </p>
             </div>
           ))}
@@ -119,16 +122,19 @@ export function CharacterSheetPreview({
       </div>
 
       <div>
-        <p className="mb-2 font-medium">Skills</p>
+        <p className="mb-2 font-medium">Навыки</p>
         {skills.length === 0 ? (
           <p className="text-sm text-muted-foreground">Нет выбранных навыков.</p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
             {skills.map((skill) => (
               <div key={skill.id} className="rounded border border-border/40 p-2 text-sm">
-                <p className="font-medium">{skill.id}</p>
-                <p>{formatSigned(skillBonus(skill.id, abilityScores, proficiency, true))}</p>
-                <p className="text-[11px] text-muted-foreground">{skill.sources.join(" + ")}</p>
+                <p className="font-medium">{getSkillName(skill.id)}</p>
+                <p>{formatSigned(skillBonus(skill.id, abilityScores, proficiency, true, skill.proficiencyMultiplier ?? 1))}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {skill.sources.join(" + ")}
+                  {(skill.proficiencyMultiplier ?? 1) > 1 ? " • x2 мастерства" : ""}
+                </p>
               </div>
             ))}
           </div>
@@ -136,7 +142,7 @@ export function CharacterSheetPreview({
       </div>
 
       <div>
-        <p className="mb-2 font-medium">Actions / Attacks</p>
+        <p className="mb-2 font-medium">Действия и атаки</p>
         {actions.length === 0 ? (
           <p className="text-sm text-muted-foreground">Оружие не найдено в инвентаре.</p>
         ) : (
@@ -154,12 +160,12 @@ export function CharacterSheetPreview({
 
       {casting.ability ? (
         <div className="rounded border border-border/40 p-3 text-sm">
-          <p className="font-medium">Spellcasting</p>
+          <p className="font-medium">Колдовство</p>
           <p>
-            Ability: {ABILITY_LABELS[casting.ability]} ({formatSigned(casting.modifier)})
+            Характеристика: {ABILITY_LABELS[casting.ability]} ({formatSigned(casting.modifier)})
           </p>
-          <p>Spell Save DC: {8 + proficiency + casting.modifier}</p>
-          <p>Spell Attack Bonus: {formatSigned(proficiency + casting.modifier)}</p>
+          <p>Сложность спасброска: {8 + proficiency + casting.modifier}</p>
+          <p>Бонус атаки заклинанием: {formatSigned(proficiency + casting.modifier)}</p>
         </div>
       ) : null}
     </div>

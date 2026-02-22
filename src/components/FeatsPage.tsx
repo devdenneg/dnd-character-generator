@@ -1,4 +1,5 @@
 import { useBackendFeat, useBackendFeatsMeta } from "@/api/hooks";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SlideOverDrawer } from "@/components/ui/slide-over-drawer";
 import { SortSelect } from "@/components/ui/SortSelect";
@@ -13,6 +14,7 @@ export default function FeatsPage() {
 
   // URL state
   const searchParams = new URLSearchParams(location.search);
+  const returnTo = searchParams.get("returnTo") || "";
   const [searchQuery, setSearchQuery] = useState(
     () => searchParams.get("search") || ""
   );
@@ -51,6 +53,7 @@ export default function FeatsPage() {
   // Navigation management
   useEffect(() => {
     const params = new URLSearchParams();
+    if (returnTo) params.set("returnTo", returnTo);
     if (searchQuery) params.set("search", searchQuery);
 
     const newSearch = params.toString();
@@ -63,7 +66,7 @@ export default function FeatsPage() {
         hash: location.hash,
       }, { replace: true });
     }
-  }, [searchQuery, navigate, location.pathname, location.hash, location.search]);
+  }, [returnTo, searchQuery, navigate, location.pathname, location.hash, location.search]);
 
   const openFeat = (id: string) => {
     navigate(`${location.pathname}${location.search}#${id}`, { replace: false });
@@ -85,6 +88,14 @@ export default function FeatsPage() {
                 {feats.length} черт доступно
               </p>
             </div>
+            {returnTo ? (
+              <Button
+                variant="outline"
+                onClick={() => navigate(returnTo)}
+              >
+                Назад к созданию
+              </Button>
+            ) : null}
           </div>
 
           {/* Search and Sort */}

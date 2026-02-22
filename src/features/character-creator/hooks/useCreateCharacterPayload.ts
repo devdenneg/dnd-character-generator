@@ -40,6 +40,7 @@ export function useCreateCharacterPayload({
       classSkills: state.skills,
       backgroundSkills: background?.skillProficiencies ?? [],
       featSkills: state.featSkills,
+      expertiseSkills: state.expertiseSkills,
       replacementSkills: state.replacementSkills,
     }).map((item) => item.id);
 
@@ -56,9 +57,13 @@ export function useCreateCharacterPayload({
       state.useClassGoldAlternative
     );
 
-    const wallet = state.useClassGoldAlternative && hasClassGoldAlternative(characterClass)
-      ? applyGoldToWallet(state.wallet, characterClass?.startingGold ?? 0)
-      : state.wallet;
+    const classGold =
+      state.useClassGoldAlternative && hasClassGoldAlternative(characterClass)
+        ? characterClass?.startingGold ?? 0
+        : 0;
+    const backgroundGold = background?.startingGold ?? 0;
+    const totalStartingGold = classGold + backgroundGold;
+    const wallet = applyGoldToWallet(state.wallet, totalStartingGold);
 
     const mergedEquipment = buildDerivedEquipment({
       includeBackgroundEquipment: state.includeBackgroundEquipment,
@@ -118,13 +123,20 @@ export function useCreateCharacterPayload({
           classSkills: state.skills,
           backgroundSkills: background?.skillProficiencies ?? [],
           featSkills: state.featSkills,
+          expertiseSkills: state.expertiseSkills,
           replacementSkills: state.replacementSkills,
         }),
+        expertiseSkills: state.expertiseSkills,
         equipment: readableEquipment,
         classEquipmentMode:
           state.useClassGoldAlternative && hasClassGoldAlternative(characterClass)
             ? "gold-alternative"
             : "standard-equipment",
+        wallet: {
+          classGold,
+          backgroundGold,
+          totalStartingGold,
+        },
       },
     };
   }, [state, races, backgrounds, classes, equipmentOptions]);

@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CreatorLayout } from "./components/CreatorLayout";
 import { CreatorNavigation } from "./components/CreatorNavigation";
@@ -18,16 +18,37 @@ import {
   buildDerivedEquipment,
   getSkillConflictInfo,
   getAvailableSpellsForClass,
+  getMaxSpellLevelFromSlots,
   getSpellLimits,
   parseClassStartingEquipment,
   selectedEquipmentCostCopper,
 } from "./utils/characterDerivations";
+import { isValidPointBuy, isValidStandardArray } from "./utils/calculations";
 
 export function CharacterCreatorPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [submitError, setSubmitError] = useState<string>("");
   const step = useCreatorStore((state) => state.step);
+  const setStep = useCreatorStore((state) => state.setStep);
   const state = useCreatorStore();
+  const requestedStep = searchParams.get("step");
+
+  useEffect(() => {
+    if (!requestedStep) return;
+    const allowed = new Set([
+      "origin",
+      "class",
+      "abilities",
+      "equipment",
+      "spells",
+      "details",
+      "review",
+    ]);
+    if (allowed.has(requestedStep) && requestedStep !== step) {
+      setStep(requestedStep as typeof step);
+    }
+  }, [requestedStep, setStep, step]);
 
   const { races, backgrounds, classes, equipment, spells, isLoading, isError } =
     useCreatorReferenceData();
@@ -49,7 +70,10 @@ export function CharacterCreatorPage() {
   const spellLimits = getSpellLimits(selectedClass, state.level);
   const availableSpells = getAvailableSpellsForClass(selectedClass, spells);
   const cantripPool = availableSpells.filter((spell) => spell.level === 0);
-  const spellPool = availableSpells.filter((spell) => spell.level > 0);
+  const maxSpellLevel = getMaxSpellLevelFromSlots(spellLimits.spellSlots);
+  const spellPool = availableSpells.filter(
+    (spell) => spell.level > 0 && spell.level <= maxSpellLevel
+  );
   const requiredCantrips = Math.min(spellLimits.cantrips, cantripPool.length);
   const requiredSpells = Math.min(spellLimits.spells, spellPool.length);
 
@@ -61,6 +85,8 @@ export function CharacterCreatorPage() {
         if (!state.classId) return false;
         const classData = classes.find((item) => item.id === state.classId);
         if (!classData) return false;
+        const subclassLevel = classData.subclassLevel ?? Number.POSITIVE_INFINITY;
+        if (state.level >= subclassLevel && !state.subclassId) return false;
         const conflictInfo = getSkillConflictInfo({
           classSkills: state.skills,
           backgroundSkills,
@@ -72,7 +98,37 @@ export function CharacterCreatorPage() {
         );
       }
       case "abilities":
-        return Object.values(state.abilityScores).every((value) => value >= 1);
+        {
+          const allPositive = Object.values(state.abilityScores).every((value) => value >= 1);
+          if (!allPositive) return false;
+
+          const selectedBackground = backgrounds.find((item) => item.id === state.backgroundId) ?? null;
+          const allowed = new Set(selectedBackground?.abilityScoreIncrease.options ?? []);
+          const expectedBonus = (selectedBackground?.abilityScoreIncrease.amount ?? []).reduce((sum, value) => sum + value, 0);
+          const actualBonus = Object.entries(state.abilityIncreases).reduce((sum, [key, value]) => {
+            if (!value) return sum;
+            if (allowed.size > 0 && !allowed.has(key)) return Number.POSITIVE_INFINITY;
+            return sum + value;
+          }, 0);
+          if (actualBonus !== expectedBonus) return false;
+
+          const picked = Object.values(state.abilityIncreases)
+            .map((value) => value ?? 0)
+            .filter((value) => value > 0);
+          if (picked.some((value) => value > 2)) return false;
+          if (expectedBonus === 3) {
+            const sorted = [...picked].sort((a, b) => a - b);
+            const isTwoPlusOne =
+              sorted.length === 2 && sorted[0] === 1 && sorted[1] === 2;
+            const isOneOneOne =
+              sorted.length === 3 && sorted.every((value) => value === 1);
+            if (!isTwoPlusOne && !isOneOneOne) return false;
+          }
+
+          if (state.abilityMethod === "standard") return isValidStandardArray(state.abilityScores);
+          if (state.abilityMethod === "pointbuy") return isValidPointBuy(state.abilityScores);
+          return true;
+        }
       case "equipment": {
         const backgroundEquipment =
           selectedBackground?.equipment?.map((item) => ({
@@ -105,6 +161,13 @@ export function CharacterCreatorPage() {
       }
       case "spells":
         if (!spellLimits.hasSpellcasting) return true;
+        {
+          const cantripIds = new Set(cantripPool.map((spell) => spell.id));
+          const spellIds = new Set(spellPool.map((spell) => spell.id));
+          const hasInvalidCantrip = state.cantrips.some((id) => !cantripIds.has(id));
+          const hasInvalidSpell = state.spells.some((id) => !spellIds.has(id));
+          if (hasInvalidCantrip || hasInvalidSpell) return false;
+        }
         return (
           state.cantrips.length === requiredCantrips &&
           state.spells.length === requiredSpells

@@ -31,7 +31,7 @@ export function calculateArmorClass(
   const bodyArmors = armors.filter((item) => item.armorType !== "shield");
 
   let base = 10 + dexMod;
-  let formula = `10 + DEX (${dexMod >= 0 ? "+" : ""}${dexMod})`;
+  let formula = `10 + Ловкость (${dexMod >= 0 ? "+" : ""}${dexMod})`;
 
   if (bodyArmors.length > 0) {
     const best = [...bodyArmors].sort((a, b) => (b.armorClass ?? 0) - (a.armorClass ?? 0))[0];
@@ -44,10 +44,10 @@ export function calculateArmorClass(
     } else if (armorType === "medium") {
       const dex = Math.min(dexMod, best.maxDexBonus ?? 2);
       base = armorBase + dex;
-      formula = `${best.nameRu}: ${armorBase} + DEX (max ${best.maxDexBonus ?? 2})`;
+      formula = `${best.nameRu}: ${armorBase} + Ловкость (макс ${best.maxDexBonus ?? 2})`;
     } else {
       base = armorBase + dexMod;
-      formula = `${best.nameRu}: ${armorBase} + DEX`;
+      formula = `${best.nameRu}: ${armorBase} + Ловкость`;
     }
   }
 
@@ -58,7 +58,7 @@ export function calculateArmorClass(
 
   if (shieldBonus > 0) {
     base += shieldBonus;
-    formula += ` + Shield (${shieldBonus})`;
+    formula += ` + Щит (${shieldBonus})`;
   }
 
   return { total: base, formula };

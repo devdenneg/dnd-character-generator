@@ -115,20 +115,32 @@ function HomePageWrapper() {
 
 function BackgroundsPageWrapper() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get("returnTo");
+  const backPath = returnTo && returnTo.startsWith("/") ? returnTo : "/";
 
-  return <BackgroundsPage onBack={() => navigate("/")} />;
+  return <BackgroundsPage onBack={() => navigate(backPath)} />;
 }
 
 function SpellsPageWrapper() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get("returnTo");
+  const backPath = returnTo && returnTo.startsWith("/") ? returnTo : "/";
 
-  return <SpellsPage onBack={() => navigate("/")} />;
+  return <SpellsPage onBack={() => navigate(backPath)} />;
 }
 
 function EquipmentPageWrapper() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get("returnTo");
+  const backPath = returnTo && returnTo.startsWith("/") ? returnTo : "/";
 
-  return <EquipmentPage onBack={() => navigate("/")} />;
+  return <EquipmentPage onBack={() => navigate(backPath)} />;
 }
 
 function BestiaryPageWrapper() {

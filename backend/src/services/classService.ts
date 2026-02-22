@@ -1,5 +1,6 @@
 import prisma from "../db";
 import type { SpellcastingConfig } from "../types/equipment";
+import { ALL_SKILLS_META, toSkillMetaList } from "../utils/skills";
 
 export interface EquipmentWithQuantity {
   equipmentId: string;
@@ -69,7 +70,11 @@ export async function getAllClasses(source?: string) {
     orderBy: [{ source: "asc" }, { name: "asc" }],
   });
 
-  return classes;
+  return classes.map((item) => ({
+    ...item,
+    skillChoicesMeta: toSkillMetaList(item.skillChoices ?? []),
+    availableSkillsMeta: ALL_SKILLS_META,
+  }));
 }
 
 export async function getAllClassesMeta(source?: string) {
@@ -91,7 +96,7 @@ export async function getAllClassesMeta(source?: string) {
       subclasses: false,
       armorProficiencies: false,
       weaponProficiencies: false,
-      skillChoices: false,
+      skillChoices: true,
       skillCount: false,
       savingThrows: false,
       gallery: false,
@@ -103,7 +108,11 @@ export async function getAllClassesMeta(source?: string) {
     orderBy: [{ source: "asc" }, { name: "asc" }],
   });
 
-  return classes;
+  return classes.map((item) => ({
+    ...item,
+    skillChoicesMeta: toSkillMetaList(item.skillChoices ?? []),
+    availableSkillsMeta: ALL_SKILLS_META,
+  }));
 }
 
 export async function getClassById(id: string) {
@@ -126,7 +135,11 @@ export async function getClassById(id: string) {
 
   if (!classData) return null;
 
-  return classData;
+  return {
+    ...classData,
+    skillChoicesMeta: toSkillMetaList(classData.skillChoices ?? []),
+    availableSkillsMeta: ALL_SKILLS_META,
+  };
 }
 
 export async function getClassByExternalId(externalId: string) {
@@ -148,6 +161,31 @@ export async function getClassByExternalId(externalId: string) {
   });
 
   if (!classData) return null;
+
+  return {
+    ...classData,
+    skillChoicesMeta: toSkillMetaList(classData.skillChoices ?? []),
+    availableSkillsMeta: ALL_SKILLS_META,
+  };
+}
+
+export async function getClassSubclassesById(id: string) {
+  const classData = await prisma.characterClass.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      externalId: true,
+      subclassLevel: true,
+      subclasses: {
+        orderBy: { name: "asc" },
+        include: {
+          features: {
+            orderBy: { level: "asc" },
+          },
+        },
+      },
+    },
+  });
 
   return classData;
 }
