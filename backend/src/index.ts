@@ -47,11 +47,6 @@ httpServer.listen(PORT, () => {
   console.log(`   POST /api/auth/login    - Login user`);
   console.log(`   POST /api/auth/logout   - Logout user`);
   console.log(`   GET  /api/auth/me       - Get current user`);
-  console.log(`   GET  /api/characters    - Get user's characters`);
-  console.log(`   POST /api/characters    - Create character`);
-  console.log(`   GET  /api/characters/:id - Get character by ID`);
-  console.log(`   PUT  /api/characters/:id - Update character`);
-  console.log(`   DELETE /api/characters/:id - Delete character`);
   console.log(`   GET  /api/rooms/active  - Get active rooms (public)`);
   console.log(`   GET  /api/rooms         - Get master's rooms`);
   console.log(`   POST /api/rooms         - Create room`);

@@ -89,12 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
     setUser(null);
-    
-    // Clear character creation store on logout
-    // Import dynamically to avoid circular dependencies
-    import("@/store/characterStore").then(({ useCharacterStore }) => {
-      useCharacterStore.getState().resetCharacter();
-    });
   };
 
   return (

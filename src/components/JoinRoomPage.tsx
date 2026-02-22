@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Lock, Users, Shield, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { roomsApi, charactersApi } from "@/api/client";
+import { roomsApi } from "@/api/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import type { CharacterEntity, RoomEntity } from "@/types/api";
@@ -43,21 +43,11 @@ export function JoinRoomPage() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const [roomResponse, charactersResponse] = await Promise.all([
-        roomsApi.get(id!),
-        charactersApi.list(),
-      ]);
+      const roomResponse = await roomsApi.get(id!);
 
-      // roomsApi.get returns { success: true, data: roomData }
-      // charactersApi.list returns { success: true, data: { characters: [...] } }
       setRoom(roomResponse.data);
-      const charactersData = charactersResponse.data?.characters || [];
-      setCharacters(charactersData);
-
-      // Auto-select first character if available
-      if (charactersData.length > 0) {
-        setSelectedCharacterId(charactersData[0].id);
-      }
+      setCharacters([]);
+      setSelectedCharacterId("");
     } catch (err: unknown) {
       console.error("Error loading data:", err);
       setError(getErrorMessage(err, "Не удалось загрузить данные"));
@@ -242,13 +232,11 @@ export function JoinRoomPage() {
                       Нет персонажей
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Создайте персонажа, чтобы присоединиться к игре
+                      Временно недоступно: создание персонажа находится в
+                      переработке
                     </p>
-                    <Button
-                      onClick={() => navigate("/my-characters")}
-                      variant="outline"
-                    >
-                      Создать персонажа
+                    <Button onClick={() => navigate("/")} variant="outline">
+                      На главную
                     </Button>
                   </div>
                 </div>

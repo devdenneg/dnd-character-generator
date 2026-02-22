@@ -186,7 +186,7 @@ export function Header() {
                           <button
                               key={item.id}
                               onClick={() => {
-                                  navigate(item.id === "character-wizard" || item.id === "my-characters" ? `/${item.id}` : (item.id === "bestiary" ? "/bestiary" : `/${item.id}`));
+                                  navigate(item.id === "bestiary" ? "/bestiary" : `/${item.id}`);
                                   setIsMenuOpen(false);
                               }}
                               className="flex items-center gap-4 p-4 rounded-xl bg-card/50 border border-border/30 hover:bg-primary/5 hover:border-primary/30 transition-all text-left group"

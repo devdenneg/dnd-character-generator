@@ -2,11 +2,9 @@ import { useRandomContent, useSearch } from "@/api/search";
 import backgroundsImage from "@/components/assets/backgrounds.jpg";
 import bestiaryImage from "@/components/assets/beasts.jpg";
 import classesImage from "@/components/assets/classes.jpg";
-import createCharImage from "@/components/assets/createChar.jpg";
 import equipImage from "@/components/assets/equip.jpg";
 import featsImage from "@/components/assets/feats.jpg";
 import glossaryImage from "@/components/assets/gloss.jpg";
-import myCharImage from "@/components/assets/myChar.jpg";
 import racesImage from "@/components/assets/races.jpg";
 import spellsImage from "@/components/assets/spells.jpg";
 import { Button } from "@/components/ui/button";
@@ -32,35 +30,7 @@ interface SearchResult {
   category: string;
 }
 
-
-
-interface SearchResult {
-  id: string;
-  name: string;
-  nameRu: string;
-  type: "race" | "class" | "background" | "spell" | "equipment" | "glossary" | "feat" | "monster";
-  category: string;
-}
-
 const MENU_ITEMS: MenuItem[] = [
-  {
-    id: "character-wizard",
-    title: "Создание персонажа",
-    description: "Пошаговый мастер создания персонажа по правилам PHB 2024",
-    gradient: "from-primary to-accent",
-    roles: ["player", "master"],
-    inDevelopment: false,
-    image: createCharImage,
-  },
-  {
-    id: "my-characters",
-    title: "Мои персонажи",
-    description: "Сохранённые персонажи в облаке",
-    gradient: "from-emerald-500 to-teal-500",
-    roles: ["player", "master"],
-    inDevelopment: false,
-    image: myCharImage,
-  },
   {
     id: "races",
     title: "Расы",
@@ -477,54 +447,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 </div>
               </div>
             ))}
-        </div>
-      </div>
-
-      {/* Second Section: Characters - Disabled (Coming Soon) */}
-      <div className="mb-16 relative">
-        {/* Coming Soon Overlay */}
-        <div className="absolute inset-0 z-[var(--z-overlay)] bg-background/40 backdrop-blur-[2px] rounded-3xl flex items-center justify-center cursor-not-allowed">
-          <div className="bg-card/90 backdrop-blur-md border-2 border-primary/30 px-8 py-4 rounded-2xl shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-300">
-            <span className="text-2xl font-display font-bold text-primary uppercase tracking-widest">
-              Скоро будет
-            </span>
-          </div>
-        </div>
-
-        <div className="opacity-40 grayscale pointer-events-none">
-          <div className="flex items-center justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-3xl font-display font-semibold text-foreground">Персонажи</h2>
-              <p className="text-muted-foreground text-sm mt-1">Создание и управление персонажами</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {visibleMenuItems
-              .filter((item) => item.id === "character-wizard" || item.id === "my-characters")
-              .map((item, index) => (
-                <div
-                  key={item.id}
-                  className="group w-full text-left rounded-2xl border bg-card/40 backdrop-blur-md border-border/40 hover:border-primary/30 hover:bg-card/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 ease-out cursor-not-allowed relative overflow-hidden h-40"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  {item.image && (
-                    <div className="absolute inset-0 z-0">
-                      <img
-                        src={item.image}
-                        alt=""
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-card/95 via-card/50 to-transparent" />
-                    </div>
-                  )}
-                  <div className="relative z-10 p-6 flex flex-col h-full justify-end">
-                    <h3 className="font-semibold text-lg text-foreground mb-2">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                  </div>
-                </div>
-              ))}
-          </div>
         </div>
       </div>
 

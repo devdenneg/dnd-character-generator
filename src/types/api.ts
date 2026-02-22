@@ -31,26 +31,6 @@ export interface CharacterEntity {
 }
 
 /**
- * Single character response
- */
-export interface CharacterResponse {
-  success: boolean;
-  data: {
-    character: CharacterEntity;
-  };
-}
-
-/**
- * Multiple characters response
- */
-export interface CharactersListResponse {
-  success: boolean;
-  data: {
-    characters: CharacterEntity[];
-  };
-}
-
-/**
  * Room entity from database
  */
 export interface RoomEntity {

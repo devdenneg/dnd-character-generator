@@ -14,17 +14,7 @@
     "prisma:migrate:status": "prisma migrate status",
     "prisma:studio": "prisma studio",
     "migration:generate": "node scripts/generate-migration.js",
-    "migration:apply": "node migrate-production.js",
-    "seed:races": "ts-node seed-races.ts",
-    "seed:classes": "tsx seed-classes-new.ts",
-    "seed:backgrounds": "ts-node seed-backgrounds.ts",
-    "seed:spells": "ts-node seed-spells.ts",
-    "seed:equipment": "ts-node seed-equip.ts",
-    "seed:glossary": "ts-node import-glossary.ts",
-    "seed:feats": "ts-node import-feats.ts",
-    "seed:features": "tsx seed-features-only.ts",
-    "seed:bestiary": "ts-node seed-bestiary.ts",
-    "generate:classes:csv": "ts-node generate-classes-csv.ts"
+    "migration:apply": "node migrate-production.js"
   },
   "keywords": [
     "dnd",

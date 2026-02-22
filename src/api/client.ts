@@ -1,9 +1,6 @@
 import type {
   ApiResponse,
   AuthResponse,
-  CharacterData,
-  CharacterResponse,
-  CharactersListResponse,
   FeatFull,
   FeatMeta,
   GlossaryListResponse,
@@ -82,42 +79,6 @@ export const authApi = {
 
   me: async () => {
     const response = await apiClient.get("/auth/me");
-    return response.data;
-  },
-};
-
-// Characters API
-export const charactersApi = {
-  list: async () => {
-    const response = await apiClient.get<CharactersListResponse>("/characters");
-    return response.data;
-  },
-
-  create: async (data: { name: string; data: CharacterData }) => {
-    const response = await apiClient.post<CharacterResponse>(
-      "/characters",
-      data
-    );
-    return response.data;
-  },
-
-  get: async (id: string) => {
-    const response = await apiClient.get<CharacterResponse>(
-      `/characters/${id}`
-    );
-    return response.data;
-  },
-
-  update: async (id: string, data: { name?: string; data?: CharacterData }) => {
-    const response = await apiClient.put<CharacterResponse>(
-      `/characters/${id}`,
-      data
-    );
-    return response.data;
-  },
-
-  delete: async (id: string) => {
-    const response = await apiClient.delete(`/characters/${id}`);
     return response.data;
   },
 };
